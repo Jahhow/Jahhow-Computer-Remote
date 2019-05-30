@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FAFAFA</color>
+    <color name="colorPrimaryDark">#BBB</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="titleTextColor">#686868</color>
+</resources>
