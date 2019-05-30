@@ -1,16 +1,18 @@
 package c.jahhow.remotecontroller;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -23,20 +25,38 @@ public class MainActivity extends AppCompatActivity {
 	Socket socket = null;
 	OutputStream socketOutput = null;
 
+	FrameLayout contentView;
+	View ipLayout, controlPanel;
+	Animation fadeIn;
 	TextInputEditText tiEditTextIp, tiEditTextPort;
 	Button buttonConnect;
-	LinearLayout controlPanel;
 	Toast toast;
 
+	static final int idControlPanel = 2;
+
+	SharedPreferences preferences;
+	static final String name_CommonSharedPrefer = "CommonSettings";
+	static final String KeyPrefer_IP = "IP";
+	static final String KeyPrefer_Port = "Port";
+
+	@SuppressLint({"ShowToast", "InflateParams"})
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		contentView = findViewById(android.R.id.content);
+		ipLayout = getLayoutInflater().inflate(R.layout.activity_main, null);
+		setContentView(ipLayout);
+		controlPanel = getLayoutInflater().inflate(R.layout.control_panel, null);
+		controlPanel.setId(idControlPanel);
 		tiEditTextIp = findViewById(R.id.editTextIp);
 		tiEditTextPort = findViewById(R.id.editTextPort);
 		buttonConnect = findViewById(R.id.buttonConnect);
-		controlPanel = findViewById(R.id.controlPanel);
 		toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
+		fadeIn = AnimationUtils.loadAnimation(this, R.anim.fadein);
+
+		preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
+		tiEditTextIp.setText(preferences.getString(KeyPrefer_IP, ""));
+		tiEditTextPort.setText(preferences.getString(KeyPrefer_Port, ""));
 	}
 
 	private Runnable Connect = new Runnable() {
@@ -51,13 +71,11 @@ public class MainActivity extends AppCompatActivity {
 				socket.connect(inetaddr, 5000);
 				socket.shutdownInput();
 				socketOutput = socket.getOutputStream();
-				controlPanel.post(new Runnable() {
+				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						controlPanel.setVisibility(View.VISIBLE);
-						AlphaAnimation a = new AlphaAnimation(0, 1);
-						a.setDuration(250);
-						controlPanel.startAnimation(a);
+						setContentView(controlPanel);
+						controlPanel.startAnimation(fadeIn);
 					}
 				});
 			} catch (SocketTimeoutException e) {
@@ -66,9 +84,9 @@ public class MainActivity extends AppCompatActivity {
 					public void run() {
 						toast.setText("Timeout");
 						toast.show();
-						CloseConnection();
 					}
 				});
+				socket = null;
 			} catch (Exception e) {
 				runOnUiThread(new Runnable() {
 					@Override
@@ -78,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
 						CloseConnection();
 					}
 				});
+				socket = null;
 				Log.e("MainActivity", "Error Creating Socket" + e.toString());
 				e.printStackTrace();
 			}
@@ -98,7 +117,17 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	protected void onPause() {
-		CloseConnection();
+
+		// id of the view passed in setContentView
+		int viewId = contentView.getChildAt(0).getId();
+
+		if (viewId == idControlPanel) {
+			CloseConnection();
+		}
+		preferences.edit()
+				.putString(KeyPrefer_IP, tiEditTextIp.getText().toString())
+				.putString(KeyPrefer_Port, tiEditTextPort.getText().toString())
+				.apply();
 		super.onPause();
 	}
 
@@ -108,15 +137,18 @@ public class MainActivity extends AppCompatActivity {
 		InputMethodManager inputMethodManager =
 				(InputMethodManager) getSystemService(
 						Activity.INPUT_METHOD_SERVICE);
-		inputMethodManager.hideSoftInputFromWindow(
-				getCurrentFocus().getWindowToken(), 0);
+		if (inputMethodManager != null)
+			inputMethodManager.hideSoftInputFromWindow(
+					v.getWindowToken(), 0);
 
 		new Thread(Connect).start();
 	}
 
+	/*
 	static final byte KeyEvent_KeyPress = 0;
 	static final byte KeyEvent_KeyRelease = 1;
 	static final byte KeyEvent_KeyClick = 2; // Press + Release
+	*/
 
 	public void ButtonClick_Left(View v) {
 		SendKeyClick((byte) 0x25);
@@ -141,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
 			public void run() {
 				try {
 					socketOutput.write(bytes);
-					//socketOutput.flush();
 				} catch (IOException e) {
 					runOnUiThread(new Runnable() {
 						@Override
@@ -160,14 +191,19 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	// Please Call it on UI Thread
 	public void onBackPressed() {
-		if (controlPanel.getVisibility() == View.VISIBLE) {
+
+		// id of the view passed in setContentView
+		int viewId = contentView.getChildAt(0).getId();
+
+		if (viewId == idControlPanel) {
 			CloseConnection();
 		} else super.onBackPressed();
 	}
 
 	// Please Call it on UI Thread
 	void CloseConnection() {
-		controlPanel.setVisibility(View.GONE);
+		setContentView(ipLayout);
+		ipLayout.startAnimation(fadeIn);
 		if (socket != null) {
 			try {
 				socket.close();
@@ -175,7 +211,6 @@ public class MainActivity extends AppCompatActivity {
 				e.printStackTrace();
 			}
 			socket = null;
-			socketOutput = null;
 		}
 		buttonConnect.setEnabled(true);
 	}
