@@ -1,217 +1,295 @@
 package c.jahhow.remotecontroller;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+
+import c.jahhow.remotecontroller.Msg.ButtonAction;
+import c.jahhow.remotecontroller.Msg.Msg;
+import c.jahhow.remotecontroller.Msg.SCS1;
 
 public class MainActivity extends AppCompatActivity {
-	Socket socket = null;
-	OutputStream socketOutput = null;
+	MainViewModel mainViewModel;
 
-	FrameLayout contentView;
-	View ipLayout, controlPanel;
-	Animation fadeIn;
-	TextInputEditText tiEditTextIp, tiEditTextPort;
-	Button buttonConnect;
-	Toast toast;
-
-	static final int idControlPanel = 2;
-
+	ConnectorFragment connectorFragment;
+	Fragment showingFragment;
 	SharedPreferences preferences;
 	static final String name_CommonSharedPrefer = "CommonSettings";
-	static final String KeyPrefer_IP = "IP";
-	static final String KeyPrefer_Port = "Port";
+	static final String KeyPrefer_IP = "0";
+	static final String KeyPrefer_Port = "1";
+	static final String KeyPrefer_Controller = "2";
+	static final String KeyPrefer_SwipeDemo = "3";
+	static final String KeyPrefer_Swiped = "4";
+	static final String KeyPrefer_InputText = "5";
+
+	Toast toast;
 
 	@SuppressLint({"ShowToast", "InflateParams"})
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		contentView = findViewById(android.R.id.content);
-		ipLayout = getLayoutInflater().inflate(R.layout.activity_main, null);
-		setContentView(ipLayout);
-		controlPanel = getLayoutInflater().inflate(R.layout.control_panel, null);
-		controlPanel.setId(idControlPanel);
-		tiEditTextIp = findViewById(R.id.editTextIp);
-		tiEditTextPort = findViewById(R.id.editTextPort);
-		buttonConnect = findViewById(R.id.buttonConnect);
-		toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
-		fadeIn = AnimationUtils.loadAnimation(this, R.anim.fadein);
-
+		mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+		connectorFragment = new ConnectorFragment();
+		getFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+				.add(android.R.id.content, connectorFragment).commit();
+		showingFragment = connectorFragment;
+		toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
 		preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
-		tiEditTextIp.setText(preferences.getString(KeyPrefer_IP, ""));
-		tiEditTextPort.setText(preferences.getString(KeyPrefer_Port, ""));
-	}
-
-	private Runnable Connect = new Runnable() {
-		@Override
-		public void run() {
-			try {
-				InetSocketAddress inetaddr = new InetSocketAddress(
-						tiEditTextIp.getText().toString(),
-						Integer.parseInt(tiEditTextPort.getText().toString())
-				);
-				socket = new Socket();
-				socket.connect(inetaddr, 5000);
-				socket.shutdownInput();
-				socketOutput = socket.getOutputStream();
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						setContentView(controlPanel);
-						controlPanel.startAnimation(fadeIn);
-					}
-				});
-			} catch (SocketTimeoutException e) {
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						toast.setText("Timeout");
-						toast.show();
-					}
-				});
-				socket = null;
-			} catch (Exception e) {
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						toast.setText("Connection Error");
-						toast.show();
-						CloseConnection();
-					}
-				});
-				socket = null;
-				Log.e("MainActivity", "Error Creating Socket" + e.toString());
-				e.printStackTrace();
-			}
-		}
-	};
-	/*
-	View.OnTouchListener key_OnTouchListener = new View.OnTouchListener() {
-		@Override
-		public boolean onTouch(View v, MotionEvent event) {
-			if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-
-			} else {
-
-			}
-			return true;
-		}
-	}*/
-
-	@Override
-	protected void onPause() {
-
-		// id of the view passed in setContentView
-		int viewId = contentView.getChildAt(0).getId();
-
-		if (viewId == idControlPanel) {
-			CloseConnection();
-		}
-		preferences.edit()
-				.putString(KeyPrefer_IP, tiEditTextIp.getText().toString())
-				.putString(KeyPrefer_Port, tiEditTextPort.getText().toString())
-				.apply();
-		super.onPause();
 	}
 
 	public void ButtonClick_Connect(View v) {
 		v.setEnabled(false);
 
-		InputMethodManager inputMethodManager =
+		/*InputMethodManager inputMethodManager =
 				(InputMethodManager) getSystemService(
 						Activity.INPUT_METHOD_SERVICE);
 		if (inputMethodManager != null)
 			inputMethodManager.hideSoftInputFromWindow(
-					v.getWindowToken(), 0);
+					v.getWindowToken(), 0);*/
 
-		new Thread(Connect).start();
+		new Thread(connectorFragment.connectRunnable).start();
 	}
 
-	/*
-	static final byte KeyEvent_KeyPress = 0;
-	static final byte KeyEvent_KeyRelease = 1;
-	static final byte KeyEvent_KeyClick = 2; // Press + Release
-	*/
-
-	public void ButtonClick_Left(View v) {
-		SendKeyClick((byte) 0x25);
+	public void SendClick_Left(View v) {
+		SendKeyboardScanCode(SCS1.Left_Arrow, ButtonAction.Click);
 	}
 
-	public void ButtonClick_Up(View v) {
-		SendKeyClick((byte) 0x26);
+	public void SendClick_Up(View v) {
+		SendKeyboardScanCode(SCS1.Up_Arrow, ButtonAction.Click);
 	}
 
-	public void ButtonClick_Right(View v) {
-		SendKeyClick((byte) 0x27);
+	public void SendClick_Right(View v) {
+		SendKeyboardScanCode(SCS1.Right_Arrow, ButtonAction.Click);
 	}
 
-	public void ButtonClick_Down(View v) {
-		SendKeyClick((byte) 0x28);
+	public void SendClick_Down(View v) {
+		SendKeyboardScanCode(SCS1.Dn_Arrow, ButtonAction.Click);
 	}
 
-	public void SendKeyClick(byte VirtualKeyCode) {
-		final byte[] bytes = {VirtualKeyCode};
+	public void SendClick_Esc(View v) {
+		SendKeyboardScanCode(SCS1.Esc, ButtonAction.Click);
+	}
+
+	public void SendClick_F5(View v) {
+		SendKeyboardScanCode(SCS1.F5, ButtonAction.Click);
+	}
+
+	public void SendClick_Backspace(View v) {
+		SendKeyboardScanCode(SCS1.Backspace, ButtonAction.Click);
+	}
+
+	public void SendClick_Enter(View v) {
+		SendKeyboardScanCode(SCS1.Enter, ButtonAction.Click);
+	}
+
+	public void SendClick_ShiftF5(View v) {
+		SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_SHIFT, SCS1.F5);
+	}
+
+	public void SendMouseMove(short dx, short dy) {
+		final byte[] bytes = ByteBuffer.allocate(5).put(Msg.MoveMouse).putShort(dx).putShort(dy).array();
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					socketOutput.write(bytes);
+					mainViewModel.socketOutput.write(bytes);
 				} catch (IOException e) {
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							CloseConnection();
-							toast.setText("Problem sending a key");
-							toast.show();
-						}
-					});
+					OnProblemSending("Problem Moving Mouse");
 					e.printStackTrace();
 				}
 			}
 		}).start();
 	}
 
-	@Override
-	// Please Call it on UI Thread
-	public void onBackPressed() {
+	public void SendMouseWheel(int amount) {
+		final byte[] bytes = ByteBuffer.allocate(5).put(Msg.MouseWheel).putInt(amount).array();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					mainViewModel.socketOutput.write(bytes);
+				} catch (IOException e) {
+					OnProblemSending("Problem Sending a Message");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
 
-		// id of the view passed in setContentView
-		int viewId = contentView.getChildAt(0).getId();
+	public void SendPasteText(final String text, boolean Hold) {
+		try {
+			int textByteLen = text.length() << 1;
+			final byte packet[] = ByteBuffer.allocate(6 + textByteLen)
+					.put(Msg.PasteText)
+					.putInt(textByteLen)
+					.put((byte) (Hold ? 1 : 0))
+					.put(text.getBytes("UTF-16LE")).array();
 
-		if (viewId == idControlPanel) {
-			CloseConnection();
-		} else super.onBackPressed();
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						mainViewModel.socketOutput.write(packet);
+					} catch (IOException e) {
+						OnProblemSending("Problem Sending Text");
+						e.printStackTrace();
+					}
+				}
+			}).start();
+		} catch (UnsupportedEncodingException e) {
+			ShowToast("Problem Sending Text");
+			e.printStackTrace();
+		}
+	}
+
+	public void SendMouseLeftDown() {
+		SendMsg(Msg.MouseLeftDown);
+	}
+
+	public void SendMouseLeftUp() {
+		SendMsg(Msg.MouseLeftUp);
+	}
+
+	public void SendMouseLeftClick() {
+		SendMsg(Msg.MouseLeftClick);
+	}
+
+	public void SendMouseRightDown() {
+		SendMsg(Msg.MouseRightDown);
+	}
+
+	public void SendMouseRightUp() {
+		SendMsg(Msg.MouseRightUp);
+	}
+
+	public void SendMouseRightClick() {
+		SendMsg(Msg.MouseRightClick);
+	}
+
+	public void SendMsg(final byte msg) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					mainViewModel.socketOutput.write(msg);
+				} catch (IOException e) {
+					OnProblemSending("Problem Sending a Message");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	public void SendKeyboardScanCode(short ScanCode, byte buttonAction) {
+		final byte[] bytes = ByteBuffer.allocate(4)
+				.put(Msg.KeyboardScanCode)
+				.putShort(ScanCode)
+				.put(buttonAction)
+				.array();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					mainViewModel.socketOutput.write(bytes);
+				} catch (IOException e) {
+					OnProblemSending("Problem sending a key");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+/*
+	public void SendKeyboardUp(byte VirtualKeyCode) {
+		final byte[] bytes = {Msg.KeyboardUp, VirtualKeyCode};
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					mainViewModel.socketOutput.write(bytes);
+				} catch (IOException e) {
+					OnProblemSending("Problem sending a key");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	public void SendKeyboardScanCode(byte VirtualKeyCode) {
+		final byte[] bytes = {Msg.KeyboardClick, VirtualKeyCode};
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					mainViewModel.socketOutput.write(bytes);
+				} catch (IOException e) {
+					OnProblemSending("Problem sending a key");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}*/
+
+
+	// actionType: ButtonAction.{Click, Down, or Up}
+	public void SendKeyboardScanCodeCombination(final byte actionType, final short... ScanCodes) {
+		int scanCodeByteLen = ScanCodes.length << 1;
+		ByteBuffer byteBuffer = ByteBuffer.allocate(3 + scanCodeByteLen)
+				.put(Msg.KeyboardScanCodeCombination)
+				.put(actionType)
+				.put((byte) scanCodeByteLen);
+		for (short scanCode : ScanCodes)
+			byteBuffer.putShort(scanCode);
+
+		final byte packet[] = byteBuffer.array();
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					mainViewModel.socketOutput.write(packet);
+				} catch (IOException e) {
+					OnProblemSending("Problem sending keys");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	void ShowToast(String text) {
+		toast.setText(text);
+		toast.show();
+	}
+
+	void OnProblemSending(final String showToast) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				CloseConnection();
+				getFragmentManager().popBackStack();
+				ShowToast(showToast);
+			}
+		});
 	}
 
 	// Please Call it on UI Thread
 	void CloseConnection() {
-		setContentView(ipLayout);
-		ipLayout.startAnimation(fadeIn);
-		if (socket != null) {
+		if (mainViewModel.socket != null) {
 			try {
-				socket.close();
+				mainViewModel.socket.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			socket = null;
+			mainViewModel.socket = null;
 		}
-		buttonConnect.setEnabled(true);
 	}
 }

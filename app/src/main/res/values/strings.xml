@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Remote Controller</string>
+    <string name="arrows">Arrows</string>
+    <string name="swipe">Swipe</string>
+    <string name="hintShiftF5">Show Current Slide</string>
+    <string name="hintF5">Play the First Slide</string>
+    <string name="connect">CONNECT</string>
+    <string name="touchPad">TouchPad</string>
+    <string name="input_text">Input Text</string>
+    <string name="Send">SEND</string>
 </resources>

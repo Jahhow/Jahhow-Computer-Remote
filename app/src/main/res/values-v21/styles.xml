@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme" parent="BaseAppTheme">
+        <!--After v21 supports shadow, so color the slide by white-->
+        <item name="slideColor">@color/White</item>
+    </style>
+
+    <style name="AppTheme.SwipeDirectionIndicatorStyle" parent="BaseAppTheme.SwipeDirectionIndicatorStyle">
+        <item name="android:tint">@color/colorPrimaryDark</item>
+    </style>
+</resources>

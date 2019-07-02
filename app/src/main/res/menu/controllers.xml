@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navButtonUseButtonController"
+        android:icon="@drawable/ic_arrow_buttons_24dp"
+        android:title="@string/arrows" />
+    <item
+        android:id="@+id/navButtonUseSwiper"
+        android:icon="@drawable/ic_slides_24dp"
+        android:title="@string/swipe" />
+    <item
+        android:id="@+id/navButtonUseTouchPad"
+        android:icon="@drawable/ic_pointer_24dp"
+        android:title="@string/touchPad" />
+    <item
+        android:id="@+id/navButtonSendText"
+        android:icon="@drawable/ic_send_text_48dp"
+        android:title="@string/input_text" />
+</menu>

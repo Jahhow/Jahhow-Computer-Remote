@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="#0000"
+        android:gravity="center_horizontal"
+        android:minHeight="?actionBarSize">
+
+        <Button
+            android:id="@+id/buttonEsc"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="?selectableItemBackgroundBorderless"
+            android:onClick="SendClick_Esc"
+            android:text="ESC"
+            android:textColor="@color/titleTextColor"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/buttonShiftF5"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="?selectableItemBackgroundBorderless"
+            android:onClick="SendClick_ShiftF5"
+            android:paddingHorizontal="16dp"
+            android:text="Shift + F5"
+            android:textColor="@color/titleTextColor"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/buttonF5"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="?selectableItemBackgroundBorderless"
+            android:onClick="SendClick_F5"
+            android:text="F5"
+            android:textColor="@color/titleTextColor"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/buttonUp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:alpha=".6"
+            android:background="?selectableItemBackgroundBorderless"
+            android:onClick="SendClick_Up"
+            android:src="@drawable/ic_keyboard_arrow_up_black_24dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/buttonLeft"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginRight="80dp"
+                android:alpha=".6"
+                android:background="?selectableItemBackgroundBorderless"
+                android:onClick="SendClick_Left"
+                android:src="@drawable/ic_keyboard_arrow_left_black_24dp" />
+
+            <ImageView
+                android:id="@+id/buttonRight"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:alpha=".6"
+                android:background="?selectableItemBackgroundBorderless"
+                android:onClick="SendClick_Right"
+                android:src="@drawable/ic_keyboard_arrow_right_black_24dp" />
+        </LinearLayout>
+
+
+        <ImageView
+            android:id="@+id/buttonDown"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:alpha=".6"
+            android:background="?selectableItemBackgroundBorderless"
+            android:onClick="SendClick_Down"
+            android:src="@drawable/ic_keyboard_arrow_down_black_24dp" />
+    </LinearLayout>
+</LinearLayout>
