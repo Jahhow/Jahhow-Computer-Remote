@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Remote Controller</string>
+    <string name="app_name">Dev Remote Controller</string>
     <string name="arrows">Arrows</string>
     <string name="swipe">Swipe</string>
     <string name="hintShiftF5">Show Current Slide</string>
@@ -8,4 +8,11 @@
     <string name="touchPad">TouchPad</string>
     <string name="input_text">Input Text</string>
     <string name="Send">SEND</string>
+    <string name="ConnectionError">Connection Error</string>
+    <string name="Disconnected">Disconnected</string>
+    <string name="ProblemSendingText">Problem Sending Text</string>
+    <string name="TimeoutCheckIPportOrUpdate">Timeout.  Check IP, Port, or Update the Programs on Both Sides</string>
+    <string name="PleaseUpdateThisApp">Please Update This App</string>
+    <string name="PleaseUpdateTheComputerSideReceiverProgram">Please Update the Computer Side Receiver Program</string>
+    <string name="buy">BUY</string>
 </resources>

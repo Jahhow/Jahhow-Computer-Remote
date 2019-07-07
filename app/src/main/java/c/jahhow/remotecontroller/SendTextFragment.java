@@ -7,9 +7,9 @@ import android.support.design.widget.TextInputEditText;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 
 import c.jahhow.remotecontroller.Msg.ButtonAction;
+import c.jahhow.remotecontroller.Msg.InputTextMode;
 import c.jahhow.remotecontroller.Msg.SCS1;
 
 public class SendTextFragment extends Fragment {
@@ -21,28 +21,56 @@ public class SendTextFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 		mainActivity = (MainActivity) getActivity();
 
-		View layout = inflater.inflate(R.layout.send_text, container, false);
+		View layout = inflater.inflate(R.layout.input_text, container, false);
 		editText = layout.findViewById(R.id.SendTextEditText);
 		if (mainActivity.mainViewModel.inputText != null)
 			editText.setText(mainActivity.mainViewModel.inputText);
 		else
 			editText.setText(mainActivity.preferences.getString(MainActivity.KeyPrefer_InputText, null));
 
-		ImageButton buttonSend = layout.findViewById(R.id.buttonSend);
+		new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonBackspace)) {
+			@Override
+			void onLongClickDown(View v) {
+				mainActivity.SendKeyboardScanCode(SCS1.Backspace, ButtonAction.Down);
+			}
+
+			@Override
+			void onLongClickUp(View v) {
+				mainActivity.SendKeyboardScanCode(SCS1.Backspace, ButtonAction.Up);
+			}
+		};
+
+		new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonEnter)) {
+			@Override
+			void onLongClickDown(View v) {
+				mainActivity.SendKeyboardScanCode(SCS1.Enter,ButtonAction.Down);
+			}
+
+			@Override
+			void onLongClickUp(View v) {
+				mainActivity.SendKeyboardScanCode(SCS1.Enter, ButtonAction.Up);
+			}
+		};
+
+		View buttonSend = layout.findViewById(R.id.buttonSend);
 		buttonSend.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				String str = editText.getText().toString();
-				if (str.length() > 0)
-					mainActivity.SendPasteText(str, false);
+				mainActivity.SendInputText(editText.getText().toString(), InputTextMode.SendInput, false);
 			}
 		});
-		new LongPressAndUpDetector(buttonSend) {
+
+		View buttonPasteText = layout.findViewById(R.id.buttonPasteText);
+		buttonPasteText.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mainActivity.SendInputText(editText.getText().toString(), InputTextMode.Paste, false);
+			}
+		});
+		new LongPressAndUpDetector(buttonPasteText) {
 			@Override
 			void onLongClickDown(View v) {
-				String str = editText.getText().toString();
-				if (str.length() > 0)
-					mainActivity.SendPasteText(str, true);
+				mainActivity.SendInputText(editText.getText().toString(), InputTextMode.Paste, true);
 			}
 
 			@Override
@@ -50,7 +78,6 @@ public class SendTextFragment extends Fragment {
 				mainActivity.SendKeyboardScanCodeCombination(ButtonAction.Up, SCS1.L_CTRL, SCS1.V);
 			}
 		};
-
 		return layout;
 	}
 

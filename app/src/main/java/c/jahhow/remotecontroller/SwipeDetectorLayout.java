@@ -75,7 +75,7 @@ public class SwipeDetectorLayout extends FrameLayout {
 	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
-		if (!mainActivity.preferences.contains(MainActivity.KeyPrefer_Swiped) || mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_SwipeDemo, false))
+		if (!mainActivity.preferences.contains(MainActivity.KeyPrefer_Swiped) || mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_SwipeDemo, true))
 			Demo();
 	}
 

@@ -5,9 +5,9 @@ import android.view.View;
 
 public abstract class LongPressAndUpDetector implements View.OnTouchListener, View.OnLongClickListener {
 
-	abstract void onLongClickUp(View v);
-
 	abstract void onLongClickDown(View v);
+
+	abstract void onLongClickUp(View v);
 
 	LongPressAndUpDetector(View v) {
 		v.setOnTouchListener(this);

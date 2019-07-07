@@ -1,17 +1,22 @@
 package c.jahhow.remotecontroller;
 
+import android.app.Service;
 import android.content.Context;
 import android.os.Build;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
 public class TouchPadLayout extends FrameLayout {
 
 	MainActivity mainActivity;
+	Vibrator vibrator;
+	boolean vibrateOnDownOnly;
 
 	public TouchPadLayout(@NonNull Context context) {
 		super(context);
@@ -31,7 +36,13 @@ public class TouchPadLayout extends FrameLayout {
 	}
 
 	public void Initialize(MainActivity mainActivity) {
-		this.mainActivity=mainActivity;
+		this.mainActivity = mainActivity;
+		vibrator = (Vibrator) mainActivity.getApplication().getSystemService(Service.VIBRATOR_SERVICE);
+		if (vibrator != null && !vibrator.hasVibrator()) vibrator = null;
+
+		if (vibrator == null) vibrateOnDownOnly = false;
+		else
+			vibrateOnDownOnly = mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_VibrateOnDownOnly, false);
 	}
 
 	@Override
@@ -44,15 +55,17 @@ public class TouchPadLayout extends FrameLayout {
 	float originXdp, originYdp;
 	float origin2PointerAverageYdp;
 	int maxPointerCount, lastMaxPointerCount;
-	boolean hasMove;
-	boolean downIsInDoubleClickInterval;
+	boolean hasMove = false;
+	boolean downIsInDoubleClickInterval = false;
 	boolean upIsFirstOfIntensiveClicks;// of intensive clicks
 	long upTime = 0;
 	int intensiveClickIntervalMs = 300;
 
 	int lastAction;
 	final Object lock = new Object();
-	boolean available;
+	boolean semaphore = false;
+	final Object vibrateLock = new Object();
+	boolean vibrateSemaphore;
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
@@ -60,9 +73,10 @@ public class TouchPadLayout extends FrameLayout {
 		switch (action) {
 			case MotionEvent.ACTION_DOWN: {
 				if (downIsInDoubleClickInterval) {// last down
-					if (event.getEventTime() - upTime < intensiveClickIntervalMs) {
+					if (/*last*/!hasMove && event.getEventTime() - upTime < intensiveClickIntervalMs) {
 						switch (maxPointerCount) {// last
 							case 1:
+								Log.e("LeftDown", "79");
 								mainActivity.SendMouseLeftDown();
 								break;
 							case 2:
@@ -75,8 +89,28 @@ public class TouchPadLayout extends FrameLayout {
 					}
 				} else {
 					synchronized (lock) {
-						downIsInDoubleClickInterval = available;
-						available = false;
+						downIsInDoubleClickInterval = semaphore;
+						semaphore = false;
+					}
+					if (downIsInDoubleClickInterval & vibrateOnDownOnly) {
+						synchronized (vibrateLock) {
+							vibrateSemaphore = true;
+						}
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									Thread.sleep(intensiveClickIntervalMs);
+								} catch (InterruptedException ignored) {
+								}
+								synchronized (vibrateLock) {
+									if (vibrateSemaphore) {
+										vibrateSemaphore = false;
+										vibrator.vibrate(1);
+									}
+								}
+							}
+						}).start();
 					}
 				}
 				lastMaxPointerCount = maxPointerCount;
@@ -89,18 +123,26 @@ public class TouchPadLayout extends FrameLayout {
 					if (event.getPointerCount() == 1) {
 						float xdp = event.getX() / density;
 						float ydp = event.getY() / density;
-						int roundDiffXdp = Math.round(xdp - originXdp);
-						int roundDiffYdp = Math.round(ydp - originYdp);
-						if (roundDiffXdp != 0 || roundDiffYdp != 0) {
-							mainActivity.SendMouseMove(AdjustMouseMove(roundDiffXdp), AdjustMouseMove(roundDiffYdp));
-							originXdp += roundDiffXdp;
-							originYdp += roundDiffYdp;
+						float diffXdp = xdp - originXdp;
+						float diffYdp = ydp - originYdp;
+						float adjFactor = (float) GetAdjustFactor(diffXdp, diffYdp);
+						int roundAdjDiffXdp = Math.round(adjFactor * diffXdp);
+						int roundAdjDiffYdp = Math.round(adjFactor * diffYdp);
+						if (roundAdjDiffXdp != 0 || roundAdjDiffYdp != 0) {
+							mainActivity.SendMouseMove((short) roundAdjDiffXdp, (short) roundAdjDiffYdp);
+							originXdp += roundAdjDiffXdp / adjFactor;
+							originYdp += roundAdjDiffYdp / adjFactor;
 						}
 					} else if (event.getPointerCount() == 2) {
 						float averageYdp = (event.getY() + event.getY(1)) / (2 * density);
-						int roundDiffYdp = Math.round(averageYdp - origin2PointerAverageYdp);
-						mainActivity.SendMouseWheel(AdjustMouseMove(roundDiffYdp));
-						origin2PointerAverageYdp += roundDiffYdp;
+						float diffYdp = averageYdp - origin2PointerAverageYdp;
+						double adjFactor = GetScrollAdjustFactor(diffYdp);
+						double adjDiffYdp = adjFactor * diffYdp;
+						int roundAdjDiffYdp = (int) Math.round(adjDiffYdp);
+						if (roundAdjDiffYdp != 0) {
+							mainActivity.SendMouseWheel(roundAdjDiffYdp);
+							origin2PointerAverageYdp += roundAdjDiffYdp / adjFactor;
+						}
 					}
 				} else {
 					hasMove = true;
@@ -118,6 +160,7 @@ public class TouchPadLayout extends FrameLayout {
 				if (downIsInDoubleClickInterval) {
 					switch (lastMaxPointerCount) {
 						case 1:
+							Log.e("LeftUp", "163");
 							mainActivity.SendMouseLeftUp();
 							break;
 						case 2:
@@ -126,14 +169,29 @@ public class TouchPadLayout extends FrameLayout {
 					}
 					if (upIsFirstOfIntensiveClicks) {//last
 						upIsFirstOfIntensiveClicks = false;
-						if (upTime - event.getDownTime() < intensiveClickIntervalMs && !hasMove) {
-							switch (lastMaxPointerCount) {
-								case 1:
-									mainActivity.SendMouseLeftClick();
-									break;
-								case 2:
-									mainActivity.SendMouseRightClick();
-									break;
+						if (!hasMove) {
+							boolean shouldSendAClick = false;
+							if (vibrateOnDownOnly) {
+								synchronized (vibrateLock) {
+									if (vibrateSemaphore) {
+										vibrateSemaphore = false;
+										shouldSendAClick = true;
+									}
+								}
+							} else if (upTime - event.getDownTime() < intensiveClickIntervalMs) {
+								shouldSendAClick = true;
+							}
+
+							if (shouldSendAClick) {
+								switch (lastMaxPointerCount) {
+									case 1:
+										Log.e("LeftClick", "188");
+										mainActivity.SendMouseLeftClick();
+										break;
+									case 2:
+										mainActivity.SendMouseRightClick();
+										break;
+								}
 							}
 						}
 					}
@@ -142,28 +200,40 @@ public class TouchPadLayout extends FrameLayout {
 					if (!hasMove) {
 						switch (maxPointerCount) {
 							case 1:
+								Log.e("LeftDown", "200");
 								mainActivity.SendMouseLeftDown();
-								available = true;
-								new Thread(new Runnable() {
-									@Override
-									public void run() {
-										try {
-											Thread.sleep(intensiveClickIntervalMs);
-											synchronized (lock) {
-												if (available) {
-													available = false;
-													mainActivity.SendMouseLeftUp();
-												}
-											}
-										} catch (InterruptedException ignored) {
-										}
-									}
-								}).start();
 								break;
 							case 2:
-								mainActivity.SendMouseRightClick();
+								mainActivity.SendMouseRightDown();
 								break;
 						}
+						final int curMaxPointerCount = maxPointerCount;
+						synchronized (lock) {
+							semaphore = true;
+						}
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									Thread.sleep(intensiveClickIntervalMs);
+									synchronized (lock) {
+										if (semaphore) {
+											semaphore = false;
+											switch (curMaxPointerCount) {
+												case 1:
+													Log.e("LeftUp", "222");
+													mainActivity.SendMouseLeftUp();
+													break;
+												case 2:
+													mainActivity.SendMouseRightUp();
+													break;
+											}
+										}
+									}
+								} catch (InterruptedException ignored) {
+								}
+							}
+						}).start();
 					}
 				}
 				break;
@@ -171,6 +241,7 @@ public class TouchPadLayout extends FrameLayout {
 			case MotionEvent.ACTION_CANCEL:
 				if (downIsInDoubleClickInterval) {
 					downIsInDoubleClickInterval = false;
+					Log.e("LeftUp", "241");
 					mainActivity.SendMouseLeftUp();
 				}
 				break;
@@ -185,11 +256,15 @@ public class TouchPadLayout extends FrameLayout {
 		return true;
 	}
 
-	double exp = 1.5;
+	double scrollAdjMultiplier = 4;
 
-	short AdjustMouseMove(double dp) {
-		if (dp < 0)
-			return (short) -Math.pow(-dp, exp);
-		return (short) Math.pow(dp, exp);
+	double GetScrollAdjustFactor(double dp) {
+		return scrollAdjMultiplier * Math.pow(Math.abs(dp), moveMouseAdjExp - 1);
+	}
+
+	double moveMouseAdjExp = 1.2;
+
+	double GetAdjustFactor(double dxDp, double dyDp) {
+		return Math.pow(dxDp * dxDp + dyDp * dyDp, moveMouseAdjExp - 1);
 	}
 }

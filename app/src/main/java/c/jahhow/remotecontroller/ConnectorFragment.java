@@ -14,9 +14,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class ConnectorFragment extends Fragment {
 	TextInputEditText tiEditTextIp, tiEditTextPort;
@@ -26,7 +29,6 @@ public class ConnectorFragment extends Fragment {
 	Toast toast;
 	MainViewModel mainViewModel;
 	Fragment controller;
-	int transactionCommitID;
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,6 +61,8 @@ public class ConnectorFragment extends Fragment {
 	}
 
 	static final byte Header[] = {'R', 'C', 'R', 'H'};
+	static final byte ServerHeader[] = {'U', 'E', 'R', 'J'};
+	static final int SupportServerVersion = 1;
 	public Runnable connectRunnable = new Runnable() {
 		@Override
 		public void run() {
@@ -69,42 +73,52 @@ public class ConnectorFragment extends Fragment {
 				);
 				mainViewModel.socket = new Socket();
 				mainViewModel.socket.setTcpNoDelay(true);
-				mainViewModel.socket.connect(inetaddr, 5000);
-				mainViewModel.socket.shutdownInput();
+				mainViewModel.socket.connect(inetaddr, 3000);
 				mainViewModel.socketOutput = mainViewModel.socket.getOutputStream();
 				mainViewModel.socketOutput.write(Header);
-				mainActivity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						transactionCommitID = getFragmentManager().beginTransaction().addToBackStack(null)
-								.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-								.remove(ConnectorFragment.this).add(android.R.id.content, controller).commit();
-						buttonConnect.setEnabled(true);
-					}
-				});
+
+				mainViewModel.socket.setSoTimeout(3000);
+				InputStream inputStream = mainViewModel.socket.getInputStream();
+				byte buf[] = new byte[ServerHeader.length];
+				if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {
+					mainActivity.OnSocketError(getString(R.string.ConnectionError));
+					return;
+				}
+				if (!Arrays.equals(buf, ServerHeader)) {
+					mainActivity.OnSocketError(getString(R.string.ConnectionError));
+					return;
+				}
+				if (4 != inputStream.read(buf, 0, 4)) {
+					mainActivity.OnSocketError(getString(R.string.PleaseUpdateTheComputerSideReceiverProgram), Toast.LENGTH_LONG);
+					return;
+				}
+				int serverVersion = ByteBuffer.wrap(buf).getInt();
+				if (serverVersion < SupportServerVersion) {
+					mainActivity.OnSocketError(getString(R.string.PleaseUpdateTheComputerSideReceiverProgram), Toast.LENGTH_LONG);
+					return;
+				} else if (serverVersion > SupportServerVersion) {
+					mainActivity.OnSocketError(getString(R.string.PleaseUpdateThisApp));
+					return;
+				}
+				mainViewModel.socket.shutdownInput();
+				mainActivity.runOnUiThread(runnableOpenControllerFragment);
 			} catch (SocketTimeoutException e) {
-				mainActivity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						buttonConnect.setEnabled(true);
-						toast.setText("Timeout");
-						toast.show();
-					}
-				});
-				mainViewModel.socket = null;
+				mainActivity.OnSocketError(getString(R.string.TimeoutCheckIPportOrUpdate), Toast.LENGTH_LONG);
 			} catch (Exception e) {
-				mainActivity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						buttonConnect.setEnabled(true);
-						toast.setText("Connection Error");
-						toast.show();
-					}
-				});
-				mainViewModel.socket = null;
-				Log.e("MainActivity", "Connection Error" + e.toString());
+				mainActivity.OnSocketError(getString(R.string.ConnectionError));
+				Log.e("MainActivity", getString(R.string.ConnectionError) + e.toString());
 				e.printStackTrace();
 			}
+		}
+	};
+
+	Runnable runnableOpenControllerFragment = new Runnable() {
+		@Override
+		public void run() {
+			mainActivity.getFragmentManager().beginTransaction().addToBackStack(null)
+					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+					.remove(ConnectorFragment.this)
+					.add(android.R.id.content, controller).commit();
 		}
 	};
 }
