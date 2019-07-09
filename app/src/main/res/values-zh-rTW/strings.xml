@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Dev 電腦遙控器</string>
+    <string name="app_name">電腦遙控器</string>
     <string name="arrows">方向鍵</string>
     <string name="swipe">滑動</string>
     <string name="hintShiftF5">放映目前投影片</string>

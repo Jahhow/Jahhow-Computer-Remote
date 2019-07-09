@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Dev Remote Controller</string>
+    <string name="app_name">Remote Controller</string>
     <string name="arrows">Arrows</string>
     <string name="swipe">Swipe</string>
     <string name="hintShiftF5">Show Current Slide</string>
