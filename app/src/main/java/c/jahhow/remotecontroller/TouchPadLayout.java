@@ -15,7 +15,6 @@ import android.widget.FrameLayout;
 public class TouchPadLayout extends FrameLayout {
 
 	MainActivity mainActivity;
-	Vibrator vibrator;
 	boolean vibrateOnDownOnly;
 
 	public TouchPadLayout(@NonNull Context context) {
@@ -37,12 +36,9 @@ public class TouchPadLayout extends FrameLayout {
 
 	public void Initialize(MainActivity mainActivity) {
 		this.mainActivity = mainActivity;
-		vibrator = (Vibrator) mainActivity.getApplication().getSystemService(Service.VIBRATOR_SERVICE);
-		if (vibrator != null && !vibrator.hasVibrator()) vibrator = null;
-
-		if (vibrator == null) vibrateOnDownOnly = false;
+		if (mainActivity.vibrator == null) vibrateOnDownOnly = false;
 		else
-			vibrateOnDownOnly = mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_VibrateOnDownOnly, false);
+			vibrateOnDownOnly = mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_VibrateOnDown, false);
 	}
 
 	@Override
@@ -65,7 +61,7 @@ public class TouchPadLayout extends FrameLayout {
 	final Object lock = new Object();
 	boolean semaphore = false;
 	final Object vibrateLock = new Object();
-	boolean vibrateSemaphore;
+	boolean vibrateMutex;
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
@@ -94,7 +90,7 @@ public class TouchPadLayout extends FrameLayout {
 					}
 					if (downIsInDoubleClickInterval & vibrateOnDownOnly) {
 						synchronized (vibrateLock) {
-							vibrateSemaphore = true;
+							vibrateMutex = true;
 						}
 						new Thread(new Runnable() {
 							@Override
@@ -104,9 +100,9 @@ public class TouchPadLayout extends FrameLayout {
 								} catch (InterruptedException ignored) {
 								}
 								synchronized (vibrateLock) {
-									if (vibrateSemaphore) {
-										vibrateSemaphore = false;
-										vibrator.vibrate(1);
+									if (vibrateMutex) {
+										vibrateMutex = false;
+										mainActivity.Vibrate(1);
 									}
 								}
 							}
@@ -173,8 +169,8 @@ public class TouchPadLayout extends FrameLayout {
 							boolean shouldSendAClick = false;
 							if (vibrateOnDownOnly) {
 								synchronized (vibrateLock) {
-									if (vibrateSemaphore) {
-										vibrateSemaphore = false;
+									if (vibrateMutex) {
+										vibrateMutex = false;
 										shouldSendAClick = true;
 									}
 								}

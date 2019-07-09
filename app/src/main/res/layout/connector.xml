@@ -22,7 +22,8 @@
             android:inputType="number"
             android:minWidth="256dp"
             android:textAlignment="center"
-            android:textSize="32sp" />
+            android:textSize="32sp"
+            tools:ignore="HardcodedText" />
 
     </android.support.design.widget.TextInputLayout>
 
@@ -40,7 +41,8 @@
             android:inputType="number"
             android:minWidth="140dp"
             android:textAlignment="center"
-            android:textSize="32sp" />
+            android:textSize="32sp"
+            tools:ignore="HardcodedText" />
     </android.support.design.widget.TextInputLayout>
 
     <Button

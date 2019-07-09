@@ -3,13 +3,16 @@ package c.jahhow.remotecontroller;
 import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.Service;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -40,16 +43,22 @@ public class MainActivity extends AppCompatActivity {
 	ConnectorFragment connectorFragment;
 	Fragment showingFragment;
 	SharedPreferences preferences;
-	static final String name_CommonSharedPrefer = "CommonSettings";
-	static final String KeyPrefer_IP = "0";
-	static final String KeyPrefer_Port = "1";
-	static final String KeyPrefer_Controller = "2";
-	static final String KeyPrefer_SwipeDemo = "3";
-	static final String KeyPrefer_Swiped = "4";
-	static final String KeyPrefer_InputText = "5";
-	static final String KeyPrefer_VibrateOnDownOnly = "6";
+	static final String name_CommonSharedPrefer = "CommonSettings",
+			KeyPrefer_IP = "0",
+			KeyPrefer_Port = "1",
+			KeyPrefer_Controller = "2",
+			KeyPrefer_SwipeDemo = "3",
+			KeyPrefer_Swiped = "4",
+			KeyPrefer_InputText = "5",
+			KeyPrefer_VibrateOnDown = "6";
+
+	static final String
+			Sku_TouchPad = "touchpad",
+			Sku_Swipe = "swipe",
+			Sku_InputText = "input_text";
 
 	Toast toast;
+	Vibrator vibrator;
 
 	@SuppressLint({"ShowToast", "InflateParams"})
 	@Override
@@ -62,13 +71,19 @@ public class MainActivity extends AppCompatActivity {
 		showingFragment = connectorFragment;
 		toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
 		preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
-/*
-		billingClient = BillingClient.newBuilder(this).setListener(new PurchasesUpdatedListener() {
+
+		vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
+		if (vibrator != null && !vibrator.hasVibrator()) vibrator = null;
+
+		billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener(new PurchasesUpdatedListener() {
 			@Override
 			public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
-				if (billingResult.getResponseCode() == BillingResponseCode.OK) {
-					for (Purchase purchase : purchases) {
-						if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+				Log.e("Billing", "onPurchasesUpdated");
+				if (purchases != null) {
+					if (billingResult.getResponseCode() == BillingResponseCode.OK) {
+						for (Purchase purchase : purchases) {
+							if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+							}
 						}
 					}
 				}
@@ -77,11 +92,14 @@ public class MainActivity extends AppCompatActivity {
 		billingClient.startConnection(new BillingClientStateListener() {
 			@Override
 			public void onBillingSetupFinished(BillingResult billingResult) {
+				Log.e("Billing", "onBillingSetupFinished");
 				if (billingResult.getResponseCode() == BillingResponseCode.OK) {
 					// The BillingClient is ready. You can query purchases here.
+					Log.e("Billing", "onBillingSetupFinished : OK");
 					List<String> skuList = new ArrayList<>();
-					skuList.add("premium_upgrade");
-					skuList.add("gas");
+					skuList.add(Sku_Swipe);
+					skuList.add(Sku_TouchPad);
+					skuList.add(Sku_InputText);
 					SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
 					params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
 					billingClient.querySkuDetailsAsync(params.build(),
@@ -91,16 +109,26 @@ public class MainActivity extends AppCompatActivity {
 																 List<SkuDetails> skuDetailsList) {
 									// Process the result.
 									if (billingResult.getResponseCode() == BillingResponseCode.OK) {
+										Log.e("Billing", "onSkuDetailsResponse : skuDetailsList.size() == " + skuDetailsList.size());
 										for (SkuDetails skuDetails : skuDetailsList) {
 											String sku = skuDetails.getSku();
 											String price = skuDetails.getPrice();
-											if ("premium_upgrade".equals(sku)) {
-											} else if ("gas".equals(sku)) {
+											if (sku.equals(Sku_Swipe)) {
+												Log.e("Billing", "onSkuDetailsResponse : " + Sku_Swipe);
+											} else if (sku.equals(Sku_TouchPad)) {
+												Log.e("Billing", "onSkuDetailsResponse : " + Sku_TouchPad);
+											} else if (sku.equals(Sku_InputText)) {
+												Log.e("Billing", "onSkuDetailsResponse : " + Sku_InputText);
 											}
 										}
+										Log.e("Billing", "onSkuDetailsResponse : OK");
+									} else {
+										Log.e("Billing", "onSkuDetailsResponse : " + billingResult.getDebugMessage());
 									}
 								}
 							});
+				} else {
+					Log.e("Billing", "onBillingSetupFinished : " + billingResult.getDebugMessage());
 				}
 			}
 
@@ -108,8 +136,21 @@ public class MainActivity extends AppCompatActivity {
 			public void onBillingServiceDisconnected() {
 				// Try to restart the connection on the next request to
 				// Google Play by calling the startConnection() method.
+				Log.e("Billing", "onBillingServiceDisconnected");
 			}
-		});*/
+		});
+	}
+
+	@Override
+	protected void onDestroy() {
+		billingClient.endConnection();
+		Log.e("Billing", "endConnection()");
+		super.onDestroy();
+	}
+
+	void Vibrate(long ms) {
+		if (ms > 0 && vibrator != null)
+			vibrator.vibrate(ms);
 	}
 
 	public void ButtonClick_Connect(View v) {
@@ -140,6 +181,14 @@ public class MainActivity extends AppCompatActivity {
 		SendKeyboardScanCode(SCS1.Esc, ButtonAction.Click);
 	}
 
+	public void SendClick_Home(View v) {
+		SendKeyboardScanCode(SCS1.Home, ButtonAction.Click);
+	}
+
+	public void SendClick_End(View v) {
+		SendKeyboardScanCode(SCS1.End, ButtonAction.Click);
+	}
+
 	public void SendClick_F5(View v) {
 		SendKeyboardScanCode(SCS1.F5, ButtonAction.Click);
 	}
@@ -154,6 +203,22 @@ public class MainActivity extends AppCompatActivity {
 
 	public void SendClick_ShiftF5(View v) {
 		SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_SHIFT, SCS1.F5);
+	}
+
+	public void SendClick_CtrlC(View v) {
+		SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.C);
+	}
+
+	public void SendClick_CtrlV(View v) {
+		SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.V);
+	}
+
+	public void SendClick_CtrlA(View v) {
+		SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.A);
+	}
+
+	public void SendClick_CtrlX(View v) {
+		SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.X);
 	}
 
 	public void SendMouseMove(short dx, short dy) {
@@ -195,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
 
 		try {
 			int textByteLen = text.length() << 1;
-			final byte packet[] = ByteBuffer.allocate(7 + textByteLen)
+			final byte[] packet = ByteBuffer.allocate(7 + textByteLen)
 					.put(Msg.PasteText)
 					.putInt(textByteLen)
 					.put(mode)
@@ -323,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
 		for (short scanCode : ScanCodes)
 			byteBuffer.putShort(scanCode);
 
-		final byte packet[] = byteBuffer.array();
+		final byte[] packet = byteBuffer.array();
 		mainViewModel.socketHandler.post(new Runnable() {
 			@Override
 			public void run() {

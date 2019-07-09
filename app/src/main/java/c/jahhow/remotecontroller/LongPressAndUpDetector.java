@@ -9,9 +9,18 @@ public abstract class LongPressAndUpDetector implements View.OnTouchListener, Vi
 
 	abstract void onLongClickUp(View v);
 
-	LongPressAndUpDetector(View v) {
+	MainActivity mainActivity;
+	long vibrateMs;
+
+	LongPressAndUpDetector(View v, MainActivity mainActivity) {
+		this(v, 1, mainActivity);
+	}
+
+	LongPressAndUpDetector(View v, long vibrateMs, MainActivity mainActivity) {
 		v.setOnTouchListener(this);
 		v.setOnLongClickListener(this);
+		this.mainActivity = mainActivity;
+		this.vibrateMs = vibrateMs;
 	}
 
 	private boolean longPressed;
@@ -24,11 +33,7 @@ public abstract class LongPressAndUpDetector implements View.OnTouchListener, Vi
 				longPressed = false;
 				break;
 			case MotionEvent.ACTION_UP:
-				checkLongUp(v);
-				break;
 			case MotionEvent.ACTION_CANCEL:
-				checkLongUp(v);
-				break;
 			case MotionEvent.ACTION_OUTSIDE:
 				checkLongUp(v);
 				break;
@@ -46,6 +51,7 @@ public abstract class LongPressAndUpDetector implements View.OnTouchListener, Vi
 	@Override
 	public boolean onLongClick(View v) {
 		longPressed = true;
+		mainActivity.Vibrate(vibrateMs);
 		onLongClickDown(v);
 		return true;
 	}

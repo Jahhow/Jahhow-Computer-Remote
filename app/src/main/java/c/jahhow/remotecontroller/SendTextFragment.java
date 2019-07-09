@@ -28,7 +28,7 @@ public class SendTextFragment extends Fragment {
 		else
 			editText.setText(mainActivity.preferences.getString(MainActivity.KeyPrefer_InputText, null));
 
-		new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonBackspace)) {
+		new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonBackspace), mainActivity) {
 			@Override
 			void onLongClickDown(View v) {
 				mainActivity.SendKeyboardScanCode(SCS1.Backspace, ButtonAction.Down);
@@ -40,10 +40,10 @@ public class SendTextFragment extends Fragment {
 			}
 		};
 
-		new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonEnter)) {
+		new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonEnter), mainActivity) {
 			@Override
 			void onLongClickDown(View v) {
-				mainActivity.SendKeyboardScanCode(SCS1.Enter,ButtonAction.Down);
+				mainActivity.SendKeyboardScanCode(SCS1.Enter, ButtonAction.Down);
 			}
 
 			@Override
@@ -67,10 +67,22 @@ public class SendTextFragment extends Fragment {
 				mainActivity.SendInputText(editText.getText().toString(), InputTextMode.Paste, false);
 			}
 		});
-		new LongPressAndUpDetector(buttonPasteText) {
+		new LongPressAndUpDetector(buttonPasteText, mainActivity) {
 			@Override
 			void onLongClickDown(View v) {
 				mainActivity.SendInputText(editText.getText().toString(), InputTextMode.Paste, true);
+			}
+
+			@Override
+			void onLongClickUp(View v) {
+				mainActivity.SendKeyboardScanCodeCombination(ButtonAction.Up, SCS1.L_CTRL, SCS1.V);
+			}
+		};
+
+		new LongPressAndUpDetector(layout.findViewById(R.id.buttonCtrlV), mainActivity) {
+			@Override
+			void onLongClickDown(View v) {
+				mainActivity.SendKeyboardScanCodeCombination(ButtonAction.Down, SCS1.L_CTRL, SCS1.V);
 			}
 
 			@Override

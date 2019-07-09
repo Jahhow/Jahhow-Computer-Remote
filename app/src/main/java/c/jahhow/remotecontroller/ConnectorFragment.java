@@ -73,11 +73,11 @@ public class ConnectorFragment extends Fragment {
 				);
 				mainViewModel.socket = new Socket();
 				mainViewModel.socket.setTcpNoDelay(true);
-				mainViewModel.socket.connect(inetaddr, 3000);
+				mainViewModel.socket.connect(inetaddr, 1000);
 				mainViewModel.socketOutput = mainViewModel.socket.getOutputStream();
 				mainViewModel.socketOutput.write(Header);
 
-				mainViewModel.socket.setSoTimeout(3000);
+				mainViewModel.socket.setSoTimeout(1000);
 				InputStream inputStream = mainViewModel.socket.getInputStream();
 				byte buf[] = new byte[ServerHeader.length];
 				if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {

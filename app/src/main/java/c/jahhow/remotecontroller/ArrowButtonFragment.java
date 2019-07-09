@@ -16,8 +16,8 @@ public class ArrowButtonFragment extends Fragment {
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mainActivity = (MainActivity) getActivity();
-		View layout = inflater.inflate(R.layout.button_controller, container, false);
-		new LongPressAndUpDetector(layout.findViewById(R.id.buttonUp)) {
+		View layout = inflater.inflate(R.layout.arrow_buttons, container, false);
+		new LongPressAndUpDetector(layout.findViewById(R.id.buttonUp), mainActivity) {
 			@Override
 			void onLongClickDown(View v) {
 				mainActivity.SendKeyboardScanCode(SCS1.Up_Arrow, ButtonAction.Down);
@@ -28,7 +28,7 @@ public class ArrowButtonFragment extends Fragment {
 				mainActivity.SendKeyboardScanCode(SCS1.Up_Arrow, ButtonAction.Up);
 			}
 		};
-		new LongPressAndUpDetector(layout.findViewById(R.id.buttonLeft)) {
+		new LongPressAndUpDetector(layout.findViewById(R.id.buttonLeft), mainActivity) {
 			@Override
 			void onLongClickDown(View v) {
 				mainActivity.SendKeyboardScanCode(SCS1.Left_Arrow, ButtonAction.Down);
@@ -39,7 +39,7 @@ public class ArrowButtonFragment extends Fragment {
 				mainActivity.SendKeyboardScanCode(SCS1.Left_Arrow, ButtonAction.Up);
 			}
 		};
-		new LongPressAndUpDetector(layout.findViewById(R.id.buttonRight)) {
+		new LongPressAndUpDetector(layout.findViewById(R.id.buttonRight), mainActivity) {
 			@Override
 			void onLongClickDown(View v) {
 				mainActivity.SendKeyboardScanCode(SCS1.Right_Arrow, ButtonAction.Down);
@@ -50,7 +50,7 @@ public class ArrowButtonFragment extends Fragment {
 				mainActivity.SendKeyboardScanCode(SCS1.Right_Arrow, ButtonAction.Up);
 			}
 		};
-		new LongPressAndUpDetector(layout.findViewById(R.id.buttonDown)) {
+		new LongPressAndUpDetector(layout.findViewById(R.id.buttonDown), mainActivity) {
 			@Override
 			void onLongClickDown(View v) {
 				mainActivity.SendKeyboardScanCode(SCS1.Dn_Arrow, ButtonAction.Down);

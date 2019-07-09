@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -14,42 +15,50 @@
 
         <Button
             android:id="@+id/buttonEsc"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="?selectableItemBackgroundBorderless"
+            style="@style/AppTheme.KeyboardShortcutButton"
             android:onClick="SendClick_Esc"
             android:text="ESC"
-            android:textColor="@color/titleTextColor"
-            android:textSize="20sp" />
+            tools:ignore="HardcodedText" />
 
         <Button
             android:id="@+id/buttonShiftF5"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="?selectableItemBackgroundBorderless"
+            style="@style/AppTheme.KeyboardShortcutButton"
             android:onClick="SendClick_ShiftF5"
-            android:paddingHorizontal="16dp"
             android:text="Shift + F5"
-            android:textColor="@color/titleTextColor"
-            android:textSize="20sp" />
+            tools:ignore="HardcodedText" />
 
         <Button
             android:id="@+id/buttonF5"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="?selectableItemBackgroundBorderless"
+            style="@style/AppTheme.KeyboardShortcutButton"
             android:onClick="SendClick_F5"
             android:text="F5"
-            android:textColor="@color/titleTextColor"
-            android:textSize="20sp" />
+            tools:ignore="HardcodedText" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#0000"
+        android:gravity="center_horizontal"
+        android:minHeight="?actionBarSize">
+
+        <Button
+            style="@style/AppTheme.KeyboardShortcutButton"
+            android:onClick="SendClick_Home"
+            android:text="HOME"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            style="@style/AppTheme.KeyboardShortcutButton"
+            android:onClick="SendClick_End"
+            android:text="END"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:translationY="-16dp"
         android:gravity="center"
         android:orientation="vertical">
 
@@ -60,12 +69,14 @@
             android:alpha=".6"
             android:background="?selectableItemBackgroundBorderless"
             android:onClick="SendClick_Up"
-            android:src="@drawable/ic_keyboard_arrow_up_black_24dp" />
+            android:src="@drawable/ic_keyboard_arrow_up_black_24dp"
+            tools:ignore="ContentDescription" />
 
         <LinearLayout
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layoutDirection="ltr"
-            android:layout_height="wrap_content">
+            tools:targetApi="jelly_bean_mr1">
 
             <ImageView
                 android:id="@+id/buttonLeft"
@@ -75,7 +86,8 @@
                 android:alpha=".6"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="SendClick_Left"
-                android:src="@drawable/ic_keyboard_arrow_left_black_24dp" />
+                android:src="@drawable/ic_keyboard_arrow_left_black_24dp"
+                tools:ignore="ContentDescription,RtlHardcoded" />
 
             <ImageView
                 android:id="@+id/buttonRight"
@@ -84,7 +96,8 @@
                 android:alpha=".6"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="SendClick_Right"
-                android:src="@drawable/ic_keyboard_arrow_right_black_24dp" />
+                android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+                tools:ignore="ContentDescription" />
         </LinearLayout>
 
 
@@ -95,6 +108,7 @@
             android:alpha=".6"
             android:background="?selectableItemBackgroundBorderless"
             android:onClick="SendClick_Down"
-            android:src="@drawable/ic_keyboard_arrow_down_black_24dp" />
+            android:src="@drawable/ic_keyboard_arrow_down_black_24dp"
+            tools:ignore="ContentDescription" />
     </LinearLayout>
 </LinearLayout>
