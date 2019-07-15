@@ -15,4 +15,12 @@
     <string name="PleaseUpdateThisApp">Please Update This App</string>
     <string name="PleaseUpdateTheComputerSideReceiverProgram">Please Update the Computer Side Receiver Program</string>
     <string name="buy">BUY</string>
+    <string name="FailedToReachGooglePlay">Failed to Reach Google Play</string>
+    <string name="subscription">Subscription</string>
+    <string name="TryingToReachGooglePlay">Trying to Reach Google Play</string>
+    <string name="start">START</string>
+    <string name="start_full_access">Start Full Access</string>
+    <string name="Check_Connection">Check Connection</string>
+    <string name="retry">RETRY</string>
+    <string name="Annual_Subscription">Annual Subscription</string>
 </resources>

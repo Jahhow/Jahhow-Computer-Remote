@@ -1,9 +1,7 @@
 package c.jahhow.remotecontroller;
 
-import android.app.Service;
 import android.content.Context;
 import android.os.Build;
-import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -72,7 +70,6 @@ public class TouchPadLayout extends FrameLayout {
 					if (/*last*/!hasMove && event.getEventTime() - upTime < intensiveClickIntervalMs) {
 						switch (maxPointerCount) {// last
 							case 1:
-								Log.e("LeftDown", "79");
 								mainActivity.SendMouseLeftDown();
 								break;
 							case 2:
@@ -156,7 +153,6 @@ public class TouchPadLayout extends FrameLayout {
 				if (downIsInDoubleClickInterval) {
 					switch (lastMaxPointerCount) {
 						case 1:
-							Log.e("LeftUp", "163");
 							mainActivity.SendMouseLeftUp();
 							break;
 						case 2:
@@ -181,7 +177,6 @@ public class TouchPadLayout extends FrameLayout {
 							if (shouldSendAClick) {
 								switch (lastMaxPointerCount) {
 									case 1:
-										Log.e("LeftClick", "188");
 										mainActivity.SendMouseLeftClick();
 										break;
 									case 2:
@@ -196,7 +191,6 @@ public class TouchPadLayout extends FrameLayout {
 					if (!hasMove) {
 						switch (maxPointerCount) {
 							case 1:
-								Log.e("LeftDown", "200");
 								mainActivity.SendMouseLeftDown();
 								break;
 							case 2:
@@ -217,7 +211,6 @@ public class TouchPadLayout extends FrameLayout {
 											semaphore = false;
 											switch (curMaxPointerCount) {
 												case 1:
-													Log.e("LeftUp", "222");
 													mainActivity.SendMouseLeftUp();
 													break;
 												case 2:
@@ -237,7 +230,6 @@ public class TouchPadLayout extends FrameLayout {
 			case MotionEvent.ACTION_CANCEL:
 				if (downIsInDoubleClickInterval) {
 					downIsInDoubleClickInterval = false;
-					Log.e("LeftUp", "241");
 					mainActivity.SendMouseLeftUp();
 				}
 				break;

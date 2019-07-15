@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/managePlaySubs"
+        android:icon="@drawable/ic_credit_card_24dp"
+        android:orderInCategory="100"
+        android:title="@string/subscription"
+        android:onClick="OnClick_ManagePlaySubs"
+        app:showAsAction="ifRoom" />
+</menu>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme" parent="BaseAppTheme">
+        <item name="colorPrimaryDark">@color/White</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="slideColor">@color/White</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

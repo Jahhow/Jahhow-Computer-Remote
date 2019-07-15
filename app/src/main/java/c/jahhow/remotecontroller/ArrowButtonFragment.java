@@ -1,14 +1,14 @@
 package c.jahhow.remotecontroller;
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import c.jahhow.remotecontroller.Msg.ButtonAction;
-import c.jahhow.remotecontroller.Msg.SCS1;
+import c.jahhow.remotecontroller.msg.ButtonAction;
+import c.jahhow.remotecontroller.msg.SCS1;
 
 public class ArrowButtonFragment extends Fragment {
 	MainActivity mainActivity;

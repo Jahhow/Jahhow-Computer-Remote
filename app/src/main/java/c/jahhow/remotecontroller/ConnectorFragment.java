@@ -1,12 +1,10 @@
 package c.jahhow.remotecontroller;
 
-import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,19 +20,21 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class ConnectorFragment extends Fragment {
+	RemoteControllerApp remoteControllerApp;
 	TextInputEditText tiEditTextIp, tiEditTextPort;
 	Button buttonConnect;
 
 	MainActivity mainActivity;
-	Toast toast;
 	MainViewModel mainViewModel;
-	Fragment controller;
+	ControllerSwitcherFragment controllersFragment;
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		controller = new ControllerSwitcherFragment();
+		controllersFragment = new ControllerSwitcherFragment();
 		mainActivity = (MainActivity) getActivity();
-		mainViewModel = ViewModelProviders.of(mainActivity).get(MainViewModel.class);
+		remoteControllerApp = (RemoteControllerApp) mainActivity.getApplication();
+		mainActivity.connectorFragment = this;
+		mainViewModel = mainActivity.mainViewModel;
 		View view = inflater.inflate(R.layout.connector, container, false);
 		tiEditTextIp = view.findViewById(R.id.editTextIp);
 		tiEditTextPort = view.findViewById(R.id.editTextPort);
@@ -46,22 +46,17 @@ public class ConnectorFragment extends Fragment {
 	}
 
 	@Override
-	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		toast = mainActivity.toast;
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
+	public void onDestroy() {
+		super.onDestroy();
+		remoteControllerApp.fetchFullAccessSkuListener = null;
 		mainActivity.preferences.edit()
 				.putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
 				.putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
 				.apply();
 	}
 
-	static final byte Header[] = {'R', 'C', 'R', 'H'};
-	static final byte ServerHeader[] = {'U', 'E', 'R', 'J'};
+	static final byte[] Header = {'R', 'C', 'R', 'H'};
+	static final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
 	static final int SupportServerVersion = 1;
 	public Runnable connectRunnable = new Runnable() {
 		@Override
@@ -73,13 +68,13 @@ public class ConnectorFragment extends Fragment {
 				);
 				mainViewModel.socket = new Socket();
 				mainViewModel.socket.setTcpNoDelay(true);
-				mainViewModel.socket.connect(inetaddr, 1000);
+				mainViewModel.socket.connect(inetaddr, 1500);
 				mainViewModel.socketOutput = mainViewModel.socket.getOutputStream();
 				mainViewModel.socketOutput.write(Header);
 
-				mainViewModel.socket.setSoTimeout(1000);
+				mainViewModel.socket.setSoTimeout(1500);
 				InputStream inputStream = mainViewModel.socket.getInputStream();
-				byte buf[] = new byte[ServerHeader.length];
+				byte[] buf = new byte[ServerHeader.length];
 				if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {
 					mainActivity.OnSocketError(getString(R.string.ConnectionError));
 					return;
@@ -115,10 +110,9 @@ public class ConnectorFragment extends Fragment {
 	Runnable runnableOpenControllerFragment = new Runnable() {
 		@Override
 		public void run() {
-			mainActivity.getFragmentManager().beginTransaction().addToBackStack(null)
-					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-					.remove(ConnectorFragment.this)
-					.add(android.R.id.content, controller).commit();
+			mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
+					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+					.replace(android.R.id.content, controllersFragment).commit();
 		}
 	};
 }

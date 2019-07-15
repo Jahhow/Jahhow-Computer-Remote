@@ -1,4 +1,4 @@
-package c.jahhow.remotecontroller.Msg;
+package c.jahhow.remotecontroller.msg;
 
 public final class InputTextMode {
 	public static final byte

@@ -12,20 +12,18 @@ import android.widget.FrameLayout;
 public class SwipeDetectorLayout extends FrameLayout {
 
 	MainActivity mainActivity;
-	LayoutInflater layoutInflater;
 	int movingChildIndex = 0;
-	SlideLayout movingChild;
+	SwipeIndicatorView movingChild;
 	Interpolator interpolator = new DecelerateInterpolator(2);
 
 	public SwipeDetectorLayout(MainActivity mainActivity) {
 		super(mainActivity);
-		layoutInflater = mainActivity.getLayoutInflater();
-		movingChild = new SlideLayout(mainActivity, interpolator);
+		movingChild = new SwipeIndicatorView(mainActivity, interpolator);
 		addView(movingChild);
-		addView(new SlideLayout(mainActivity, interpolator));
-		addView(new SlideLayout(mainActivity, interpolator));
-		addView(new SlideLayout(mainActivity, interpolator));
-		addView(new SlideLayout(mainActivity, interpolator));
+		addView(new SwipeIndicatorView(mainActivity, interpolator));
+		addView(new SwipeIndicatorView(mainActivity, interpolator));
+		addView(new SwipeIndicatorView(mainActivity, interpolator));
+		addView(new SwipeIndicatorView(mainActivity, interpolator));
 		this.mainActivity = mainActivity;
 	}
 
@@ -239,7 +237,7 @@ public class SwipeDetectorLayout extends FrameLayout {
 
 	void ReadyNextChild() {
 		movingChildIndex = (movingChildIndex + 1) % getChildCount();
-		movingChild = (SlideLayout) getChildAt(movingChildIndex);
+		movingChild = (SwipeIndicatorView) getChildAt(movingChildIndex);
 		movingChild.Reset(false);
 		ShowView(movingChild);
 	}
@@ -249,15 +247,15 @@ public class SwipeDetectorLayout extends FrameLayout {
 		if (absDiffX > pxSlop | absDiffY > pxSlop) {
 			if (absDiffY > absDiffX) {
 				if (diffY > 0) {
-					movingChild.Indicate(SlideLayout.IndicatorUp);
+					movingChild.Indicate(SwipeIndicatorView.IndicatorUp);
 				} else {
-					movingChild.Indicate(SlideLayout.IndicatorDown);
+					movingChild.Indicate(SwipeIndicatorView.IndicatorDown);
 				}
 			} else {
 				if (diffX > 0) {
-					movingChild.Indicate(SlideLayout.IndicatorLeft);
+					movingChild.Indicate(SwipeIndicatorView.IndicatorLeft);
 				} else {
-					movingChild.Indicate(SlideLayout.IndicatorRight);
+					movingChild.Indicate(SwipeIndicatorView.IndicatorRight);
 				}
 			}
 		} else {

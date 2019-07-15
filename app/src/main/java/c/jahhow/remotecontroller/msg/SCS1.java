@@ -1,4 +1,4 @@
-package c.jahhow.remotecontroller.Msg;
+package c.jahhow.remotecontroller.msg;
 
 // Keyboard Scan Code Set1
 public final class SCS1 {

@@ -16,4 +16,12 @@
     <string name="PleaseUpdateThisApp">請更新本軟體</string>
     <string name="PleaseUpdateTheComputerSideReceiverProgram">請更新電腦端接收器程式</string>
     <string name="buy">購買</string>
+    <string name="FailedToReachGooglePlay">無法連線到 Google Play</string>
+    <string name="subscription">訂閱</string>
+    <string name="TryingToReachGooglePlay">正在嘗試連線到 Google Play</string>
+    <string name="start">開始</string>
+    <string name="start_full_access">開始完整存取</string>
+    <string name="Check_Connection">請檢查連線</string>
+    <string name="retry">重試</string>
+    <string name="Annual_Subscription">一年訂閱</string>
 </resources>

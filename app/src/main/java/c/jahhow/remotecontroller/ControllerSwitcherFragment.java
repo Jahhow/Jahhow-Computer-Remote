@@ -1,25 +1,31 @@
 package c.jahhow.remotecontroller;
 
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class ControllerSwitcherFragment extends Fragment {
-	MainActivity mainActivity;
-	Fragment showingController = null;
-	BottomNavigationView navigationView;
+import com.android.billingclient.api.Purchase.PurchaseState;
 
-	ArrowButtonFragment arrowButtonFragment;
-	SwipeControllerFragment swipeControllerFragment;
-	TouchPadFragment touchPadFragment;
-	SendTextFragment sendTextFragment;
+public class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
+	MainActivity mainActivity;
+	BottomNavigationView navigationView;
+	Fragment showingController = null;
+
+	ArrowButtonFragment arrowButtonFragment = new ArrowButtonFragment();
+	SwipeControllerFragment swipeControllerFragment = new SwipeControllerFragment();
+	TouchPadFragment touchPadFragment = new TouchPadFragment();
+	SendTextFragment sendTextFragment = new SendTextFragment();
+
+	PurchaseFragment purchaseFragment = new PurchaseFragment();
+
+	RemoteControllerApp remoteControllerApp;
 
 	@Nullable
 	@Override
@@ -27,78 +33,106 @@ public class ControllerSwitcherFragment extends Fragment {
 							 @Nullable Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.controller_switcher, container, false);
 		mainActivity = (MainActivity) getActivity();
+		assert mainActivity != null;
+		remoteControllerApp = (RemoteControllerApp) mainActivity.getApplication();
 		navigationView = view.findViewById(R.id.navBarControllers);
-		navigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-			@Override
-			public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-				switch (item.getItemId()) {
-					case R.id.navButtonUseButtonController:
-						ShowFragment(arrowButtonFragment);
-						break;
-					case R.id.navButtonUseSwiper:
-						ShowFragment(swipeControllerFragment);
-						break;
-					case R.id.navButtonUseTouchPad:
-						ShowFragment(touchPadFragment);
-						break;
-					case R.id.navButtonSendText:
-						ShowFragment(sendTextFragment);
-						break;
-				}
-				return true;
-			}
-		});
-		arrowButtonFragment = new ArrowButtonFragment();
-		swipeControllerFragment = new SwipeControllerFragment();
-		touchPadFragment = new TouchPadFragment();
-		sendTextFragment = new SendTextFragment();
+		navigationView.setOnNavigationItemSelectedListener(this);
+		remoteControllerApp.controllerSwitcherFragment = this;
+		purchaseFragment.controllerSwitcherFragment = this;
 
-		int preferControllerID = mainActivity.preferences.getInt(MainActivity.KeyPrefer_Controller, R.id.navButtonUseSwiper);
-		switch (preferControllerID) {
-			case R.id.navButtonUseButtonController:
-				showingController = arrowButtonFragment;
-				break;
-			case R.id.navButtonUseSwiper:
-				showingController = swipeControllerFragment;
-				break;
-			case R.id.navButtonUseTouchPad:
-				showingController = touchPadFragment;
-				break;
-			case R.id.navButtonSendText:
-				showingController = sendTextFragment;
-				break;
-			default:
+		remoteControllerApp.SyncPurchase();
+		if (savedInstanceState == null) {
+			int preferControllerID = mainActivity.preferences.getInt(MainActivity.KeyPrefer_Controller, R.id.navButtonUseSwiper);
+			if (preferControllerID != R.id.navButtonUseButtonController &&
+					preferControllerID != R.id.navButtonUseSwiper &&
+					preferControllerID != R.id.navButtonUseTouchPad &&
+					preferControllerID != R.id.navButtonSendText) {
 				mainActivity.preferences.edit().remove(MainActivity.KeyPrefer_Controller).apply();
 				preferControllerID = R.id.navButtonUseSwiper;
-				showingController = swipeControllerFragment;
+			}
+			navigationView.setSelectedItemId(preferControllerID);
 		}
-		navigationView.setSelectedItemId(preferControllerID);
-		getFragmentManager().beginTransaction()
-				.add(R.id.ControllerFragmentContainer, showingController).commit();
 		return view;
+	}
+
+	@Override
+	public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+		super.onViewStateRestored(savedInstanceState);
+		if (savedInstanceState != null) {
+			int preferControllerID = mainActivity.preferences.getInt(MainActivity.KeyPrefer_Controller, R.id.navButtonUseSwiper);
+			showingController = getChildFragmentManager().getFragments().get(0);
+			if (showingController instanceof PurchaseFragment) {
+				purchaseFragment = (PurchaseFragment) showingController;
+			} else {
+				switch (preferControllerID) {
+					case R.id.navButtonUseButtonController:
+						arrowButtonFragment = (ArrowButtonFragment) showingController;
+						break;
+					case R.id.navButtonUseSwiper:
+						swipeControllerFragment = (SwipeControllerFragment) showingController;
+						break;
+					case R.id.navButtonUseTouchPad:
+						touchPadFragment = (TouchPadFragment) showingController;
+						break;
+					case R.id.navButtonSendText:
+						sendTextFragment = (SendTextFragment) showingController;
+						break;
+				}
+			}
+
+			navigationView.setSelectedItemId(preferControllerID);
+		}
 	}
 
 	void ShowFragment(Fragment fragment) {
 		if (showingController != fragment) {
-			getFragmentManager().beginTransaction()
-					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-					.remove(showingController)
-					.add(R.id.ControllerFragmentContainer, fragment).commit();
+			FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction()
+					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+			if (showingController != null)
+				fragmentTransaction.remove(showingController);
+			fragmentTransaction.add(R.id.ControllerFragmentContainer, fragment).commit();
 			showingController = fragment;
 		}
 	}
 
-	@Override
-	public void onDestroyView() {
-		getFragmentManager().beginTransaction().remove(showingController).commit();
-		super.onDestroyView();
+	void OnPurchaseStateChanged() {
+		onNavigationItemSelected(navigationView.getSelectedItemId());
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		// Fragments don't need to place these in onPause()
+		remoteControllerApp.controllerSwitcherFragment = null;
 		mainActivity.preferences.edit().putInt(MainActivity.KeyPrefer_Controller, navigationView.getSelectedItemId()).apply();
-		mainActivity.CloseConnection();
+		if (!mainActivity.isChangingConfigurations()) {
+			mainActivity.CloseConnection();
+		}
+	}
+
+	void onNavigationItemSelected(int id) {
+		if (remoteControllerApp.fullAccessState == PurchaseState.PURCHASED) {
+			switch (id) {
+				case R.id.navButtonUseButtonController:
+					ShowFragment(arrowButtonFragment);
+					break;
+				case R.id.navButtonUseSwiper:
+					ShowFragment(swipeControllerFragment);
+					break;
+				case R.id.navButtonUseTouchPad:
+					ShowFragment(touchPadFragment);
+					break;
+				case R.id.navButtonSendText:
+					ShowFragment(sendTextFragment);
+					break;
+			}
+		} else {
+			ShowFragment(purchaseFragment);
+		}
+	}
+
+	@Override
+	public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+		onNavigationItemSelected(item.getItemId());
+		return true;
 	}
 }

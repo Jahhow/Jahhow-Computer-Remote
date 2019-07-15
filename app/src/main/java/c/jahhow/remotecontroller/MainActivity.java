@@ -1,7 +1,6 @@
 package c.jahhow.remotecontroller;
 
 import android.annotation.SuppressLint;
-import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.Service;
 import android.arch.lifecycle.ViewModelProviders;
@@ -10,38 +9,29 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Vibrator;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingClient.BillingResponseCode;
-import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.Purchase.PurchaseState;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
-import c.jahhow.remotecontroller.Msg.ButtonAction;
-import c.jahhow.remotecontroller.Msg.Msg;
-import c.jahhow.remotecontroller.Msg.SCS1;
+import c.jahhow.remotecontroller.msg.ButtonAction;
+import c.jahhow.remotecontroller.msg.Msg;
+import c.jahhow.remotecontroller.msg.SCS1;
 
 public class MainActivity extends AppCompatActivity {
+	RemoteControllerApp remoteControllerApp;
 	MainViewModel mainViewModel;
-	private BillingClient billingClient;
-
 	ConnectorFragment connectorFragment;
-	Fragment showingFragment;
+
 	SharedPreferences preferences;
 	static final String name_CommonSharedPrefer = "CommonSettings",
 			KeyPrefer_IP = "0",
@@ -52,99 +42,63 @@ public class MainActivity extends AppCompatActivity {
 			KeyPrefer_InputText = "5",
 			KeyPrefer_VibrateOnDown = "6";
 
-	static final String
-			Sku_TouchPad = "touchpad",
-			Sku_Swipe = "swipe",
-			Sku_InputText = "input_text";
-
 	Toast toast;
 	Vibrator vibrator;
+
+	public void OnClick_ManagePlaySubs(MenuItem v) {
+		if (remoteControllerApp.fullAccessState == PurchaseState.UNSPECIFIED_STATE) {
+			// launchBillingFlow
+			if (remoteControllerApp.skuDetailsFullAccess == null) {
+				remoteControllerApp.fetchFullAccessSkuListener = new RemoteControllerApp.FetchFullAccessSkuListener() {
+					@Override
+					public void onSkuDetailsReady() {
+						if (remoteControllerApp.skuDetailsFullAccess == null) {
+							Toast.makeText(getApplicationContext(), R.string.FailedToReachGooglePlay, Toast.LENGTH_SHORT).show();
+						} else {
+							remoteControllerApp.billingClient.launchBillingFlow(MainActivity.this, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetailsFullAccess).build());
+						}
+					}
+				};
+				remoteControllerApp.SyncPurchase();
+				if (remoteControllerApp.fullAccessState != PurchaseState.UNSPECIFIED_STATE) {
+					remoteControllerApp.OpenPlayStoreManageSubscription();
+				}
+			} else {
+				remoteControllerApp.billingClient.launchBillingFlow(this, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetailsFullAccess).build());
+			}
+		} else {
+			remoteControllerApp.OpenPlayStoreManageSubscription();
+		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.actions, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
 
 	@SuppressLint({"ShowToast", "InflateParams"})
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-		connectorFragment = new ConnectorFragment();
-		getFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-				.add(android.R.id.content, connectorFragment).commit();
-		showingFragment = connectorFragment;
+		remoteControllerApp = (RemoteControllerApp) getApplication();
 		toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
+		mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+		if (savedInstanceState == null) {
+			connectorFragment = new ConnectorFragment();
+			getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+					.add(android.R.id.content, connectorFragment).commit();
+		}
 		preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
 
 		vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
 		if (vibrator != null && !vibrator.hasVibrator()) vibrator = null;
-
-		billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener(new PurchasesUpdatedListener() {
-			@Override
-			public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
-				Log.e("Billing", "onPurchasesUpdated");
-				if (purchases != null) {
-					if (billingResult.getResponseCode() == BillingResponseCode.OK) {
-						for (Purchase purchase : purchases) {
-							if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-							}
-						}
-					}
-				}
-			}
-		}).build();
-		billingClient.startConnection(new BillingClientStateListener() {
-			@Override
-			public void onBillingSetupFinished(BillingResult billingResult) {
-				Log.e("Billing", "onBillingSetupFinished");
-				if (billingResult.getResponseCode() == BillingResponseCode.OK) {
-					// The BillingClient is ready. You can query purchases here.
-					Log.e("Billing", "onBillingSetupFinished : OK");
-					List<String> skuList = new ArrayList<>();
-					skuList.add(Sku_Swipe);
-					skuList.add(Sku_TouchPad);
-					skuList.add(Sku_InputText);
-					SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-					params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
-					billingClient.querySkuDetailsAsync(params.build(),
-							new SkuDetailsResponseListener() {
-								@Override
-								public void onSkuDetailsResponse(BillingResult billingResult,
-																 List<SkuDetails> skuDetailsList) {
-									// Process the result.
-									if (billingResult.getResponseCode() == BillingResponseCode.OK) {
-										Log.e("Billing", "onSkuDetailsResponse : skuDetailsList.size() == " + skuDetailsList.size());
-										for (SkuDetails skuDetails : skuDetailsList) {
-											String sku = skuDetails.getSku();
-											String price = skuDetails.getPrice();
-											if (sku.equals(Sku_Swipe)) {
-												Log.e("Billing", "onSkuDetailsResponse : " + Sku_Swipe);
-											} else if (sku.equals(Sku_TouchPad)) {
-												Log.e("Billing", "onSkuDetailsResponse : " + Sku_TouchPad);
-											} else if (sku.equals(Sku_InputText)) {
-												Log.e("Billing", "onSkuDetailsResponse : " + Sku_InputText);
-											}
-										}
-										Log.e("Billing", "onSkuDetailsResponse : OK");
-									} else {
-										Log.e("Billing", "onSkuDetailsResponse : " + billingResult.getDebugMessage());
-									}
-								}
-							});
-				} else {
-					Log.e("Billing", "onBillingSetupFinished : " + billingResult.getDebugMessage());
-				}
-			}
-
-			@Override
-			public void onBillingServiceDisconnected() {
-				// Try to restart the connection on the next request to
-				// Google Play by calling the startConnection() method.
-				Log.e("Billing", "onBillingServiceDisconnected");
-			}
-		});
 	}
 
 	@Override
 	protected void onDestroy() {
-		billingClient.endConnection();
-		Log.e("Billing", "endConnection()");
+		remoteControllerApp.fetchFullAccessSkuListener = null;
 		super.onDestroy();
 	}
 
@@ -254,6 +208,8 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
+	static final String SendTextEncode = "UTF-16LE";
+
 	public void SendInputText(final String text, byte mode, boolean Hold) {
 		if (mainViewModel.socketHandler == null || text.length() == 0)
 			return;
@@ -265,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
 					.putInt(textByteLen)
 					.put(mode)
 					.put((byte) (Hold ? 1 : 0))
-					.put(text.getBytes("UTF-16LE")).array();
+					.put(text.getBytes(SendTextEncode)).array();
 
 			mainViewModel.socketHandler.post(new Runnable() {
 				@Override
@@ -344,36 +300,6 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 	}
-/*
-	public void SendKeyboardUp(byte VirtualKeyCode) {
-		final byte[] bytes = {Msg.KeyboardUp, VirtualKeyCode};
-		if(mainViewModel.socketHandler!=null)mainViewModel.socketHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					mainViewModel.socketOutput.write(bytes);
-				} catch (IOException e) {
-					OnSocketError("Problem sending a key");
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	public void SendKeyboardScanCode(byte VirtualKeyCode) {
-		final byte[] bytes = {Msg.KeyboardClick, VirtualKeyCode};
-		if(mainViewModel.socketHandler!=null)mainViewModel.socketHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					mainViewModel.socketOutput.write(bytes);
-				} catch (IOException e) {
-					OnSocketError("Problem sending a key");
-					e.printStackTrace();
-				}
-			}
-		});
-	}*/
 
 	// actionType: ButtonAction.{Click, Down, or Up}
 	public void SendKeyboardScanCodeCombination(final byte actionType, final short... ScanCodes) {
@@ -416,9 +342,9 @@ public class MainActivity extends AppCompatActivity {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
+				getSupportFragmentManager().popBackStack();
 				connectorFragment.buttonConnect.setEnabled(true);
 				CloseConnection();
-				getFragmentManager().popBackStack();
 				ShowToast(showToast, toastDuration);
 			}
 		});

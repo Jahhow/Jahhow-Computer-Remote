@@ -1,4 +1,4 @@
-package c.jahhow.remotecontroller.Msg;
+package c.jahhow.remotecontroller.msg;
 
 // Microsoft Virtual-Key Code
 public final class MSVK {

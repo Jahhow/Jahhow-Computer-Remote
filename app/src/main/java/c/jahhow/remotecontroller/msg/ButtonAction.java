@@ -1,4 +1,4 @@
-package c.jahhow.remotecontroller.Msg;
+package c.jahhow.remotecontroller.msg;
 
 public final class ButtonAction {
 	public static final byte
