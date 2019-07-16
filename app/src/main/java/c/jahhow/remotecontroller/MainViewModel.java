@@ -16,5 +16,5 @@ public class MainViewModel extends ViewModel {
 	OutputStream socketOutput = null;
 	BillingClient billingClient = null;
 
-	String inputText = null;
+	int helpButtonVisibility;
 }

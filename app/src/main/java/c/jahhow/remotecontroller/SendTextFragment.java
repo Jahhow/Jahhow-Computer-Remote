@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,9 +25,7 @@ public class SendTextFragment extends Fragment {
 
 		View layout = inflater.inflate(R.layout.input_text, container, false);
 		editText = layout.findViewById(R.id.SendTextEditText);
-		if (mainActivity.mainViewModel.inputText != null)
-			editText.setText(mainActivity.mainViewModel.inputText);
-		else
+		if (savedInstanceState == null)
 			editText.setText(mainActivity.preferences.getString(MainActivity.KeyPrefer_InputText, null));
 
 		new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonBackspace), mainActivity) {
@@ -95,9 +94,19 @@ public class SendTextFragment extends Fragment {
 	}
 
 	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+		if (!mainActivity.isChangingConfigurations())
+			mainActivity.preferences.edit().putString(MainActivity.KeyPrefer_InputText, editText.getText().toString()).apply();
+
+		Log.e("SendTextFragment","onSaveInstanceState()");
+	}
+
+	@Override
 	public void onDestroy() {
+		Log.e("SendTextFragment", "onDestroy()");
 		super.onDestroy();
-		mainActivity.mainViewModel.inputText = editText.getText().toString();
-		mainActivity.preferences.edit().putString(MainActivity.KeyPrefer_InputText, mainActivity.mainViewModel.inputText).apply();
+		if (!mainActivity.isChangingConfigurations())
+			mainActivity.preferences.edit().putString(MainActivity.KeyPrefer_InputText, editText.getText().toString()).apply();
 	}
 }

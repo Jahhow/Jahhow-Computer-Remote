@@ -1,15 +1,23 @@
 package c.jahhow.remotecontroller;
 
 import android.app.FragmentTransaction;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.transition.AutoTransition;
+import android.support.transition.TransitionManager;
+import android.support.transition.TransitionSet;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.InputStream;
@@ -20,40 +28,118 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class ConnectorFragment extends Fragment {
+	View layout = null;
+
 	RemoteControllerApp remoteControllerApp;
 	TextInputEditText tiEditTextIp, tiEditTextPort;
 	Button buttonConnect;
+	AppCompatImageView buttonHelp;
+	LinearLayout connectButtonsParentLayout;
 
 	MainActivity mainActivity;
+	SharedPreferences preferences;
 	MainViewModel mainViewModel;
 	ControllerSwitcherFragment controllersFragment;
 
+	// set buttons state on next onCreateView()
+	boolean postDelayedSetButtonsState = false;
+	int helpButtonVisibility;
+	boolean connectButtonEnabled;
+
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		controllersFragment = new ControllerSwitcherFragment();
-		mainActivity = (MainActivity) getActivity();
-		remoteControllerApp = (RemoteControllerApp) mainActivity.getApplication();
-		mainActivity.connectorFragment = this;
-		mainViewModel = mainActivity.mainViewModel;
-		View view = inflater.inflate(R.layout.connector, container, false);
-		tiEditTextIp = view.findViewById(R.id.editTextIp);
-		tiEditTextPort = view.findViewById(R.id.editTextPort);
-		buttonConnect = view.findViewById(R.id.buttonConnect);
+		if (layout == null || savedInstanceState != null) {
+			controllersFragment = new ControllerSwitcherFragment();
+			mainActivity = (MainActivity) getActivity();
+			preferences = mainActivity.preferences;
+			remoteControllerApp = (RemoteControllerApp) mainActivity.getApplication();
+			mainViewModel = mainActivity.mainViewModel;
+			layout = inflater.inflate(R.layout.connector, container, false);
+			tiEditTextIp = layout.findViewById(R.id.editTextIp);
+			tiEditTextPort = layout.findViewById(R.id.editTextPort);
+			buttonConnect = layout.findViewById(R.id.buttonConnect);
+			buttonHelp = layout.findViewById(R.id.buttonHelp);
+			connectButtonsParentLayout = layout.findViewById(R.id.connectButtonsParentLayout);
 
-		tiEditTextIp.setText(mainActivity.preferences.getString(MainActivity.KeyPrefer_IP, "192.168.1.3"));
-		tiEditTextPort.setText(mainActivity.preferences.getString(MainActivity.KeyPrefer_Port, "5555"));
-		return view;
+			if (savedInstanceState == null) {
+				tiEditTextIp.setText(preferences.getString(MainActivity.KeyPrefer_IP, "192.168.1.3"));
+				tiEditTextPort.setText(preferences.getString(MainActivity.KeyPrefer_Port, "5555"));
+				buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true) ? View.VISIBLE : View.GONE);
+			}/* else {
+				buttonHelp.setVisibility(mainViewModel.helpButtonVisibility);
+			}*/
+		}
+		if (postDelayedSetButtonsState) {
+			postDelayedSetButtonsState = false;
+			buttonConnect.setEnabled(connectButtonEnabled);
+			buttonHelp.setVisibility(helpButtonVisibility);
+		}
+		return layout;
 	}
+
+	void SavePreferences() {
+		int _helpButtonVisibility = postDelayedSetButtonsState ? helpButtonVisibility : buttonHelp.getVisibility();
+		preferences.edit()
+				.putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
+				.putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
+				.putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
+				.apply();
+	}
+
+	/*@Override
+	public void onPause() {
+		Log.e("ConnectorFrag", "onPause()");
+		super.onPause();
+	}
+
+	@Override
+	public void onStop() {
+		Log.e("ConnectorFrag", "onStop()");
+		super.onStop();
+	}*/
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		remoteControllerApp.fetchFullAccessSkuListener = null;
-		mainActivity.preferences.edit()
-				.putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
-				.putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
-				.apply();
+		if (!mainActivity.isChangingConfigurations()) {
+			SavePreferences();
+		}
 	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+		Log.e("ConnectorFrag", "onSaveInstanceState()");
+		//mainViewModel.helpButtonVisibility = buttonHelp.getVisibility();
+		SavePreferences();
+	}
+
+	@Override
+	public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+		super.onViewStateRestored(savedInstanceState);
+		Log.e("ConnectorFrag", "onViewStateRestored");
+	}
+
+	void ShowHelpButton() {
+		mainActivity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				TransitionManager.beginDelayedTransition(connectButtonsParentLayout, new AutoTransition().setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500).setOrdering(TransitionSet.ORDERING_TOGETHER));
+				buttonHelp.setVisibility(View.VISIBLE);
+			}
+		});
+	}
+
+	/*void HideHelpButton() {
+		mainActivity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				mainActivity.runOnUiThread(TransitionManager.beginDelayedTransition(connectButtonsParentLayout, new AutoTransition().setInterpolator(new AccelerateDecelerateInterpolator()));
+				buttonHelp.setVisibility(View.GONE);
+			}
+		});
+	}*/
 
 	static final byte[] Header = {'R', 'C', 'R', 'H'};
 	static final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
@@ -98,8 +184,10 @@ public class ConnectorFragment extends Fragment {
 				mainViewModel.socket.shutdownInput();
 				mainActivity.runOnUiThread(runnableOpenControllerFragment);
 			} catch (SocketTimeoutException e) {
+				ShowHelpButton();
 				mainActivity.OnSocketError(getString(R.string.TimeoutCheckIPportOrUpdate), Toast.LENGTH_LONG);
 			} catch (Exception e) {
+				ShowHelpButton();
 				mainActivity.OnSocketError(getString(R.string.ConnectionError));
 				Log.e("MainActivity", getString(R.string.ConnectionError) + e.toString());
 				e.printStackTrace();
@@ -113,6 +201,10 @@ public class ConnectorFragment extends Fragment {
 			mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.replace(android.R.id.content, controllersFragment).commit();
+
+			postDelayedSetButtonsState = true;
+			connectButtonEnabled = true;
+			helpButtonVisibility = View.GONE;
 		}
 	};
 }

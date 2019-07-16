@@ -1,15 +1,18 @@
 package c.jahhow.remotecontroller;
 
 import android.annotation.SuppressLint;
-import android.app.FragmentTransaction;
 import android.app.Service;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Vibrator;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
 			KeyPrefer_SwipeDemo = "3",
 			KeyPrefer_Swiped = "4",
 			KeyPrefer_InputText = "5",
-			KeyPrefer_VibrateOnDown = "6";
+			KeyPrefer_VibrateOnDown = "6",
+			KeyPrefer_ShowHelpButton = "7";
 
 	Toast toast;
 	Vibrator vibrator;
@@ -78,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
 		return super.onCreateOptionsMenu(menu);
 	}
 
+	static final String FragmentTag_Connector = "0";
+
 	@SuppressLint({"ShowToast", "InflateParams"})
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 		if (savedInstanceState == null) {
 			connectorFragment = new ConnectorFragment();
 			getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-					.add(android.R.id.content, connectorFragment).commit();
+					.add(android.R.id.content, connectorFragment, FragmentTag_Connector).commit();
 		}
 		preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
 
@@ -97,9 +103,31 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+		connectorFragment = (ConnectorFragment) getSupportFragmentManager().findFragmentByTag(FragmentTag_Connector);
+	}
+
+	@Override
 	protected void onDestroy() {
 		remoteControllerApp.fetchFullAccessSkuListener = null;
 		super.onDestroy();
+	}
+
+	static final String AppWebsite = "http://jahhowapp.blogspot.com/2019/07/computer-remote-controller.html";
+
+	public void OpenAppWebsite(View v) {
+		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(AppWebsite)));
+	}
+
+	public void buttonShowHelpFragment(View v) {
+		getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+				.addToBackStack(null)
+				.replace(android.R.id.content, new HelpFragment()).commit();
+	}
+
+	public void OnClickHelpFragmentOk(View v) {
+		getSupportFragmentManager().popBackStack();
 	}
 
 	void Vibrate(long ms) {
@@ -342,8 +370,8 @@ public class MainActivity extends AppCompatActivity {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				getSupportFragmentManager().popBackStack();
 				connectorFragment.buttonConnect.setEnabled(true);
+				getSupportFragmentManager().popBackStack();
 				CloseConnection();
 				ShowToast(showToast, toastDuration);
 			}

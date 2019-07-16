@@ -23,4 +23,13 @@
     <string name="Check_Connection">Check Connection</string>
     <string name="retry">RETRY</string>
     <string name="Annual_Subscription">Annual Subscription</string>
+
+    <!--Help.xml-->
+    <string name="currently_works_with_windows_only">Currently works with Windows only.</string>
+    <string name="make_this_device_and_your_pc_under_the_same_wifi">Make this device and your PC be under the same WiFi.</string>
+    <string name="you_could_use_wifi_hotspot_on_this_device">You could open WiFi Hotspot on this device</string>
+    <string name="please_run_the_receiver_program_on_your_pc_nthe_download_link_is_in_the_website_below">Please run the Receiver Program on Your PC.\nThe download link is in this website:</string>
+    <string name="you_could_make_a_search_on_your_pc_to_reach_the_website">You could make a web search on your PC\nto reach the website.</string>
+    <string name="the_receiver_program_will_show_its_ip_address_try_them_in_this_app">The receiver program will show the IP address.\nType it into this app.</string>
+    <string name="ok">OK</string>
 </resources>

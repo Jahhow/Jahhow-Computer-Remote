@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
@@ -101,7 +102,7 @@ public class RemoteControllerApp extends Application {
 		void onSkuDetailsReady();
 	}
 
-	FetchFullAccessSkuListener fetchFullAccessSkuListener=null;
+	FetchFullAccessSkuListener fetchFullAccessSkuListener = null;
 
 	void FetchFullAccessSku() {
 		List<String> skuList = new ArrayList<>();
@@ -122,7 +123,7 @@ public class RemoteControllerApp extends Application {
 							Log.e("Billing", "onSkuDetailsResponse : " + billingResult.getDebugMessage());
 						}
 
-						if(fetchFullAccessSkuListener!=null){
+						if (fetchFullAccessSkuListener != null) {
 							fetchFullAccessSkuListener.onSkuDetailsReady();
 						}
 					}
@@ -137,7 +138,8 @@ public class RemoteControllerApp extends Application {
 			Log.e(LogTag_Billing, "queryPurchases() : OK : getPurchasesList().size() = " + purchases.size());
 			if (purchases.size() == 0) {
 				// Fetch skuDetailsFullAccess
-				FetchFullAccessSku();
+				if (skuDetailsFullAccess == null)
+					FetchFullAccessSku();
 			} else {
 				Purchase purchase = purchases.get(0);
 				if (purchase.getSku().equals(Sku_Subscription_FullAccess)) {
