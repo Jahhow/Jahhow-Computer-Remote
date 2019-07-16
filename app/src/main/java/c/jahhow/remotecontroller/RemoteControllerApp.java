@@ -4,11 +4,8 @@ import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
-import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.android.billingclient.api.BillingClient.SkuType;
@@ -24,16 +21,17 @@ import com.android.billingclient.api.SkuDetailsResponseListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.android.billingclient.api.Purchase.PurchaseState.UNSPECIFIED_STATE;
+
 public class RemoteControllerApp extends Application {
 	ControllerSwitcherFragment controllerSwitcherFragment = null;
 
 	BillingClient billingClient = null;
 	SkuDetails skuDetailsFullAccess = null;
-	int fullAccessState = PurchaseState.UNSPECIFIED_STATE;
+	int fullAccessState = UNSPECIFIED_STATE;
 
 	static final String ManagePlaySubsUrl = "https://play.google.com/store/account/subscriptions?package=c.jahhow.remotecontroller&sku=subscription.full_access";
 	static final String Sku_Subscription_FullAccess = "subscription.full_access";
-	static final String LogTag_Billing = "Billing";
 
 	@Override
 	public void onCreate() {
@@ -44,36 +42,23 @@ public class RemoteControllerApp extends Application {
 	PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
 		@Override
 		public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
-			fullAccessState = PurchaseState.UNSPECIFIED_STATE;
+			fullAccessState = UNSPECIFIED_STATE;
 			if (billingResult.getResponseCode() == BillingResponseCode.OK) {
-				Log.e(LogTag_Billing, "onPurchasesUpdated : OK");
-				if (purchases != null) {
-					Log.e("Billing", "onPurchasesUpdated : purchases.size() == " + purchases.size());
-					if (purchases.size() == 1) {
-						Purchase purchase = purchases.get(0);
-						if (purchase.getSku().equals(Sku_Subscription_FullAccess)) {
-							fullAccessState = purchase.getPurchaseState();
-							if (purchase.getPurchaseState() == PurchaseState.PURCHASED) {
-								if (!purchase.isAcknowledged()) {
-									AcknowledgePurchaseParams acknowledgePurchaseParams =
-											AcknowledgePurchaseParams.newBuilder()
-													.setPurchaseToken(purchase.getPurchaseToken())
-													.build();
-									billingClient.acknowledgePurchase(acknowledgePurchaseParams, new AcknowledgePurchaseResponseListener() {
-										@Override
-										public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
-											if (billingResult.getResponseCode() != BillingResponseCode.OK) {
-												Log.e(LogTag_Billing, billingResult.getDebugMessage());
-											}
-										}
-									});
-								}
+				if (purchases != null && purchases.size() == 1) {
+					Purchase purchase = purchases.get(0);
+					if (purchase.getSku().equals(Sku_Subscription_FullAccess)) {
+						fullAccessState = purchase.getPurchaseState();
+						if (purchase.getPurchaseState() == PurchaseState.PURCHASED) {
+							if (!purchase.isAcknowledged()) {
+								AcknowledgePurchaseParams acknowledgePurchaseParams =
+										AcknowledgePurchaseParams.newBuilder()
+												.setPurchaseToken(purchase.getPurchaseToken())
+												.build();
+								billingClient.acknowledgePurchase(acknowledgePurchaseParams, null);
 							}
 						}
 					}
 				}
-			} else {
-				Log.e(LogTag_Billing, "onPurchasesUpdated NOT OK : (" + billingResult.getResponseCode() + ") " + billingResult.getDebugMessage());
 			}
 
 			if (controllerSwitcherFragment != null)
@@ -85,16 +70,11 @@ public class RemoteControllerApp extends Application {
 		public void onBillingSetupFinished(BillingResult billingResult) {
 			if (billingResult.getResponseCode() == BillingResponseCode.OK) {
 				SyncPurchase();
-			} else {
-				Log.e("Billing", "onBillingSetupFinished NOT OK : " + billingResult.getDebugMessage());
 			}
 		}
 
 		@Override
 		public void onBillingServiceDisconnected() {
-			// Try to restart the connection on the next request to
-			// Google Play by calling the startConnection() method.
-			Log.e("Billing", "onBillingServiceDisconnected");
 		}
 	};
 
@@ -119,8 +99,6 @@ public class RemoteControllerApp extends Application {
 									skuDetailsFullAccess = skuDetails;
 								}
 							}
-						} else {
-							Log.e("Billing", "onSkuDetailsResponse : " + billingResult.getDebugMessage());
 						}
 
 						if (fetchFullAccessSkuListener != null) {
@@ -135,7 +113,6 @@ public class RemoteControllerApp extends Application {
 		Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(SkuType.SUBS);
 		if (purchasesResult.getResponseCode() == BillingResponseCode.OK) {
 			List<Purchase> purchases = purchasesResult.getPurchasesList();
-			Log.e(LogTag_Billing, "queryPurchases() : OK : getPurchasesList().size() = " + purchases.size());
 			if (purchases.size() == 0) {
 				// Fetch skuDetailsFullAccess
 				if (skuDetailsFullAccess == null)
@@ -146,8 +123,7 @@ public class RemoteControllerApp extends Application {
 					fullAccessState = purchase.getPurchaseState();
 				}
 			}
-		} else
-			Log.e(LogTag_Billing, "queryPurchases() Not OK : " + purchasesResult.getBillingResult().getDebugMessage());
+		}
 	}
 
 	void OpenPlayStoreManageSubscription() {

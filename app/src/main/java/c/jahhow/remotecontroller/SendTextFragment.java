@@ -98,13 +98,12 @@ public class SendTextFragment extends Fragment {
 		super.onSaveInstanceState(outState);
 		if (!mainActivity.isChangingConfigurations())
 			mainActivity.preferences.edit().putString(MainActivity.KeyPrefer_InputText, editText.getText().toString()).apply();
-
-		Log.e("SendTextFragment","onSaveInstanceState()");
+		//Log.e("SendTextFragment","onSaveInstanceState()");
 	}
 
 	@Override
 	public void onDestroy() {
-		Log.e("SendTextFragment", "onDestroy()");
+		//Log.e("SendTextFragment", "onDestroy()");
 		super.onDestroy();
 		if (!mainActivity.isChangingConfigurations())
 			mainActivity.preferences.edit().putString(MainActivity.KeyPrefer_InputText, editText.getText().toString()).apply();

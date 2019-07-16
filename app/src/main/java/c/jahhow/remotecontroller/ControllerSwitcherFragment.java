@@ -59,7 +59,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 	@Override
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
-		_onDestroy_onSaveInstanceState();
+		SavePreference();
 	}
 
 	@Override
@@ -103,18 +103,18 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 		onNavigationItemSelected(navigationView.getSelectedItemId());
 	}
 
-	void _onDestroy_onSaveInstanceState() {
-		if (!mainActivity.isChangingConfigurations()) {
-			mainActivity.preferences.edit().putInt(MainActivity.KeyPrefer_Controller, navigationView.getSelectedItemId()).apply();
-			mainActivity.CloseConnection();
-		}
+	void SavePreference() {
+		mainActivity.preferences.edit().putInt(MainActivity.KeyPrefer_Controller, navigationView.getSelectedItemId()).apply();
 	}
 
 	@Override
 	public void onDestroy() {
 		showingController = null;
 		remoteControllerApp.controllerSwitcherFragment = null;
-		_onDestroy_onSaveInstanceState();
+		if (!mainActivity.isChangingConfigurations()) {
+			SavePreference();
+			mainActivity.CloseConnection();
+		}
 		super.onDestroy();
 	}
 

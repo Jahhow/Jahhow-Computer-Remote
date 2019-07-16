@@ -4,7 +4,6 @@ import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.transition.AutoTransition;
 import android.support.transition.TransitionManager;
@@ -42,7 +41,7 @@ public class ConnectorFragment extends Fragment {
 	ControllerSwitcherFragment controllersFragment;
 
 	// set buttons state on next onCreateView()
-	boolean postDelayedSetButtonsState = false;
+	boolean setButtonsStateOnCreateView = false;
 	int helpButtonVisibility;
 	boolean connectButtonEnabled;
 
@@ -51,6 +50,7 @@ public class ConnectorFragment extends Fragment {
 		if (layout == null || savedInstanceState != null) {
 			controllersFragment = new ControllerSwitcherFragment();
 			mainActivity = (MainActivity) getActivity();
+			assert mainActivity != null;
 			preferences = mainActivity.preferences;
 			remoteControllerApp = (RemoteControllerApp) mainActivity.getApplication();
 			mainViewModel = mainActivity.mainViewModel;
@@ -60,17 +60,18 @@ public class ConnectorFragment extends Fragment {
 			buttonConnect = layout.findViewById(R.id.buttonConnect);
 			buttonHelp = layout.findViewById(R.id.buttonHelp);
 			connectButtonsParentLayout = layout.findViewById(R.id.connectButtonsParentLayout);
-
-			if (savedInstanceState == null) {
-				tiEditTextIp.setText(preferences.getString(MainActivity.KeyPrefer_IP, "192.168.1.3"));
-				tiEditTextPort.setText(preferences.getString(MainActivity.KeyPrefer_Port, "5555"));
-				buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true) ? View.VISIBLE : View.GONE);
-			}/* else {
-				buttonHelp.setVisibility(mainViewModel.helpButtonVisibility);
-			}*/
 		}
-		if (postDelayedSetButtonsState) {
-			postDelayedSetButtonsState = false;
+
+		if (savedInstanceState == null) {
+			tiEditTextIp.setText(preferences.getString(MainActivity.KeyPrefer_IP, "192.168.1.3"));
+			tiEditTextPort.setText(preferences.getString(MainActivity.KeyPrefer_Port, "5555"));
+			buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true) ? View.VISIBLE : View.GONE);
+		} else {
+			buttonHelp.setVisibility(mainViewModel.helpButtonVisibility);
+		}
+
+		if (setButtonsStateOnCreateView) {
+			setButtonsStateOnCreateView = false;
 			buttonConnect.setEnabled(connectButtonEnabled);
 			buttonHelp.setVisibility(helpButtonVisibility);
 		}
@@ -78,50 +79,32 @@ public class ConnectorFragment extends Fragment {
 	}
 
 	void SavePreferences() {
-		int _helpButtonVisibility = postDelayedSetButtonsState ? helpButtonVisibility : buttonHelp.getVisibility();
-		preferences.edit()
-				.putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
-				.putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
-				.putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
-				.apply();
+		int _helpButtonVisibility = setButtonsStateOnCreateView ? helpButtonVisibility : buttonHelp.getVisibility();
+		if (mainActivity.isChangingConfigurations())
+			mainViewModel.helpButtonVisibility = _helpButtonVisibility;
+		else
+			preferences.edit()
+					.putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
+					.putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
+					.putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
+					.apply();
 	}
-
-	/*@Override
-	public void onPause() {
-		Log.e("ConnectorFrag", "onPause()");
-		super.onPause();
-	}
-
-	@Override
-	public void onStop() {
-		Log.e("ConnectorFrag", "onStop()");
-		super.onStop();
-	}*/
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		remoteControllerApp.fetchFullAccessSkuListener = null;
-		if (!mainActivity.isChangingConfigurations()) {
+		if (!mainActivity.isChangingConfigurations())
 			SavePreferences();
-		}
 	}
 
 	@Override
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
-		Log.e("ConnectorFrag", "onSaveInstanceState()");
-		//mainViewModel.helpButtonVisibility = buttonHelp.getVisibility();
 		SavePreferences();
 	}
 
-	@Override
-	public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-		super.onViewStateRestored(savedInstanceState);
-		Log.e("ConnectorFrag", "onViewStateRestored");
-	}
-
-	void ShowHelpButton() {
+	void AnimateShowHelpButton() {
 		mainActivity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -184,10 +167,10 @@ public class ConnectorFragment extends Fragment {
 				mainViewModel.socket.shutdownInput();
 				mainActivity.runOnUiThread(runnableOpenControllerFragment);
 			} catch (SocketTimeoutException e) {
-				ShowHelpButton();
+				AnimateShowHelpButton();
 				mainActivity.OnSocketError(getString(R.string.TimeoutCheckIPportOrUpdate), Toast.LENGTH_LONG);
 			} catch (Exception e) {
-				ShowHelpButton();
+				AnimateShowHelpButton();
 				mainActivity.OnSocketError(getString(R.string.ConnectionError));
 				Log.e("MainActivity", getString(R.string.ConnectionError) + e.toString());
 				e.printStackTrace();
@@ -202,7 +185,7 @@ public class ConnectorFragment extends Fragment {
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.replace(android.R.id.content, controllersFragment).commit();
 
-			postDelayedSetButtonsState = true;
+			setButtonsStateOnCreateView = true;
 			connectButtonEnabled = true;
 			helpButtonVisibility = View.GONE;
 		}
