@@ -80,7 +80,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:gravity="center">
 
 
@@ -139,5 +138,14 @@
                 </LinearLayout>
             </HorizontalScrollView>
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/buttonToggleInputPassword"
+            style="@style/AppTheme.InputTextButton"
+            android:layout_marginTop="8dp"
+            android:alpha=".3"
+            android:src="@drawable/ic_security_black_24dp"
+            android:tint="@color/titleTextColor"
+            tools:ignore="ContentDescription" />
     </LinearLayout>
 </ScrollView>

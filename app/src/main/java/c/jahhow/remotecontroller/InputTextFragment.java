@@ -1,22 +1,25 @@
 package c.jahhow.remotecontroller;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.ImageView;
 
 import c.jahhow.remotecontroller.msg.ButtonAction;
 import c.jahhow.remotecontroller.msg.InputTextMode;
 import c.jahhow.remotecontroller.msg.SCS1;
 
-public class SendTextFragment extends Fragment {
+public class InputTextFragment extends Fragment {
 	TextInputEditText editText;
 	MainActivity mainActivity;
+	ImageView buttonToggleInputPassword;
 
 	@Nullable
 	@Override
@@ -25,8 +28,6 @@ public class SendTextFragment extends Fragment {
 
 		View layout = inflater.inflate(R.layout.input_text, container, false);
 		editText = layout.findViewById(R.id.SendTextEditText);
-		if (savedInstanceState == null)
-			editText.setText(mainActivity.preferences.getString(MainActivity.KeyPrefer_InputText, null));
 
 		new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonBackspace), mainActivity) {
 			@Override
@@ -90,20 +91,56 @@ public class SendTextFragment extends Fragment {
 				mainActivity.SendKeyboardScanCodeCombination(ButtonAction.Up, SCS1.L_CTRL, SCS1.V);
 			}
 		};
+
+		buttonToggleInputPassword = layout.findViewById(R.id.buttonToggleInputPassword);
+		buttonToggleInputPassword.setOnClickListener(new View.OnClickListener() {
+			@SuppressLint("RestrictedApi")
+			@Override
+			public void onClick(View v) {
+				int inputType = editText.getInputType();
+				if (isInputTypeNormal(inputType)) {
+					inputType |= EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+					buttonToggleInputPassword.animate().alpha(1);
+				} else {
+					buttonToggleInputPassword.animate().alpha(.3f);
+					inputType = inputType & ~EditorInfo.TYPE_MASK_VARIATION;
+				}
+				editText.setInputType(inputType);
+			}
+		});
+
+
+		if (savedInstanceState == null)
+			editText.setText(mainActivity.preferences.getString(MainActivity.KeyPrefer_InputText, null));
+		else {
+			int inputType = savedInstanceState.getInt(BundleKey_InputType, 0);
+			if (inputType != 0) {
+				editText.setInputType(inputType);
+				if (!isInputTypeNormal(inputType))
+					buttonToggleInputPassword.setAlpha(1f);
+			}
+		}
 		return layout;
 	}
+
+	boolean isInputTypeNormal(int inputType) {
+		return (inputType & EditorInfo.TYPE_MASK_VARIATION) == 0;
+	}
+
+	static final String BundleKey_InputType = "BKIT";
 
 	@Override
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 		if (!mainActivity.isChangingConfigurations())
 			mainActivity.preferences.edit().putString(MainActivity.KeyPrefer_InputText, editText.getText().toString()).apply();
-		//Log.e("SendTextFragment","onSaveInstanceState()");
+		outState.putInt(BundleKey_InputType, editText.getInputType());
+		//Log.e("InputTextFragment","onSaveInstanceState()");
 	}
 
 	@Override
 	public void onDestroy() {
-		//Log.e("SendTextFragment", "onDestroy()");
+		//Log.e("InputTextFragment", "onDestroy()");
 		super.onDestroy();
 		if (!mainActivity.isChangingConfigurations())
 			mainActivity.preferences.edit().putString(MainActivity.KeyPrefer_InputText, editText.getText().toString()).apply();

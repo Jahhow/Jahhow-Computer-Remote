@@ -69,7 +69,4 @@
     <declare-styleable name="slideColor">
         <attr name="slideColor" format="color" />
     </declare-styleable>
-    <declare-styleable name="swipeDirectionIndicatorStyle">
-
-    </declare-styleable>
 </resources>

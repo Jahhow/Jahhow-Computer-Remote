@@ -3,9 +3,11 @@ package c.jahhow.remotecontroller;
 import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.Keep;
 import android.support.annotation.Nullable;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.android.billingclient.api.BillingClient.SkuType;
@@ -54,7 +56,12 @@ public class RemoteControllerApp extends Application {
 										AcknowledgePurchaseParams.newBuilder()
 												.setPurchaseToken(purchase.getPurchaseToken())
 												.build();
-								billingClient.acknowledgePurchase(acknowledgePurchaseParams, null);
+								billingClient.acknowledgePurchase(acknowledgePurchaseParams, new AcknowledgePurchaseResponseListener() {
+									@Override
+									@Keep
+									public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
+									}
+								});
 							}
 						}
 					}

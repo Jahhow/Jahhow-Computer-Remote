@@ -21,7 +21,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 	ArrowButtonFragment arrowButtonFragment = new ArrowButtonFragment();
 	SwipeControllerFragment swipeControllerFragment = new SwipeControllerFragment();
 	TouchPadFragment touchPadFragment = new TouchPadFragment();
-	SendTextFragment sendTextFragment = new SendTextFragment();
+	InputTextFragment inputTextFragment = new InputTextFragment();
 
 	PurchaseFragment purchaseFragment = new PurchaseFragment();
 
@@ -81,7 +81,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 						touchPadFragment = (TouchPadFragment) showingController;
 						break;
 					case R.id.navButtonSendText:
-						sendTextFragment = (SendTextFragment) showingController;
+						inputTextFragment = (InputTextFragment) showingController;
 						break;
 				}
 			}
@@ -131,7 +131,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 					ShowFragment(touchPadFragment);
 					break;
 				case R.id.navButtonSendText:
-					ShowFragment(sendTextFragment);
+					ShowFragment(inputTextFragment);
 					break;
 			}
 		} else {
