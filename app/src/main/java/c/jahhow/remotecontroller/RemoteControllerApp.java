@@ -32,14 +32,15 @@ public class RemoteControllerApp extends Application {
 	SkuDetails skuDetailsFullAccess = null;
 	int fullAccessState = UNSPECIFIED_STATE;
 
-	static final String ManagePlaySubsUrl = "https://play.google.com/store/account/subscriptions?package=c.jahhow.remotecontroller&sku=subscription.full_access";
-	static final String Sku_Subscription_FullAccess = "subscription.full_access";
+	static final String
+			ManagePlaySubsUrl = "https://play.google.com/store/account/subscriptions?package=c.jahhow.remotecontroller&sku=subscription.full_access",
+			Sku_Subscription_FullAccess = "subscription.full_access";
 
-	@Override
+	/*@Override
 	public void onCreate() {
 		super.onCreate();
 		StartBillingClient();
-	}
+	}*/
 
 	PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
 		@Override
@@ -117,6 +118,7 @@ public class RemoteControllerApp extends Application {
 	}
 
 	void SyncPurchase() {
+		fullAccessState = UNSPECIFIED_STATE;
 		Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(SkuType.SUBS);
 		if (purchasesResult.getResponseCode() == BillingResponseCode.OK) {
 			List<Purchase> purchases = purchasesResult.getPurchasesList();
@@ -138,7 +140,22 @@ public class RemoteControllerApp extends Application {
 	}
 
 	void StartBillingClient() {
+		Reset();
 		billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener(purchasesUpdatedListener).build();
 		billingClient.startConnection(billingClientStateListener);
+	}
+
+	void EndBillingClient() {
+		if (billingClient != null) {
+			billingClient.endConnection();
+			Reset();
+		}
+	}
+
+	void Reset() {
+		controllerSwitcherFragment = null;
+		billingClient = null;
+		skuDetailsFullAccess = null;
+		fullAccessState = UNSPECIFIED_STATE;
 	}
 }

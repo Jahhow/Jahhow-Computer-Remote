@@ -10,9 +10,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Vibrator;
+import android.support.annotation.StringRes;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -88,36 +88,34 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
+		if (vibrator != null && !vibrator.hasVibrator()) vibrator = null;
+		preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
 		remoteControllerApp = (RemoteControllerApp) getApplication();
 		toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
 		mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 		if (savedInstanceState == null) {
+			remoteControllerApp.StartBillingClient();
 			connectorFragment = new ConnectorFragment();
 			getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.add(android.R.id.content, connectorFragment, FragmentTag_Connector).commit();
 		}
-		preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
-
-		vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
-		if (vibrator != null && !vibrator.hasVibrator()) vibrator = null;
-	}
-
-	@Override
-	protected void onRestoreInstanceState(Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
-		connectorFragment = (ConnectorFragment) getSupportFragmentManager().findFragmentByTag(FragmentTag_Connector);
 	}
 
 	@Override
 	protected void onDestroy() {
+		//Log.e(getLocalClassName(), "onDestroy() isFinishing() == " + isFinishing());
+		if (isFinishing()) {
+			remoteControllerApp.EndBillingClient();
+		}
 		remoteControllerApp.fetchFullAccessSkuListener = null;
 		super.onDestroy();
 	}
 
-	static final String AppWebsite = "http://jahhowapp.blogspot.com/2019/07/computer-remote-controller.html";
+	static final String JahhowAppWebsite = "http://jahhowapp.blogspot.com/2019/07/computer-remote-controller.html";
 
-	public void OpenAppWebsite(View v) {
-		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(AppWebsite)));
+	public void OpenJahhowAppWebsite(View v) {
+		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(JahhowAppWebsite)));
 	}
 
 	public void buttonShowHelpFragment(View v) {
@@ -214,8 +212,7 @@ public class MainActivity extends AppCompatActivity {
 				try {
 					mainViewModel.socketOutput.write(bytes);
 				} catch (IOException e) {
-					OnSocketError(getString(R.string.Disconnected));
-					e.printStackTrace();
+					OnSocketError(R.string.Disconnected);
 				}
 			}
 		});
@@ -229,8 +226,7 @@ public class MainActivity extends AppCompatActivity {
 				try {
 					mainViewModel.socketOutput.write(bytes);
 				} catch (IOException e) {
-					OnSocketError(getString(R.string.Disconnected));
-					e.printStackTrace();
+					OnSocketError(R.string.Disconnected);
 				}
 			}
 		});
@@ -257,13 +253,12 @@ public class MainActivity extends AppCompatActivity {
 					try {
 						mainViewModel.socketOutput.write(packet);
 					} catch (IOException e) {
-						OnSocketError(getString(R.string.Disconnected));
-						e.printStackTrace();
+						OnSocketError(R.string.Disconnected);
 					}
 				}
 			});
 		} catch (UnsupportedEncodingException e) {
-			ShowToast(getString(R.string.ProblemSendingText));
+			ShowToast(R.string.ProblemSendingText);
 			e.printStackTrace();
 		}
 	}
@@ -300,8 +295,7 @@ public class MainActivity extends AppCompatActivity {
 					try {
 						mainViewModel.socketOutput.write(msg);
 					} catch (IOException e) {
-						OnSocketError(getString(R.string.Disconnected));
-						e.printStackTrace();
+						OnSocketError(R.string.Disconnected);
 					}
 				}
 			});
@@ -322,8 +316,7 @@ public class MainActivity extends AppCompatActivity {
 				try {
 					mainViewModel.socketOutput.write(bytes);
 				} catch (IOException e) {
-					OnSocketError(getString(R.string.Disconnected));
-					e.printStackTrace();
+					OnSocketError(R.string.Disconnected);
 				}
 			}
 		});
@@ -349,11 +342,18 @@ public class MainActivity extends AppCompatActivity {
 				try {
 					mainViewModel.socketOutput.write(packet);
 				} catch (IOException e) {
-					OnSocketError(getString(R.string.Disconnected));
-					e.printStackTrace();
+					OnSocketError(R.string.Disconnected);
 				}
 			}
 		});
+	}
+
+	void ShowToast(@StringRes int resId) {
+		ShowToast(resId, Toast.LENGTH_SHORT);
+	}
+
+	void ShowToast(@StringRes int resId, int duration) {
+		ShowToast(getString(resId), Toast.LENGTH_SHORT);
 	}
 
 	void ShowToast(String text, int duration) {
@@ -362,23 +362,35 @@ public class MainActivity extends AppCompatActivity {
 		toast.show();
 	}
 
-	void ShowToast(String text) {
-		ShowToast(text, Toast.LENGTH_SHORT);
+	/*@Override
+	protected void onPause() {
+		Log.e(getLocalClassName(), "onPause() isFinishing() == " + isFinishing());
+		super.onPause();
+	}*/
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		connectorFragment = (ConnectorFragment) getSupportFragmentManager().findFragmentByTag(FragmentTag_Connector);
+		super.onRestoreInstanceState(savedInstanceState);
 	}
 
-	void OnSocketError(final String showToast, final int toastDuration) {
+	void OnSocketError(@StringRes final int showToast, final int toastDuration) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				connectorFragment.buttonConnect.setEnabled(true);
-				getSupportFragmentManager().popBackStack();
+				if (!getSupportFragmentManager().isStateSaved()) {
+					getSupportFragmentManager().popBackStack();
+				}
+				if (!isFinishing()) {
+					connectorFragment.buttonConnect.setEnabled(true);
+					ShowToast(showToast, toastDuration);
+				}
 				CloseConnection();
-				ShowToast(showToast, toastDuration);
 			}
 		});
 	}
 
-	void OnSocketError(final String showToast) {
+	void OnSocketError(@StringRes int showToast) {
 		OnSocketError(showToast, Toast.LENGTH_SHORT);
 	}
 

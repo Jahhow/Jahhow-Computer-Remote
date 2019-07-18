@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,8 +16,9 @@ import com.android.billingclient.api.Purchase.PurchaseState;
 
 public class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
 	MainActivity mainActivity;
-	BottomNavigationView navigationView;
+
 	Fragment showingController = null;
+	BottomNavigationView navigationView;
 
 	ArrowButtonFragment arrowButtonFragment = new ArrowButtonFragment();
 	SwipeControllerFragment swipeControllerFragment = new SwipeControllerFragment();
@@ -108,13 +110,26 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 	}
 
 	@Override
-	public void onDestroy() {
-		showingController = null;
-		remoteControllerApp.controllerSwitcherFragment = null;
-		if (!mainActivity.isChangingConfigurations()) {
+	public void onPause() {
+		Log.i(getClass().getSimpleName(), "onPause(), isRemoving() == " + isRemoving());
+		if (isRemoving()) {
+			showingController = null;
+			remoteControllerApp.controllerSwitcherFragment = null;
 			SavePreference();
 			mainActivity.CloseConnection();
 		}
+		super.onPause();
+	}
+
+	@Override
+	public void onStop() {
+		Log.i(getClass().getSimpleName(), "onStop()");
+		super.onStop();
+	}
+
+	@Override
+	public void onDestroy() {
+		Log.i(getClass().getSimpleName(), "onDestroy()");
 		super.onDestroy();
 	}
 

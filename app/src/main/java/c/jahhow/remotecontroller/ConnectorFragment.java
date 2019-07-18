@@ -2,6 +2,7 @@ package c.jahhow.remotecontroller;
 
 import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
@@ -10,7 +11,6 @@ import android.support.transition.TransitionManager;
 import android.support.transition.TransitionSet;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatImageView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +47,18 @@ public class ConnectorFragment extends Fragment {
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		if (layout == null || savedInstanceState != null) {
+		boolean layoutIsPossiblyAttachedToWindow = false; // if true, must not reuse layout
+		if (layout != null) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+				layoutIsPossiblyAttachedToWindow = layout.isAttachedToWindow();
+			else
+				layoutIsPossiblyAttachedToWindow = true;
+		}
+
+		/*if (layoutIsPossiblyAttachedToWindow)
+			Log.e(getClass().getSimpleName(), "layoutIsPossiblyAttachedToWindow == " + layoutIsPossiblyAttachedToWindow);*/
+
+		if (layoutIsPossiblyAttachedToWindow || layout == null || savedInstanceState != null) {
 			controllersFragment = new ControllerSwitcherFragment();
 			mainActivity = (MainActivity) getActivity();
 			assert mainActivity != null;
@@ -75,6 +86,12 @@ public class ConnectorFragment extends Fragment {
 			buttonConnect.setEnabled(connectButtonEnabled);
 			buttonHelp.setVisibility(helpButtonVisibility);
 		}
+		/*if (mainViewModel.socketHandlerThread != null) {
+			buttonConnect.setEnabled(false);
+		}*/
+		/*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			Log.e(getClass().getSimpleName(), "onCreateView() { fragmentView.isAttachedToWindow() == " + layout.isAttachedToWindow() + " }");
+		}*/
 		return layout;
 	}
 
@@ -89,6 +106,12 @@ public class ConnectorFragment extends Fragment {
 					.putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
 					.apply();
 	}
+
+	/*@Override
+	public void onDestroyView() {
+		Log.e(getClass().getSimpleName(), "onDestroyView()");
+		super.onDestroyView();
+	}*/
 
 	@Override
 	public void onDestroy() {
@@ -145,39 +168,40 @@ public class ConnectorFragment extends Fragment {
 				InputStream inputStream = mainViewModel.socket.getInputStream();
 				byte[] buf = new byte[ServerHeader.length];
 				if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {
-					mainActivity.OnSocketError(getString(R.string.ConnectionError));
+					mainActivity.OnSocketError(R.string.ConnectionError);
 					return;
 				}
 				if (!Arrays.equals(buf, ServerHeader)) {
-					mainActivity.OnSocketError(getString(R.string.ConnectionError));
+					mainActivity.OnSocketError(R.string.ConnectionError);
 					return;
 				}
 				if (4 != inputStream.read(buf, 0, 4)) {
-					mainActivity.OnSocketError(getString(R.string.PleaseUpdateTheComputerSideReceiverProgram), Toast.LENGTH_LONG);
+					mainActivity.OnSocketError(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
 					return;
 				}
 				int serverVersion = ByteBuffer.wrap(buf).getInt();
 				if (serverVersion < SupportServerVersion) {
-					mainActivity.OnSocketError(getString(R.string.PleaseUpdateTheComputerSideReceiverProgram), Toast.LENGTH_LONG);
+					mainActivity.OnSocketError(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
 					return;
 				} else if (serverVersion > SupportServerVersion) {
-					mainActivity.OnSocketError(getString(R.string.PleaseUpdateThisApp));
+					mainActivity.OnSocketError(R.string.PleaseUpdateThisApp);
 					return;
 				}
 				mainViewModel.socket.shutdownInput();
 				mainActivity.runOnUiThread(runnableOpenControllerFragment);
 			} catch (SocketTimeoutException e) {
 				AnimateShowHelpButton();
-				mainActivity.OnSocketError(getString(R.string.TimeoutCheckIPportOrUpdate), Toast.LENGTH_LONG);
+				mainActivity.OnSocketError(R.string.TimeoutCheckIPportOrUpdate, Toast.LENGTH_LONG);
 			} catch (Exception e) {
 				AnimateShowHelpButton();
-				mainActivity.OnSocketError(getString(R.string.ConnectionError));
-				Log.e("MainActivity", getString(R.string.ConnectionError) + e.toString());
+				mainActivity.OnSocketError(R.string.ConnectionError);
+				//Log.e("MainActivity", R.string.ConnectionError + e.toString());
 				e.printStackTrace();
 			}
 		}
 	};
 
+	// On Ui Thread
 	Runnable runnableOpenControllerFragment = new Runnable() {
 		@Override
 		public void run() {

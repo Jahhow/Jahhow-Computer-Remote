@@ -32,4 +32,5 @@
     <string name="you_could_make_a_search_on_your_pc_to_reach_the_website">You could make a web search on your PC\nto reach the website.</string>
     <string name="the_receiver_program_will_show_its_ip_address_try_them_in_this_app">The receiver program will show the IP address.\nType it into this app.</string>
     <string name="ok">OK</string>
+    <string name="jahhow_s_app" translatable="false">Jahhow\'s App</string>
 </resources>
