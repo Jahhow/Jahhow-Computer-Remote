@@ -36,11 +36,11 @@ public class RemoteControllerApp extends Application {
 			ManagePlaySubsUrl = "https://play.google.com/store/account/subscriptions?package=c.jahhow.remotecontroller&sku=subscription.full_access",
 			Sku_Subscription_FullAccess = "subscription.full_access";
 
-	/*@Override
+	@Override
 	public void onCreate() {
 		super.onCreate();
 		StartBillingClient();
-	}*/
+	}
 
 	PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
 		@Override
@@ -141,21 +141,23 @@ public class RemoteControllerApp extends Application {
 
 	void StartBillingClient() {
 		Reset();
-		billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener(purchasesUpdatedListener).build();
-		billingClient.startConnection(billingClientStateListener);
+		if (billingClient == null) {
+			billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener(purchasesUpdatedListener).build();
+			billingClient.startConnection(billingClientStateListener);
+		}
 	}
 
-	void EndBillingClient() {
+	/*void EndBillingClient() {
 		if (billingClient != null) {
 			billingClient.endConnection();
 			Reset();
 		}
-	}
+	}*/
 
 	void Reset() {
 		controllerSwitcherFragment = null;
-		billingClient = null;
+		/*billingClient = null;
 		skuDetailsFullAccess = null;
-		fullAccessState = UNSPECIFIED_STATE;
+		fullAccessState = UNSPECIFIED_STATE;*/
 	}
 }

@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
 		toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
 		mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 		if (savedInstanceState == null) {
-			remoteControllerApp.StartBillingClient();
+			//remoteControllerApp.StartBillingClient();
 			connectorFragment = new ConnectorFragment();
 			getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.add(android.R.id.content, connectorFragment, FragmentTag_Connector).commit();
@@ -105,9 +105,9 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onDestroy() {
 		//Log.e(getLocalClassName(), "onDestroy() isFinishing() == " + isFinishing());
-		if (isFinishing()) {
+		/*if (isFinishing()) {
 			remoteControllerApp.EndBillingClient();
-		}
+		}*/
 		remoteControllerApp.fetchFullAccessSkuListener = null;
 		super.onDestroy();
 	}
