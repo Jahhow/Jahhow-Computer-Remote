@@ -77,7 +77,7 @@
             </HorizontalScrollView>
         </FrameLayout>
 
-        <LinearLayout
+        <!--<LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
@@ -138,7 +138,50 @@
                         tools:ignore="HardcodedText" />
                 </LinearLayout>
             </HorizontalScrollView>
-        </LinearLayout>
+        </LinearLayout>-->
+
+        <!--FrameLayout is for clipping the selectableBackground properly-->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#0000">
+
+            <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="1dp"
+                android:scrollbars="none"
+                tools:ignore="UselessParent">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="?actionBarSize">
+
+                    <Button
+                        style="@style/AppTheme.KeyboardShortcutButton.Narrow"
+                        android:onClick="SendClick_CtrlA"
+                        android:text="@string/Select_All" />
+
+                    <Button
+                        style="@style/AppTheme.KeyboardShortcutButton.Narrow"
+                        android:onClick="SendClick_CtrlX"
+                        android:text="@string/cut" />
+
+                    <Button
+                        style="@style/AppTheme.KeyboardShortcutButton.Narrow"
+                        android:onClick="SendClick_CtrlC"
+                        android:text="@string/Copy" />
+
+                    <Button
+                        android:id="@+id/buttonCtrlV"
+                        style="@style/AppTheme.KeyboardShortcutButton.Narrow"
+                        android:onClick="SendClick_CtrlV"
+                        android:text="@string/Paste" />
+                </LinearLayout>
+            </HorizontalScrollView>
+        </FrameLayout>
 
         <ImageView
             android:id="@+id/buttonToggleInputPassword"

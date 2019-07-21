@@ -32,8 +32,8 @@
         <item name="android:tint">@color/White</item>
     </style>
 
-    <style name="AppTheme.WhiteButton" parent="Base.Widget.AppCompat.Button">
-        <item name="colorButtonNormal">@color/White</item>
+    <style name="AppTheme.LightButton" parent="Widget.AppCompat.Button">
+        <item name="colorButtonNormal">#F1F1F1</item>
     </style>
 
     <style name="AppTheme.InputTextButton">
@@ -61,8 +61,12 @@
     </style>
 
     <style name="AppTheme.KeyboardShortcutButton.Narrow" parent="AppTheme.KeyboardShortcutButton">
-        <item name="android:paddingLeft">16dp</item>
-        <item name="android:paddingRight">16dp</item>
+        <!--<item name="android:textAppearance">@null</item>-->
+        <!--<item name="android:textColor">?android:textColorSecondary</item>-->
+        <item name="android:textSize">16sp</item>
+        <!--<item name="android:textStyle">bold</item>-->
+        <item name="android:paddingLeft">15dp</item>
+        <item name="android:paddingRight">15dp</item>
         <item name="android:minWidth">@null</item>
     </style>
 

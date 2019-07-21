@@ -11,6 +11,7 @@ import android.support.transition.TransitionManager;
 import android.support.transition.TransitionSet;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatImageView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,8 +58,9 @@ public class ConnectorFragment extends Fragment {
 
 		/*if (layoutIsPossiblyAttachedToWindow)
 			Log.e(getClass().getSimpleName(), "layoutIsPossiblyAttachedToWindow == " + layoutIsPossiblyAttachedToWindow);*/
+		boolean shouldInflateNewLayout = layoutIsPossiblyAttachedToWindow || layout == null || savedInstanceState != null;
 
-		if (layoutIsPossiblyAttachedToWindow || layout == null || savedInstanceState != null) {
+		if (shouldInflateNewLayout) {
 			controllersFragment = new ControllerSwitcherFragment();
 			mainActivity = (MainActivity) getActivity();
 			assert mainActivity != null;
@@ -76,35 +78,27 @@ public class ConnectorFragment extends Fragment {
 		if (savedInstanceState == null) {
 			tiEditTextIp.setText(preferences.getString(MainActivity.KeyPrefer_IP, "192.168.1.3"));
 			tiEditTextPort.setText(preferences.getString(MainActivity.KeyPrefer_Port, "5555"));
-			buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true) ? View.VISIBLE : View.GONE);
-		} else {
-			buttonHelp.setVisibility(mainViewModel.helpButtonVisibility);
 		}
 
 		if (setButtonsStateOnCreateView) {
 			setButtonsStateOnCreateView = false;
 			buttonConnect.setEnabled(connectButtonEnabled);
 			buttonHelp.setVisibility(helpButtonVisibility);
+		} else if (shouldInflateNewLayout) {
+			//Log.i(getClass().getSimpleName(), "preferences.getBoolean(KeyPrefer_ShowHelpButton, true) == " + preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true));
+			buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true) ? View.VISIBLE : View.GONE);
 		}
-		/*if (mainViewModel.socketHandlerThread != null) {
-			buttonConnect.setEnabled(false);
-		}*/
-		/*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-			Log.e(getClass().getSimpleName(), "onCreateView() { fragmentView.isAttachedToWindow() == " + layout.isAttachedToWindow() + " }");
-		}*/
 		return layout;
 	}
 
 	void SavePreferences() {
 		int _helpButtonVisibility = setButtonsStateOnCreateView ? helpButtonVisibility : buttonHelp.getVisibility();
-		if (mainActivity.isChangingConfigurations())
-			mainViewModel.helpButtonVisibility = _helpButtonVisibility;
-		else
-			preferences.edit()
-					.putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
-					.putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
-					.putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
-					.apply();
+		//Log.i(getClass().getSimpleName(), "SavePreferences KeyPrefer_ShowHelpButton " + (_helpButtonVisibility == View.VISIBLE));
+		preferences.edit()
+				.putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
+				.putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
+				.putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
+				.apply();
 	}
 
 	/*@Override

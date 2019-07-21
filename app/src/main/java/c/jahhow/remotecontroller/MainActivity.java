@@ -124,7 +124,13 @@ public class MainActivity extends AppCompatActivity {
 				.replace(android.R.id.content, new HelpFragment()).commit();
 	}
 
-	public void OnClickHelpFragmentOk(View v) {
+	public void OpenBuildConnection(View v) {
+		getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+				.addToBackStack(null)
+				.replace(android.R.id.content, new ConnectionGuideFragment()).commit();
+	}
+
+	public void PopFragmentStack(View v) {
 		getSupportFragmentManager().popBackStack();
 	}
 

@@ -26,11 +26,26 @@
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">Currently works with Windows only.</string>
-    <string name="make_this_device_and_your_pc_under_the_same_wifi">Make this device and your PC be under the same WiFi.</string>
-    <string name="you_could_use_wifi_hotspot_on_this_device">You could open WiFi Hotspot on this device</string>
+    <string name="Build_a_Connection_to_Your_PC">Build a Connection to Your PC</string>
+    <string name="open_connection_guide">Read Connection Guide</string>
     <string name="please_run_the_receiver_program_on_your_pc_nthe_download_link_is_in_the_website_below">Please run the Receiver Program on Your PC.\nThe download link is in this website:</string>
     <string name="you_could_make_a_search_on_your_pc_to_reach_the_website">You could make a web search on your PC\nto reach the website.</string>
-    <string name="the_receiver_program_will_show_its_ip_address_try_them_in_this_app">The receiver program will show the IP address.\nType it into this app.</string>
+    <string name="the_receiver_program_will_show_its_ip_address_try_them_in_this_app">The receiver program will show the IP address.\nPlease type the IP into this app.</string>
     <string name="ok">OK</string>
     <string name="jahhow_s_app" translatable="false">Jahhow\'s App</string>
+
+    <!--Connection Conditions-->
+    <string name="connection_guide">Connection Guide</string>
+    <string name="if_your_pc_could_connect_to_wifi">If Your PC Could Connect to WiFi</string>
+    <string name="you_could_use_wifi_hotspot_on_this_device_____">Please open WiFi Hotspot on this device,\nthen connect your PC to this device through WiFi.</string>
+    <string name="if_you_have_a_wifi_router">If You Have a WiFi Router</string>
+    <string name="connect_your_pc_to_the_router_either_through_a_cable_or_wifi_then_connect_this_device_to_the_wifi">Please connect your PC to the router either through a Cable or WiFi. And connect this device to the router\'s WiFi.</string>
+    <string name="other_conditions">Other Conditions</string>
+    <string name="success_rate_is_low_njust_connect_your_pc_and_this_device_to_the_internet_then_go_to_the_next_step">Success rate is low.\nJust connect your PC and this device to the internet,\nthen go to the next step.</string>
+
+    <!--Input Text-->
+    <string name="Select_All">Select All</string>
+    <string name="cut">Cut</string>
+    <string name="Copy">Copy</string>
+    <string name="Paste">Paste</string>
 </resources>
