@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Vibrator;
 import android.support.annotation.StringRes;
 import android.support.v4.app.FragmentTransaction;
@@ -33,7 +31,7 @@ import c.jahhow.remotecontroller.msg.SCS1;
 public class MainActivity extends AppCompatActivity {
 	RemoteControllerApp remoteControllerApp;
 	MainViewModel mainViewModel;
-	ConnectorFragment connectorFragment;
+	//ConnectorFragment connectorFragment;
 
 	SharedPreferences preferences;
 	static final String name_CommonSharedPrefer = "CommonSettings",
@@ -95,10 +93,9 @@ public class MainActivity extends AppCompatActivity {
 		toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
 		mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 		if (savedInstanceState == null) {
-			//remoteControllerApp.StartBillingClient();
-			connectorFragment = new ConnectorFragment();
+			//connectorFragment = new ConnectorFragment();
 			getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-					.add(android.R.id.content, connectorFragment, FragmentTag_Connector).commit();
+					.add(android.R.id.content, new ConnectorFragment(), FragmentTag_Connector).commit();
 		}
 	}
 
@@ -137,14 +134,6 @@ public class MainActivity extends AppCompatActivity {
 	void Vibrate(long ms) {
 		if (ms > 0 && vibrator != null)
 			vibrator.vibrate(ms);
-	}
-
-	public void ButtonClick_Connect(View v) {
-		v.setEnabled(false);
-		mainViewModel.socketHandlerThread = new HandlerThread("");
-		mainViewModel.socketHandlerThread.start();
-		mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
-		mainViewModel.socketHandler.post(connectorFragment.connectRunnable);
 	}
 
 	public void SendClick_Left(View v) {
@@ -218,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
 				try {
 					mainViewModel.socketOutput.write(bytes);
 				} catch (IOException e) {
-					OnSocketError(R.string.Disconnected);
+					OnSendCommandError(R.string.Disconnected);
 				}
 			}
 		});
@@ -232,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
 				try {
 					mainViewModel.socketOutput.write(bytes);
 				} catch (IOException e) {
-					OnSocketError(R.string.Disconnected);
+					OnSendCommandError(R.string.Disconnected);
 				}
 			}
 		});
@@ -259,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
 					try {
 						mainViewModel.socketOutput.write(packet);
 					} catch (IOException e) {
-						OnSocketError(R.string.Disconnected);
+						OnSendCommandError(R.string.Disconnected);
 					}
 				}
 			});
@@ -301,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
 					try {
 						mainViewModel.socketOutput.write(msg);
 					} catch (IOException e) {
-						OnSocketError(R.string.Disconnected);
+						OnSendCommandError(R.string.Disconnected);
 					}
 				}
 			});
@@ -322,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
 				try {
 					mainViewModel.socketOutput.write(bytes);
 				} catch (IOException e) {
-					OnSocketError(R.string.Disconnected);
+					OnSendCommandError(R.string.Disconnected);
 				}
 			}
 		});
@@ -348,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
 				try {
 					mainViewModel.socketOutput.write(packet);
 				} catch (IOException e) {
-					OnSocketError(R.string.Disconnected);
+					OnSendCommandError(R.string.Disconnected);
 				}
 			}
 		});
@@ -374,13 +363,13 @@ public class MainActivity extends AppCompatActivity {
 		super.onPause();
 	}*/
 
-	@Override
+	/*@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
-		connectorFragment = (ConnectorFragment) getSupportFragmentManager().findFragmentByTag(FragmentTag_Connector);
+		//connectorFragment = (ConnectorFragment) getSupportFragmentManager().findFragmentByTag(FragmentTag_Connector);
 		super.onRestoreInstanceState(savedInstanceState);
-	}
+	}*/
 
-	void OnSocketError(@StringRes final int showToast, final int toastDuration) {
+	void OnSendCommandError(@StringRes final int showToast, final int toastDuration) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -388,7 +377,6 @@ public class MainActivity extends AppCompatActivity {
 					getSupportFragmentManager().popBackStack();
 				}
 				if (!isFinishing()) {
-					connectorFragment.buttonConnect.setEnabled(true);
 					ShowToast(showToast, toastDuration);
 				}
 				CloseConnection();
@@ -396,8 +384,8 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
-	void OnSocketError(@StringRes int showToast) {
-		OnSocketError(showToast, Toast.LENGTH_SHORT);
+	void OnSendCommandError(@StringRes int showToast) {
+		OnSendCommandError(showToast, Toast.LENGTH_SHORT);
 	}
 
 	// Please Call it on UI Thread

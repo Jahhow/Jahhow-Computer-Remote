@@ -4,7 +4,11 @@ import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.TextInputEditText;
 import android.support.transition.AutoTransition;
 import android.support.transition.TransitionManager;
@@ -47,6 +51,12 @@ public class ConnectorFragment extends Fragment {
 	boolean connectButtonEnabled;
 
 	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		Log.i(getClass().getSimpleName(), "onCreate()");
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		boolean layoutIsPossiblyAttachedToWindow = false; // if true, must not reuse layout
 		if (layout != null) {
@@ -55,7 +65,7 @@ public class ConnectorFragment extends Fragment {
 			else
 				layoutIsPossiblyAttachedToWindow = true;
 		}
-
+		Log.i(getClass().getSimpleName(), "onCreateView()");
 		/*if (layoutIsPossiblyAttachedToWindow)
 			Log.e(getClass().getSimpleName(), "layoutIsPossiblyAttachedToWindow == " + layoutIsPossiblyAttachedToWindow);*/
 		boolean shouldInflateNewLayout = layoutIsPossiblyAttachedToWindow || layout == null || savedInstanceState != null;
@@ -73,6 +83,17 @@ public class ConnectorFragment extends Fragment {
 			buttonConnect = layout.findViewById(R.id.buttonConnect);
 			buttonHelp = layout.findViewById(R.id.buttonHelp);
 			connectButtonsParentLayout = layout.findViewById(R.id.connectButtonsParentLayout);
+
+			buttonConnect.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					v.setEnabled(false);
+					mainViewModel.socketHandlerThread = new HandlerThread("");
+					mainViewModel.socketHandlerThread.start();
+					mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
+					mainViewModel.socketHandler.post(connectRunnable);
+				}
+			});
 		}
 
 		if (savedInstanceState == null) {
@@ -121,14 +142,29 @@ public class ConnectorFragment extends Fragment {
 		SavePreferences();
 	}
 
+
+	// Run it on Ui Thread
 	void AnimateShowHelpButton() {
+		TransitionManager.beginDelayedTransition(connectButtonsParentLayout, new AutoTransition().setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500).setOrdering(TransitionSet.ORDERING_TOGETHER));
+		buttonHelp.setVisibility(View.VISIBLE);
+	}
+
+	void OnErrorConnecting(@StringRes final int showToast, final int toastDuration) {
 		mainActivity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				TransitionManager.beginDelayedTransition(connectButtonsParentLayout, new AutoTransition().setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500).setOrdering(TransitionSet.ORDERING_TOGETHER));
-				buttonHelp.setVisibility(View.VISIBLE);
+				AnimateShowHelpButton();
+				if (!isRemoving()) {
+					buttonConnect.setEnabled(true);
+					mainActivity.ShowToast(showToast, toastDuration);
+				}
+				mainActivity.CloseConnection();
 			}
 		});
+	}
+
+	void OnErrorConnecting(@StringRes final int showToast) {
+		OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
 	}
 
 	/*void HideHelpButton() {
@@ -162,33 +198,31 @@ public class ConnectorFragment extends Fragment {
 				InputStream inputStream = mainViewModel.socket.getInputStream();
 				byte[] buf = new byte[ServerHeader.length];
 				if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {
-					mainActivity.OnSocketError(R.string.ConnectionError);
+					OnErrorConnecting(R.string.ConnectionError);
 					return;
 				}
 				if (!Arrays.equals(buf, ServerHeader)) {
-					mainActivity.OnSocketError(R.string.ConnectionError);
+					OnErrorConnecting(R.string.ConnectionError);
 					return;
 				}
 				if (4 != inputStream.read(buf, 0, 4)) {
-					mainActivity.OnSocketError(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
+					OnErrorConnecting(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
 					return;
 				}
 				int serverVersion = ByteBuffer.wrap(buf).getInt();
 				if (serverVersion < SupportServerVersion) {
-					mainActivity.OnSocketError(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
+					OnErrorConnecting(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
 					return;
 				} else if (serverVersion > SupportServerVersion) {
-					mainActivity.OnSocketError(R.string.PleaseUpdateThisApp);
+					OnErrorConnecting(R.string.PleaseUpdateThisApp);
 					return;
 				}
 				mainViewModel.socket.shutdownInput();
 				mainActivity.runOnUiThread(runnableOpenControllerFragment);
 			} catch (SocketTimeoutException e) {
-				AnimateShowHelpButton();
-				mainActivity.OnSocketError(R.string.TimeoutCheckIPportOrUpdate, Toast.LENGTH_LONG);
+				OnErrorConnecting(R.string.TimeoutCheckIPportOrUpdate, Toast.LENGTH_LONG);
 			} catch (Exception e) {
-				AnimateShowHelpButton();
-				mainActivity.OnSocketError(R.string.ConnectionError);
+				OnErrorConnecting(R.string.ConnectionError);
 				//Log.e("MainActivity", R.string.ConnectionError + e.toString());
 				e.printStackTrace();
 			}
