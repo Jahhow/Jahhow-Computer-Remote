@@ -22,10 +22,9 @@
 
         <!--AppCompatButton for change color-->
         <android.support.v7.widget.AppCompatButton
+            android:id="@+id/buttonOpenConnectionGuide"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="OpenBuildConnection"
-            android:shadowRadius="20"
             android:text="@string/open_connection_guide"
             android:textAllCaps="false"
             android:textSize="16sp"

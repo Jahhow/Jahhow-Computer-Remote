@@ -38,6 +38,7 @@
 
     <style name="AppTheme.LightButton" parent="Widget.AppCompat.Button">
         <item name="colorButtonNormal">#F1F1F1</item>
+        <item name="android:onClick">OpenConnectionGuide</item>
     </style>
 
     <style name="AppTheme.InputTextButton">
