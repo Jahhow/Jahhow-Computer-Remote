@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -15,8 +14,7 @@
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:paddingTop="@dimen/paddingTop_connectorRootLinearLayout"
-        android:paddingBottom="@dimen/paddingBottom_connectorRootLinearLayout"
-        tools:context=".MainActivity">
+        android:paddingBottom="@dimen/paddingBottom_connectorRootLinearLayout">
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="wrap_content"
@@ -68,21 +66,21 @@
                 android:layout_height="wrap_content"
                 android:text="@string/connect" />
 
-            <android.support.v7.widget.AppCompatImageView
+            <ImageView
                 android:id="@+id/buttonHelp"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginLeft="10dp"
-                android:alpha=".2"
+                android:alpha=".1"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="buttonShowHelpFragment"
                 android:padding="2dp"
                 android:src="@drawable/ic_help_black_24dp"
                 android:text="@string/connect"
-                android:tint="?android:textColorPrimary"
                 android:visibility="gone"
-                app:tintMode="src_in" />
+                tools:visibility="visible"
+                tools:ignore="ContentDescription" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

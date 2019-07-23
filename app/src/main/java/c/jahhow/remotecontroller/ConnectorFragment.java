@@ -14,13 +14,13 @@ import android.support.transition.AutoTransition;
 import android.support.transition.TransitionManager;
 import android.support.transition.TransitionSet;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.AppCompatImageView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -37,7 +37,7 @@ public class ConnectorFragment extends Fragment {
 	RemoteControllerApp remoteControllerApp;
 	TextInputEditText tiEditTextIp, tiEditTextPort;
 	Button buttonConnect;
-	AppCompatImageView buttonHelp;
+	ImageView buttonHelp;
 	LinearLayout connectButtonsParentLayout;
 
 	MainActivity mainActivity;

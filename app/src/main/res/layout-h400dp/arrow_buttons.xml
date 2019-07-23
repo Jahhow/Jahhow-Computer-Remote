@@ -69,7 +69,7 @@
             android:alpha=".6"
             android:background="?selectableItemBackgroundBorderless"
             android:onClick="SendClick_Up"
-            android:src="@drawable/ic_keyboard_arrow_up_black_24dp"
+            android:src="@drawable/ic_keyboard_arrow_up_black_80dp"
             tools:ignore="ContentDescription" />
 
         <LinearLayout
@@ -86,7 +86,7 @@
                 android:alpha=".6"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="SendClick_Left"
-                android:src="@drawable/ic_keyboard_arrow_left_black_24dp"
+                android:src="@drawable/ic_keyboard_arrow_left_black_80dp"
                 tools:ignore="ContentDescription,RtlHardcoded" />
 
             <ImageView
@@ -96,7 +96,7 @@
                 android:alpha=".6"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="SendClick_Right"
-                android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+                android:src="@drawable/ic_keyboard_arrow_right_black_80dp"
                 tools:ignore="ContentDescription" />
         </LinearLayout>
 
@@ -108,7 +108,7 @@
             android:alpha=".6"
             android:background="?selectableItemBackgroundBorderless"
             android:onClick="SendClick_Down"
-            android:src="@drawable/ic_keyboard_arrow_down_black_24dp"
+            android:src="@drawable/ic_keyboard_arrow_down_black_80dp"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 </LinearLayout>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3">
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/MouseleftButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:theme="@style/AppTheme.LightButton" />
+
+        <!--<FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="center"
+                android:alpha=".5"
+                android:src="@drawable/ic_mouse_left_24dp" />
+        </FrameLayout>-->
+        <c.jahhow.remotecontroller.WheelView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_arrow_up_down_24dp" />
+        </c.jahhow.remotecontroller.WheelView>
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/MouseRightButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:theme="@style/AppTheme.LightButton" />
+        <!-- <FrameLayout
+             android:layout_width="0dp"
+             android:layout_height="match_parent"
+             android:layout_weight="2">
+
+             <ImageView
+                 android:layout_width="80dp"
+                 android:layout_height="80dp"
+                 android:layout_gravity="center"
+                 android:alpha=".5"
+                 android:src="@drawable/ic_mouse_right_24dp" />
+         </FrameLayout>-->
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/ImagePauseMoving"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="?selectableItemBackground" />
+</LinearLayout>

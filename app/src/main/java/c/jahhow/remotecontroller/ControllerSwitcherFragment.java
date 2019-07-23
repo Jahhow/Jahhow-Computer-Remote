@@ -22,6 +22,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 
 	ArrowButtonFragment arrowButtonFragment = new ArrowButtonFragment();
 	SwipeControllerFragment swipeControllerFragment = new SwipeControllerFragment();
+	MotionMouseFragment motionMouseFragment = new MotionMouseFragment();
 	TouchPadFragment touchPadFragment = new TouchPadFragment();
 	InputTextFragment inputTextFragment = new InputTextFragment();
 
@@ -45,11 +46,11 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 		remoteControllerApp.SyncPurchase();
 		if (savedInstanceState == null) {
 			int preferControllerID = mainActivity.preferences.getInt(MainActivity.KeyPrefer_Controller, R.id.navButtonUseSwiper);
-			if (
-					preferControllerID != R.id.navButtonUseButtonController &&
-							preferControllerID != R.id.navButtonUseSwiper &&
-							preferControllerID != R.id.navButtonUseTouchPad &&
-							preferControllerID != R.id.navButtonSendText) {
+			if (preferControllerID != R.id.navButtonUseButtonController &&
+					preferControllerID != R.id.navButtonUseSwiper &&
+					preferControllerID != R.id.navButtonUseMotionMouse &&
+					preferControllerID != R.id.navButtonUseTouchPad &&
+					preferControllerID != R.id.navButtonSendText) {
 				mainActivity.preferences.edit().remove(MainActivity.KeyPrefer_Controller).apply();
 				preferControllerID = R.id.navButtonUseSwiper;
 			}
@@ -79,6 +80,9 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 					case R.id.navButtonUseSwiper:
 						swipeControllerFragment = (SwipeControllerFragment) showingController;
 						break;
+					case R.id.navButtonUseMotionMouse:
+						motionMouseFragment = (MotionMouseFragment) showingController;
+						break;
 					case R.id.navButtonUseTouchPad:
 						touchPadFragment = (TouchPadFragment) showingController;
 						break;
@@ -102,7 +106,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 	}
 
 	void OnPurchaseStateChanged() {
-		onNavigationItemSelected(navigationView.getSelectedItemId());
+		showFragmentById(navigationView.getSelectedItemId());
 	}
 
 	void SavePreference() {
@@ -133,7 +137,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 		super.onDestroy();
 	}
 
-	void onNavigationItemSelected(int id) {
+	void showFragmentById(int id) {
 		if (remoteControllerApp.fullAccessState == PurchaseState.PURCHASED) {
 			switch (id) {
 				case R.id.navButtonUseButtonController:
@@ -141,6 +145,9 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 					break;
 				case R.id.navButtonUseSwiper:
 					ShowFragment(swipeControllerFragment);
+					break;
+				case R.id.navButtonUseMotionMouse:
+					ShowFragment(motionMouseFragment);
 					break;
 				case R.id.navButtonUseTouchPad:
 					ShowFragment(touchPadFragment);
@@ -156,7 +163,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 
 	@Override
 	public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-		onNavigationItemSelected(item.getItemId());
+		showFragmentById(item.getItemId());
 		return true;
 	}
 }

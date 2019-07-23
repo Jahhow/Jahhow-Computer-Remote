@@ -1,6 +1,7 @@
 package c.jahhow.remotecontroller;
 
 import android.app.Activity;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.view.animation.Interpolator;
@@ -13,12 +14,15 @@ public class SwipeIndicatorView extends CardView {
 	public SwipeIndicatorView(@NonNull Activity activity, Interpolator interpolator) {
 		super(activity);
 		float density = getResources().getDisplayMetrics().density;
-		int marginDp = (int) (32 * density);
 		LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		layoutParams.setMargins(marginDp, marginDp, marginDp, marginDp);
+		int marginDp = (int) ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? 32 : 0) * density);
+		int marginDpHorizontal = (int) ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? 32 : 10) * density);
+		layoutParams.setMargins(marginDpHorizontal, marginDp, marginDpHorizontal, marginDp);
 		setLayoutParams(layoutParams);
-		setCardElevation(24 * density);
 		setRadius(36 * density);
+		float elevationDp = 24 * density;
+		setMaxCardElevation(elevationDp);
+		setCardElevation(elevationDp);
 
 		indicator = (ImageView) activity.getLayoutInflater().inflate(R.layout.swipe_direction_indicator, this, false);
 		indicator.setAlpha(0f);

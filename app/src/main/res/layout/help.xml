@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,23 +11,23 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <android.support.v7.widget.AppCompatTextView
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:lineSpacingMultiplier="1.6"
             android:text="@string/currently_works_with_windows_only"
-            android:textAlignment="center"
-            app:lineHeight="28sp" />
+            android:textAlignment="center" />
 
-        <android.support.v7.widget.AppCompatTextView
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="28sp"
+            android:lineSpacingMultiplier="1.6"
             android:text="@string/Build_a_Connection_to_Your_PC"
             android:textAlignment="center"
             android:textColor="?android:textColorPrimary"
             android:textSize="16sp"
-            android:textStyle="bold"
-            app:lineHeight="28sp" />
+            android:textStyle="bold" />
 
         <android.support.v7.widget.AppCompatButton
             android:layout_width="wrap_content"
@@ -40,16 +39,16 @@
             android:textSize="16sp"
             android:theme="@style/AppTheme.LightButton" />
 
-        <android.support.v7.widget.AppCompatTextView
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20sp"
+            android:lineSpacingMultiplier="1.6"
             android:text="@string/please_run_the_receiver_program_on_your_pc_nthe_download_link_is_in_the_website_below"
             android:textAlignment="center"
             android:textColor="?android:textColorPrimary"
             android:textSize="16sp"
-            android:textStyle="bold"
-            app:lineHeight="28sp" />
+            android:textStyle="bold" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -58,7 +57,7 @@
             android:layout_marginBottom="4sp"
             android:background="#0000">
 
-            <android.support.v7.widget.AppCompatTextView
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -70,24 +69,24 @@
                 android:textStyle="bold" />
         </FrameLayout>
 
-        <android.support.v7.widget.AppCompatTextView
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:lineSpacingMultiplier="1.6"
             android:text="@string/you_could_make_a_search_on_your_pc_to_reach_the_website"
-            android:textAlignment="center"
-            app:lineHeight="28sp" />
+            android:textAlignment="center" />
 
 
-        <android.support.v7.widget.AppCompatTextView
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="36sp"
+            android:lineSpacingMultiplier="1.6"
             android:text="@string/the_receiver_program_will_show_its_ip_address_try_them_in_this_app"
             android:textAlignment="center"
             android:textColor="?android:textColorPrimary"
             android:textSize="16sp"
-            android:textStyle="bold"
-            app:lineHeight="28sp" />
+            android:textStyle="bold" />
 
         <Button
             style="@style/Widget.AppCompat.Button.Colored"

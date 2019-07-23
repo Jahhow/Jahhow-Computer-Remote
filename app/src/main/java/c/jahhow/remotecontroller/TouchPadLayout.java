@@ -9,6 +9,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TouchPadLayout extends FrameLayout {
 
 	MainActivity mainActivity;
@@ -48,7 +51,7 @@ public class TouchPadLayout extends FrameLayout {
 	float originXdp, originYdp;
 	float origin2PointerAverageYdp;
 	int maxPointerCount, lastMaxPointerCount;
-	boolean hasMove = false;
+	boolean hasMoveEventExceedSlop = false;
 	boolean downIsInDoubleClickInterval = false;
 	boolean upIsFirstOfIntensiveClicks;// of intensive clicks
 	long upTime = 0;
@@ -60,13 +63,28 @@ public class TouchPadLayout extends FrameLayout {
 	final Object vibrateLock = new Object();
 	boolean vibrateMutex;
 
+	float pxSlop = 2 * density;
+
+	class DownEvent {
+		float X, Y;
+		int ID;
+
+		DownEvent(float x, float y, int id) {
+			X = x;
+			Y = y;
+			ID = id;
+		}
+	}
+
+	List<DownEvent> downEventList = new ArrayList<>();
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		int action = event.getActionMasked();
 		switch (action) {
 			case MotionEvent.ACTION_DOWN: {
 				if (downIsInDoubleClickInterval) {// last down
-					if (/*last*/!hasMove && event.getEventTime() - upTime < intensiveClickIntervalMs) {
+					if (/*last*/!hasMoveEventExceedSlop && event.getEventTime() - upTime < intensiveClickIntervalMs) {
 						switch (maxPointerCount) {// last
 							case 1:
 								mainActivity.SendMouseLeftDown();
@@ -105,45 +123,49 @@ public class TouchPadLayout extends FrameLayout {
 						}).start();
 					}
 				}
+				downEventList.add(new DownEvent(event.getX(), event.getY(), event.getPointerId(0)));
 				lastMaxPointerCount = maxPointerCount;
 				maxPointerCount = 1;
-				hasMove = false;
+				hasMoveEventExceedSlop = false;
 				break;
 			}
 			case MotionEvent.ACTION_MOVE: {
-				if (lastAction == MotionEvent.ACTION_MOVE) {
-					if (event.getPointerCount() == 1) {
-						float xdp = event.getX() / density;
-						float ydp = event.getY() / density;
-						float diffXdp = xdp - originXdp;
-						float diffYdp = ydp - originYdp;
-						float adjFactor = (float) GetAdjustFactor(diffXdp, diffYdp);
-						int roundAdjDiffXdp = Math.round(adjFactor * diffXdp);
-						int roundAdjDiffYdp = Math.round(adjFactor * diffYdp);
-						if (roundAdjDiffXdp != 0 || roundAdjDiffYdp != 0) {
-							mainActivity.SendMouseMove((short) roundAdjDiffXdp, (short) roundAdjDiffYdp);
-							originXdp += roundAdjDiffXdp / adjFactor;
-							originYdp += roundAdjDiffYdp / adjFactor;
+				if (hasMoveEventExceedSlop) {
+					if (lastAction == MotionEvent.ACTION_MOVE) {
+						if (event.getPointerCount() == 1) {
+							float xdp = event.getX() / density;
+							float ydp = event.getY() / density;
+							float diffXdp = xdp - originXdp;
+							float diffYdp = ydp - originYdp;
+							float adjFactor = (float) GetAdjustFactor(diffXdp, diffYdp, moveMouseAdjExp);
+							int roundAdjDiffXdp = Math.round(adjFactor * diffXdp);
+							int roundAdjDiffYdp = Math.round(adjFactor * diffYdp);
+							if (roundAdjDiffXdp != 0 || roundAdjDiffYdp != 0) {
+								mainActivity.SendMouseMove((short) roundAdjDiffXdp, (short) roundAdjDiffYdp);
+								originXdp += roundAdjDiffXdp / adjFactor;
+								originYdp += roundAdjDiffYdp / adjFactor;
+							}
+						} else if (event.getPointerCount() == 2) {
+							float averageYdp = (event.getY() + event.getY(1)) / (2 * density);
+							float diffYdp = averageYdp - origin2PointerAverageYdp;
+							double adjFactor = GetScrollAdjustFactor(diffYdp);
+							double adjDiffYdp = adjFactor * diffYdp;
+							int roundAdjDiffYdp = (int) Math.round(adjDiffYdp);
+							if (roundAdjDiffYdp != 0) {
+								mainActivity.SendMouseWheel(roundAdjDiffYdp);
+								origin2PointerAverageYdp += roundAdjDiffYdp / adjFactor;
+							}
 						}
-					} else if (event.getPointerCount() == 2) {
-						float averageYdp = (event.getY() + event.getY(1)) / (2 * density);
-						float diffYdp = averageYdp - origin2PointerAverageYdp;
-						double adjFactor = GetScrollAdjustFactor(diffYdp);
-						double adjDiffYdp = adjFactor * diffYdp;
-						int roundAdjDiffYdp = (int) Math.round(adjDiffYdp);
-						if (roundAdjDiffYdp != 0) {
-							mainActivity.SendMouseWheel(roundAdjDiffYdp);
-							origin2PointerAverageYdp += roundAdjDiffYdp / adjFactor;
+					} else {
+						//hasMoveEventExceedSlop = true;
+						if (event.getPointerCount() == 2) {
+							origin2PointerAverageYdp = (event.getY() + event.getY(1)) / (2 * density);
+						} else if (event.getPointerCount() == 1) {
+							originXdp = event.getX() / density;
+							originYdp = event.getY() / density;
 						}
 					}
 				} else {
-					hasMove = true;
-					if (event.getPointerCount() == 2) {
-						origin2PointerAverageYdp = (event.getY() + event.getY(1)) / (2 * density);
-					} else if (event.getPointerCount() == 1) {
-						originXdp = event.getX() / density;
-						originYdp = event.getY() / density;
-					}
 				}
 				break;
 			}
@@ -160,7 +182,7 @@ public class TouchPadLayout extends FrameLayout {
 					}
 					if (upIsFirstOfIntensiveClicks) {//last
 						upIsFirstOfIntensiveClicks = false;
-						if (!hasMove) {
+						if (!hasMoveEventExceedSlop) {
 							boolean shouldSendAClick = false;
 							if (vibrateOnDownOnly) {
 								synchronized (vibrateLock) {
@@ -187,7 +209,7 @@ public class TouchPadLayout extends FrameLayout {
 					}
 				} else {
 					upIsFirstOfIntensiveClicks = true;
-					if (!hasMove) {
+					if (!hasMoveEventExceedSlop) {
 						switch (maxPointerCount) {
 							case 1:
 								mainActivity.SendMouseLeftDown();
@@ -233,6 +255,8 @@ public class TouchPadLayout extends FrameLayout {
 				}
 				break;
 			case MotionEvent.ACTION_POINTER_DOWN:
+				int index = event.getActionIndex();
+				downEventList.add(new DownEvent(event.getX(index),event.getY(index),event.getPointerId(index)));
 				int pointerCount = event.getPointerCount();
 				if (maxPointerCount < pointerCount) maxPointerCount = pointerCount;
 				break;
@@ -251,7 +275,7 @@ public class TouchPadLayout extends FrameLayout {
 
 	double moveMouseAdjExp = 1.2;
 
-	double GetAdjustFactor(double dxDp, double dyDp) {
-		return Math.pow(dxDp * dxDp + dyDp * dyDp, moveMouseAdjExp - 1);
+	static double GetAdjustFactor(double dxDp, double dyDp, double expFactor) {
+		return Math.pow(dxDp * dxDp + dyDp * dyDp, expFactor - 1);
 	}
 }
