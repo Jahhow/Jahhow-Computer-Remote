@@ -72,7 +72,7 @@
                 android:layout_height="48dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginLeft="10dp"
-                android:alpha=".1"
+                android:alpha=".12"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="buttonShowHelpFragment"
                 android:padding="2dp"

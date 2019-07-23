@@ -9,10 +9,6 @@
         android:icon="@drawable/ic_slides_24dp"
         android:title="@string/swipe" />
     <item
-        android:id="@+id/navButtonUseMotionMouse"
-        android:icon="@drawable/ic_pointer_24dp"
-        android:title="@string/motion_mouse" />
-    <item
         android:id="@+id/navButtonUseTouchPad"
         android:icon="@drawable/ic_pointer_24dp"
         android:title="@string/touchPad" />
