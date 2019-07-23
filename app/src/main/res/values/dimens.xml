@@ -2,4 +2,8 @@
 <resources>
     <dimen name="paddingTop_connectorRootLinearLayout">16dp</dimen>
     <dimen name="paddingBottom_connectorRootLinearLayout">30dp</dimen>
+    <dimen name="lineSpacingExtra_helpTitle2">16sp</dimen>
+    <dimen name="CompatMarginBottom_lineSpacing_helpTitle2">-16sp</dimen>
+    <dimen name="lineSpacingExtra_helpText">16sp</dimen>
+    <dimen name="CompatMarginBottom_lineSpacing_helpText">-16sp</dimen>
 </resources>

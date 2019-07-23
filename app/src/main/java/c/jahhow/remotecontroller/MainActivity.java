@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
 			if (remoteControllerApp.skuDetailsFullAccess == null) {
 				remoteControllerApp.fetchFullAccessSkuListener = new RemoteControllerApp.FetchFullAccessSkuListener() {
 					@Override
-					public void onSkuDetailsReady() {
+					public void onSkuDetailsResponse() {
 						if (remoteControllerApp.skuDetailsFullAccess == null) {
 							Toast.makeText(getApplicationContext(), R.string.FailedToReachGooglePlay, Toast.LENGTH_SHORT).show();
 						} else {
@@ -63,13 +63,13 @@ public class MainActivity extends AppCompatActivity {
 				};
 				remoteControllerApp.SyncPurchase();
 				if (remoteControllerApp.fullAccessState != PurchaseState.UNSPECIFIED_STATE) {
-					remoteControllerApp.OpenPlayStoreManageSubscription();
+					remoteControllerApp.OpenPlayStoreManageSubscription(this);
 				}
 			} else {
 				remoteControllerApp.billingClient.launchBillingFlow(this, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetailsFullAccess).build());
 			}
 		} else {
-			remoteControllerApp.OpenPlayStoreManageSubscription();
+			remoteControllerApp.OpenPlayStoreManageSubscription(this);
 		}
 	}
 
@@ -206,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
 			public void run() {
 				try {
 					mainViewModel.socketOutput.write(bytes);
+					//mainViewModel.socketOutput.flush();
 				} catch (IOException e) {
 					OnSendCommandError(R.string.Disconnected);
 				}

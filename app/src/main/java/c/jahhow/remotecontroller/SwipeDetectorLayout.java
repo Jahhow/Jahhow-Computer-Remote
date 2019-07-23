@@ -12,17 +12,17 @@ public class SwipeDetectorLayout extends FrameLayout {
 
 	MainActivity mainActivity;
 	int movingChildIndex = 0;
-	SwipeIndicatorView movingChild;
+	SwipeCardView movingChild;
 	Interpolator interpolator = new DecelerateInterpolator(2);
 
 	public SwipeDetectorLayout(MainActivity mainActivity) {
 		super(mainActivity);
-		movingChild = new SwipeIndicatorView(mainActivity, interpolator);
+		movingChild = new SwipeCardView(mainActivity, interpolator);
 		addView(movingChild);
-		addView(new SwipeIndicatorView(mainActivity, interpolator));
-		addView(new SwipeIndicatorView(mainActivity, interpolator));
-		addView(new SwipeIndicatorView(mainActivity, interpolator));
-		addView(new SwipeIndicatorView(mainActivity, interpolator));
+		addView(new SwipeCardView(mainActivity, interpolator));
+		addView(new SwipeCardView(mainActivity, interpolator));
+		addView(new SwipeCardView(mainActivity, interpolator));
+		addView(new SwipeCardView(mainActivity, interpolator));
 		this.mainActivity = mainActivity;
 	}
 
@@ -236,7 +236,7 @@ public class SwipeDetectorLayout extends FrameLayout {
 
 	void ReadyNextChild() {
 		movingChildIndex = (movingChildIndex + 1) % getChildCount();
-		movingChild = (SwipeIndicatorView) getChildAt(movingChildIndex);
+		movingChild = (SwipeCardView) getChildAt(movingChildIndex);
 		movingChild.Reset(false);
 		ShowView(movingChild);
 	}
@@ -246,15 +246,15 @@ public class SwipeDetectorLayout extends FrameLayout {
 		if (absDiffX > pxSlop | absDiffY > pxSlop) {
 			if (absDiffY > absDiffX) {
 				if (diffY > 0) {
-					movingChild.Indicate(SwipeIndicatorView.IndicatorUp);
+					movingChild.Indicate(SwipeCardView.IndicatorUp);
 				} else {
-					movingChild.Indicate(SwipeIndicatorView.IndicatorDown);
+					movingChild.Indicate(SwipeCardView.IndicatorDown);
 				}
 			} else {
 				if (diffX > 0) {
-					movingChild.Indicate(SwipeIndicatorView.IndicatorLeft);
+					movingChild.Indicate(SwipeCardView.IndicatorLeft);
 				} else {
-					movingChild.Indicate(SwipeIndicatorView.IndicatorRight);
+					movingChild.Indicate(SwipeCardView.IndicatorRight);
 				}
 			}
 		} else {

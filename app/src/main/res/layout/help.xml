@@ -12,23 +12,15 @@
         android:padding="24dp">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/currently_works_with_windows_only"
-            android:textAlignment="center" />
+            style="@style/AppTheme.Help_Text"
+            android:text="@string/currently_works_with_windows_only" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/AppTheme.Help_Text.Title"
             android:layout_marginTop="28sp"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/Build_a_Connection_to_Your_PC"
-            android:textAlignment="center"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:text="@string/Build_a_Connection_to_Your_PC" />
 
+        <!--AppCompatButton for change color-->
         <android.support.v7.widget.AppCompatButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -40,15 +32,9 @@
             android:theme="@style/AppTheme.LightButton" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/AppTheme.Help_Text.Title"
             android:layout_marginTop="20sp"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/please_run_the_receiver_program_on_your_pc_nthe_download_link_is_in_the_website_below"
-            android:textAlignment="center"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:text="@string/please_run_the_receiver_program_on_your_pc_nthe_download_link_is_in_the_website_below" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -72,23 +58,14 @@
         </FrameLayout>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/you_could_make_a_search_on_your_pc_to_reach_the_website"
-            android:textAlignment="center" />
+            style="@style/AppTheme.Help_Text"
+            android:text="@string/you_could_make_a_search_on_your_pc_to_reach_the_website" />
 
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/AppTheme.Help_Text.Title"
             android:layout_marginTop="36sp"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/the_receiver_program_will_show_its_ip_address_try_them_in_this_app"
-            android:textAlignment="center"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:text="@string/the_receiver_program_will_show_its_ip_address_try_them_in_this_app" />
 
         <Button
             style="@style/Widget.AppCompat.Button.Colored"

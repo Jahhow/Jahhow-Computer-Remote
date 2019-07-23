@@ -95,7 +95,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			if (showingController != null)
 				fragmentTransaction.remove(showingController);
-			fragmentTransaction.add(R.id.ControllerFragmentContainer, fragment).commit();
+			fragmentTransaction.add(R.id.ControllerFragmentContainer, fragment).commitAllowingStateLoss();
 			showingController = fragment;
 		}
 	}

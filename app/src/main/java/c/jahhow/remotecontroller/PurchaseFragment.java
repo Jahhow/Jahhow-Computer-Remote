@@ -1,5 +1,6 @@
 package c.jahhow.remotecontroller;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,6 +16,7 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase.PurchaseState;
 
 public class PurchaseFragment extends Fragment {
+	Activity activity;
 	ControllerSwitcherFragment controllerSwitcherFragment;
 	RemoteControllerApp remoteControllerApp;
 	Button purchaseButton;
@@ -24,7 +26,9 @@ public class PurchaseFragment extends Fragment {
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.purchase, container, false);
-		remoteControllerApp = (RemoteControllerApp) getActivity().getApplication();
+		activity = getActivity();
+		assert activity != null;
+		remoteControllerApp = (RemoteControllerApp) activity.getApplication();
 		subtitle = view.findViewById(R.id.purchaseDescription);
 		purchaseButton = view.findViewById(R.id.purchaseButton);
 		if (remoteControllerApp.skuDetailsFullAccess != null) {
@@ -32,7 +36,7 @@ public class PurchaseFragment extends Fragment {
 		} else {
 			remoteControllerApp.fetchFullAccessSkuListener = new RemoteControllerApp.FetchFullAccessSkuListener() {
 				@Override
-				public void onSkuDetailsReady() {
+				public void onSkuDetailsResponse() {
 					// This is called only when SyncPurchase = UNSPECIFIED_STATE
 
 					if (remoteControllerApp.skuDetailsFullAccess != null) {
@@ -49,7 +53,7 @@ public class PurchaseFragment extends Fragment {
 					switch (remoteControllerApp.fullAccessState) {
 						case PurchaseState.PENDING:
 							SetUiForNotPurchased();
-							remoteControllerApp.OpenPlayStoreManageSubscription();
+							remoteControllerApp.OpenPlayStoreManageSubscription(activity);
 							break;
 						case PurchaseState.PURCHASED:
 							controllerSwitcherFragment.OnPurchaseStateChanged();
@@ -68,9 +72,9 @@ public class PurchaseFragment extends Fragment {
 			@Override
 			public void onClick(View v) {
 				if (remoteControllerApp.fullAccessState == PurchaseState.PENDING)
-					remoteControllerApp.OpenPlayStoreManageSubscription();
+					remoteControllerApp.OpenPlayStoreManageSubscription(activity);
 				else
-					remoteControllerApp.billingClient.launchBillingFlow(getActivity(), BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetailsFullAccess).build());
+					remoteControllerApp.billingClient.launchBillingFlow(activity, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetailsFullAccess).build());
 			}
 		});
 	}

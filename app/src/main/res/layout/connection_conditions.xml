@@ -11,73 +11,41 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <android.support.v7.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:lineSpacingMultiplier="1.6"
+        <TextView
+            style="@style/AppTheme.Help_Text.Title"
             android:text="@string/connection_guide"
-            android:textAlignment="center"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textSize="20sp" />
 
-        <android.support.v7.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <TextView
+            style="@style/AppTheme.Help_Text.Title"
             android:layout_marginTop="28sp"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/if_your_pc_could_connect_to_wifi"
-            android:textAlignment="center"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:text="@string/if_your_pc_could_connect_to_wifi" />
 
-        <android.support.v7.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10sp"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/you_could_use_wifi_hotspot_on_this_device_____"
-            android:textAlignment="center" />
+        <TextView
+            style="@style/AppTheme.Help_Text"
+            android:layout_marginTop="14sp"
+            android:text="@string/you_could_use_wifi_hotspot_on_this_device_____" />
 
-        <android.support.v7.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <TextView
+            style="@style/AppTheme.Help_Text.Title"
             android:layout_marginTop="28sp"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/if_you_have_a_wifi_router"
-            android:textAlignment="center"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:text="@string/if_you_have_a_wifi_router" />
 
-        <android.support.v7.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10sp"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/connect_your_pc_to_the_router_either_through_a_cable_or_wifi_then_connect_this_device_to_the_wifi"
-            android:textAlignment="center" />
+        <TextView
+            style="@style/AppTheme.Help_Text"
+            android:layout_marginTop="14sp"
+            android:text="@string/connect_your_pc_to_the_router_either_through_a_cable_or_wifi_then_connect_this_device_to_the_wifi" />
 
 
-        <android.support.v7.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <TextView
+            style="@style/AppTheme.Help_Text.Title"
             android:layout_marginTop="28sp"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/other_conditions"
-            android:textAlignment="center"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:text="@string/other_conditions" />
 
-        <android.support.v7.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10sp"
-            android:lineSpacingMultiplier="1.6"
-            android:text="@string/success_rate_is_low_njust_connect_your_pc_and_this_device_to_the_internet_then_go_to_the_next_step"
-            android:textAlignment="center" />
+        <TextView
+            style="@style/AppTheme.Help_Text"
+            android:layout_marginTop="14sp"
+            android:text="@string/success_rate_is_low_njust_connect_your_pc_and_this_device_to_the_internet_then_go_to_the_next_step" />
 
         <Button
             style="@style/Widget.AppCompat.Button.Colored"

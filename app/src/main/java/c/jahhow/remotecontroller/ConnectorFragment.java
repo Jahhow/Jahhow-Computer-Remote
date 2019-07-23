@@ -235,7 +235,7 @@ public class ConnectorFragment extends Fragment {
 		public void run() {
 			mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-					.replace(android.R.id.content, controllersFragment).commit();
+					.replace(android.R.id.content, controllersFragment).commitAllowingStateLoss();
 
 			setButtonsStateOnCreateView = true;
 			connectButtonEnabled = true;

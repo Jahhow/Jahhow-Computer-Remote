@@ -9,8 +9,8 @@
         android:id="@+id/navBarControllers"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#0000"
         android:theme="@style/BottomNavigationTheme"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/controllers" />
 
     <FrameLayout

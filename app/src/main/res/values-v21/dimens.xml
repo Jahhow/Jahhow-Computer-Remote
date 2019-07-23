@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="CompatMarginBottom_lineSpacing_helpTitle2">0px</dimen>
+    <dimen name="CompatMarginBottom_lineSpacing_helpText">0px</dimen>
+</resources>

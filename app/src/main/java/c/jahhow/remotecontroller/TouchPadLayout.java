@@ -9,6 +9,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
+import java.util.ArrayList;
+
 public class TouchPadLayout extends FrameLayout {
 
 	MainActivity mainActivity;
@@ -48,7 +50,7 @@ public class TouchPadLayout extends FrameLayout {
 	float originXdp, originYdp;
 	float origin2PointerAverageYdp;
 	int maxPointerCount, lastMaxPointerCount;
-	boolean hasMove = false;
+	boolean hasMoveEventExceedSlop = false;
 	boolean downIsInDoubleClickInterval = false;
 	boolean upIsFirstOfIntensiveClicks;// of intensive clicks
 	long upTime = 0;
@@ -60,13 +62,18 @@ public class TouchPadLayout extends FrameLayout {
 	final Object vibrateLock = new Object();
 	boolean vibrateMutex;
 
+	//float pxSlop = 0;
+
+	DownEventList downEventList = new DownEventList(/*pxSlop*/);
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		int action = event.getActionMasked();
 		switch (action) {
 			case MotionEvent.ACTION_DOWN: {
+				//Log.i(getClass().getSimpleName(), "ACTION_DOWN");
 				if (downIsInDoubleClickInterval) {// last down
-					if (/*last*/!hasMove && event.getEventTime() - upTime < intensiveClickIntervalMs) {
+					if (/*last*/!hasMoveEventExceedSlop && event.getEventTime() - upTime < intensiveClickIntervalMs) {
 						switch (maxPointerCount) {// last
 							case 1:
 								mainActivity.SendMouseLeftDown();
@@ -105,49 +112,57 @@ public class TouchPadLayout extends FrameLayout {
 						}).start();
 					}
 				}
+				downEventList.clear();
+				downEventList.add(new DownEventList.DownEvent(event.getX(), event.getY(), event.getPointerId(0)));
 				lastMaxPointerCount = maxPointerCount;
 				maxPointerCount = 1;
-				hasMove = false;
+				hasMoveEventExceedSlop = false;
 				break;
 			}
 			case MotionEvent.ACTION_MOVE: {
-				if (lastAction == MotionEvent.ACTION_MOVE) {
-					if (event.getPointerCount() == 1) {
-						float xdp = event.getX() / density;
-						float ydp = event.getY() / density;
-						float diffXdp = xdp - originXdp;
-						float diffYdp = ydp - originYdp;
-						float adjFactor = (float) GetAdjustFactor(diffXdp, diffYdp, moveMouseAdjExp);
-						int roundAdjDiffXdp = Math.round(adjFactor * diffXdp);
-						int roundAdjDiffYdp = Math.round(adjFactor * diffYdp);
-						if (roundAdjDiffXdp != 0 || roundAdjDiffYdp != 0) {
-							mainActivity.SendMouseMove((short) roundAdjDiffXdp, (short) roundAdjDiffYdp);
-							originXdp += roundAdjDiffXdp / adjFactor;
-							originYdp += roundAdjDiffYdp / adjFactor;
+				//Log.i(getClass().getSimpleName(), "ACTION_MOVE");
+				if (hasMoveEventExceedSlop) {
+					if (lastAction == MotionEvent.ACTION_MOVE) {
+						if (event.getPointerCount() == 1) {
+							float xdp = event.getX() / density;
+							float ydp = event.getY() / density;
+							float diffXdp = xdp - originXdp;
+							float diffYdp = ydp - originYdp;
+							float adjFactor = (float) GetAdjustFactor(diffXdp, diffYdp, moveMouseAdjExp);
+							int roundAdjDiffXdp = Math.round(adjFactor * diffXdp);
+							int roundAdjDiffYdp = Math.round(adjFactor * diffYdp);
+							if (roundAdjDiffXdp != 0 || roundAdjDiffYdp != 0) {
+								mainActivity.SendMouseMove((short) roundAdjDiffXdp, (short) roundAdjDiffYdp);
+								originXdp += roundAdjDiffXdp / adjFactor;
+								originYdp += roundAdjDiffYdp / adjFactor;
+							}
+						} else if (event.getPointerCount() == 2) {
+							float averageYdp = (event.getY() + event.getY(1)) / (2 * density);
+							float diffYdp = averageYdp - origin2PointerAverageYdp;
+							double adjFactor = GetScrollAdjustFactor(diffYdp);
+							double adjDiffYdp = adjFactor * diffYdp;
+							int roundAdjDiffYdp = (int) Math.round(adjDiffYdp);
+							if (roundAdjDiffYdp != 0) {
+								mainActivity.SendMouseWheel(roundAdjDiffYdp);
+								origin2PointerAverageYdp += roundAdjDiffYdp / adjFactor;
+							}
 						}
-					} else if (event.getPointerCount() == 2) {
-						float averageYdp = (event.getY() + event.getY(1)) / (2 * density);
-						float diffYdp = averageYdp - origin2PointerAverageYdp;
-						double adjFactor = GetScrollAdjustFactor(diffYdp);
-						double adjDiffYdp = adjFactor * diffYdp;
-						int roundAdjDiffYdp = (int) Math.round(adjDiffYdp);
-						if (roundAdjDiffYdp != 0) {
-							mainActivity.SendMouseWheel(roundAdjDiffYdp);
-							origin2PointerAverageYdp += roundAdjDiffYdp / adjFactor;
-						}
+					} else {
+						SetMoveOrigin(event);
 					}
 				} else {
-					hasMove = true;
-					if (event.getPointerCount() == 2) {
-						origin2PointerAverageYdp = (event.getY() + event.getY(1)) / (2 * density);
-					} else if (event.getPointerCount() == 1) {
-						originXdp = event.getX() / density;
-						originYdp = event.getY() / density;
+					hasMoveEventExceedSlop = !downEventList.isEqualToMoveEvent(event);
+					if (hasMoveEventExceedSlop) {
+						//Log.i(getClass().getSimpleName(), "hasMoveEventExceedSlop = true");
+						SetMoveOrigin(event);
+					} else {
+						return true;// ignore this event. ignore lastAction = action
 					}
 				}
 				break;
 			}
 			case MotionEvent.ACTION_UP: {
+				//Log.i(getClass().getSimpleName(), "ACTION_UP");
 				upTime = event.getEventTime();
 				if (downIsInDoubleClickInterval) {
 					switch (lastMaxPointerCount) {
@@ -160,7 +175,7 @@ public class TouchPadLayout extends FrameLayout {
 					}
 					if (upIsFirstOfIntensiveClicks) {//last
 						upIsFirstOfIntensiveClicks = false;
-						if (!hasMove) {
+						if (!hasMoveEventExceedSlop) {
 							boolean shouldSendAClick = false;
 							if (vibrateOnDownOnly) {
 								synchronized (vibrateLock) {
@@ -187,7 +202,7 @@ public class TouchPadLayout extends FrameLayout {
 					}
 				} else {
 					upIsFirstOfIntensiveClicks = true;
-					if (!hasMove) {
+					if (!hasMoveEventExceedSlop) {
 						switch (maxPointerCount) {
 							case 1:
 								mainActivity.SendMouseLeftDown();
@@ -224,23 +239,49 @@ public class TouchPadLayout extends FrameLayout {
 						}).start();
 					}
 				}
+				downEventList.clear();
 				break;
 			}
-			case MotionEvent.ACTION_CANCEL:
+			case MotionEvent.ACTION_CANCEL: {
+				//Log.i(getClass().getSimpleName(), "ACTION_CANCEL");
 				if (downIsInDoubleClickInterval) {
 					downIsInDoubleClickInterval = false;
 					mainActivity.SendMouseLeftUp();
 				}
 				break;
-			case MotionEvent.ACTION_POINTER_DOWN:
+			}
+			case MotionEvent.ACTION_POINTER_DOWN: {
+				//Log.i(getClass().getSimpleName(), "ACTION_POINTER_DOWN");
+				int index = event.getActionIndex();
+				downEventList.add(new DownEventList.DownEvent(event.getX(index), event.getY(index), event.getPointerId(index)));
 				int pointerCount = event.getPointerCount();
 				if (maxPointerCount < pointerCount) maxPointerCount = pointerCount;
 				break;
-			case MotionEvent.ACTION_POINTER_UP:
+			}
+			case MotionEvent.ACTION_POINTER_UP: {
+				//Log.i(getClass().getSimpleName(), "ACTION_POINTER_UP");
+				int index = event.getActionIndex();
+				int id = event.getPointerId(index);
+				downEventList.remove(downEventList.findById(id));
 				break;
+			}
+			default: {
+				//Log.i(getClass().getSimpleName(), "MotionEvent NOT HANDLED");
+			}
 		}
 		lastAction = action;
 		return true;
+	}
+
+	private void SetMoveOrigin(MotionEvent event) {
+		int pointerCount = event.getPointerCount();
+		float Y0 = event.getY();
+		if (pointerCount == 2) {
+			origin2PointerAverageYdp = (Y0 + event.getY(1)) / (2 * density);
+		} else if (pointerCount == 1) {
+			originXdp = event.getX() / density;
+			originYdp = Y0 / density;
+		}
 	}
 
 	double scrollAdjMultiplier = 4;
@@ -253,5 +294,58 @@ public class TouchPadLayout extends FrameLayout {
 
 	static double GetAdjustFactor(double dxDp, double dyDp, double expFactor) {
 		return Math.pow(dxDp * dxDp + dyDp * dyDp, expFactor - 1);
+	}
+
+	static class DownEventList extends ArrayList<DownEventList.DownEvent> {
+		/*float squarePxSlop;
+
+		DownEventList(float pxSlop) {
+			super();
+			squarePxSlop = pxSlop * pxSlop;
+		}
+
+		boolean isMoveEventExceedSlop(MotionEvent moveEvent) {
+			for (DownEvent downEvent : this) {
+				int index = moveEvent.findPointerIndex(downEvent.ID);
+				float dx = moveEvent.getX(index) - downEvent.X;
+				float dy = moveEvent.getY(index) - downEvent.Y;
+				Log.i(TouchPadLayout.class.getSimpleName(), String.format("dx:%f dy:%f", dx, dy));
+				float dr2 = dx * dx + dy * dy;
+				if (dr2 > squarePxSlop)
+					return true;
+			}
+			return false;
+		}*/
+
+		static class DownEvent {
+			float X, Y;
+			int ID;
+
+			DownEvent(float x, float y, int id) {
+				X = x;
+				Y = y;
+				ID = id;
+			}
+		}
+
+		static int NotFound = -1;
+
+		// return list index
+		int findById(int id) {
+			for (int i = 0; i < size(); ++i) {
+				DownEvent downEvent = get(i);
+				if (downEvent.ID == id) return i;
+			}
+			return NotFound;
+		}
+
+		boolean isEqualToMoveEvent(MotionEvent moveEvent) {
+			for (DownEvent downEvent : this) {
+				int index = moveEvent.findPointerIndex(downEvent.ID);
+				if (moveEvent.getX(index) != downEvent.X || moveEvent.getY(index) != downEvent.Y)
+					return false;
+			}
+			return true;
+		}
 	}
 }

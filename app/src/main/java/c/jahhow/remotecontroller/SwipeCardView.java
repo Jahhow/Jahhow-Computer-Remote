@@ -7,17 +7,17 @@ import android.support.v7.widget.CardView;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
-public class SwipeIndicatorView extends CardView {
+public class SwipeCardView extends CardView {
 	ImageView indicator;
 	public static final int IndicatorUp = 0, IndicatorRight = 1, IndicatorDown = 2, IndicatorLeft = 3;
 
-	public SwipeIndicatorView(@NonNull Activity activity, Interpolator interpolator) {
+	public SwipeCardView(@NonNull Activity activity, Interpolator interpolator) {
 		super(activity);
 		float density = getResources().getDisplayMetrics().density;
 		LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		int marginDp = (int) ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? 32 : 0) * density);
-		int marginDpHorizontal = (int) ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? 32 : 10) * density);
-		layoutParams.setMargins(marginDpHorizontal, marginDp, marginDpHorizontal, marginDp);
+		int marginVerticalDp = (int) ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? 32 : 0) * density);
+		int marginDpHorizontal = (int) ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? 32 : 12) * density);
+		layoutParams.setMargins(marginDpHorizontal, marginVerticalDp, marginDpHorizontal, marginVerticalDp);
 		setLayoutParams(layoutParams);
 		setRadius(36 * density);
 		float elevationDp = 24 * density;
