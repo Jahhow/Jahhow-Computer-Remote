@@ -1,5 +1,6 @@
 package c.jahhow.remotecontroller;
 
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
@@ -11,7 +12,7 @@ import android.widget.FrameLayout;
 public class SwipeDetectorLayout extends FrameLayout {
 
 	MainActivity mainActivity;
-	int movingChildIndex = 0;
+	//int movingChildIndex = 0;
 	SwipeCardView movingChild;
 	Interpolator interpolator = new DecelerateInterpolator(2);
 
@@ -23,6 +24,7 @@ public class SwipeDetectorLayout extends FrameLayout {
 		addView(new SwipeCardView(mainActivity, interpolator));
 		addView(new SwipeCardView(mainActivity, interpolator));
 		addView(new SwipeCardView(mainActivity, interpolator));
+		indexLastChild = getChildCount() - 1;
 		this.mainActivity = mainActivity;
 	}
 
@@ -38,36 +40,9 @@ public class SwipeDetectorLayout extends FrameLayout {
 	@Override
 	public void addView(final View child) {
 		child.setVisibility(getChildCount() == 0 ? VISIBLE : GONE);
-		/*TranslateAnimation translateAnimation=new TranslateAnimation(TranslateAnimation.RELATIVE_TO_PARENT,);
-		translateAnimation.setStartTime(TranslateAnimation.START_ON_FIRST_FRAME);
-		translateAnimation.cancel();*/
-		child.animate().setDuration(duration)/*.setInterpolator(interpolator)*//*.setListener(new Animator.AnimatorListener() {
-			@Override
-			public void onAnimationStart(Animator animation) {
-			}
-
-			@Override
-			public void onAnimationEnd(Animator animation) {
-				onChildAnimationEnd(child);
-			}
-
-			@Override
-			public void onAnimationCancel(Animator animation) {
-			}
-
-			@Override
-			public void onAnimationRepeat(Animator animation) {
-			}
-		})*/;
+		child.animate().setDuration(duration);
 		super.addView(child);
 	}
-
-	/*void onChildAnimationEnd(View view) {
-		if (view.getTranslationX() != view.getTranslationY() && view.getAlpha() != 0 && view != movingChild) {
-			view.animate().alpha(0);
-			mainActivity.ShowToast("animate to alpha 0");
-		}
-	}*/
 
 	@Override
 	protected void onAttachedToWindow() {
@@ -78,12 +53,20 @@ public class SwipeDetectorLayout extends FrameLayout {
 
 	boolean demoing;
 
+	Runnable readyNextChildRunnable = new Runnable() {
+		@Override
+		public void run() {
+			ReadyNextChild();
+		}
+	};
+
 	void Demo() {
 		demoing = true;
 		final Interpolator demoInterpolator = new AccelerateDecelerateInterpolator();
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
+				Log.i(SwipeDetectorLayout.class.getSimpleName(), "Start DEMO LOOP");
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException ignored) {
@@ -91,62 +74,50 @@ public class SwipeDetectorLayout extends FrameLayout {
 				while (demoing) {
 					movingChild.animate().translationY(-getHeight())
 							.setInterpolator(demoInterpolator)/*.setListener(listener)*/;
-					mainActivity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							ReadyNextChild();
-						}
-					});
+					mainActivity.runOnUiThread(readyNextChildRunnable);
 
 					try {
 						Thread.sleep(250);
 					} catch (InterruptedException ignored) {
 					}
-					if (!demoing) return;
+					if (!demoing) break;
 					movingChild.animate().translationY(getHeight())
 							.setInterpolator(demoInterpolator)/*.setListener(listener)*/;
-					mainActivity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							ReadyNextChild();
-						}
-					});
+					mainActivity.runOnUiThread(readyNextChildRunnable);
 
 					try {
 						Thread.sleep(250);
 					} catch (InterruptedException ignored) {
 					}
-					if (!demoing) return;
+					if (!demoing) break;
 					movingChild.animate().translationX(-getWidth())
 							.setInterpolator(demoInterpolator)/*.setListener(listener)*/;
-					mainActivity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							ReadyNextChild();
-						}
-					});
+					mainActivity.runOnUiThread(readyNextChildRunnable);
 
 					try {
 						Thread.sleep(250);
 					} catch (InterruptedException ignored) {
 					}
-					if (!demoing) return;
+					if (!demoing) break;
 					movingChild.animate().translationX(getWidth())
 							.setInterpolator(demoInterpolator)/*.setListener(listener)*/;
-					mainActivity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							ReadyNextChild();
-						}
-					});
+					mainActivity.runOnUiThread(readyNextChildRunnable);
 
 					try {
 						Thread.sleep(3000);
 					} catch (InterruptedException ignored) {
 					}
 				}
+				Log.i(SwipeDetectorLayout.class.getSimpleName(), " End  DEMO LOOP");
 			}
 		}).start();
+	}
+
+	@Override
+	protected void onDetachedFromWindow() {
+		demoing = false;
+		Log.i(SwipeDetectorLayout.class.getSimpleName(), "onDetachedFromWindow()");
+		super.onDetachedFromWindow();
 	}
 
 	@Override
@@ -234,11 +205,15 @@ public class SwipeDetectorLayout extends FrameLayout {
 		return true;
 	}
 
+	int indexLastChild;
+
 	void ReadyNextChild() {
-		movingChildIndex = (movingChildIndex + 1) % getChildCount();
-		movingChild = (SwipeCardView) getChildAt(movingChildIndex);
+		//movingChildIndex = (movingChildIndex + 1) % getChildCount();
+		movingChild = (SwipeCardView) getChildAt(indexLastChild);
+		removeViewAt(indexLastChild);
+		addView(movingChild, 0);
 		movingChild.Reset(false);
-		ShowView(movingChild);
+		AnimateShowView(movingChild);
 	}
 
 	void IndicateDirection() {
@@ -262,7 +237,7 @@ public class SwipeDetectorLayout extends FrameLayout {
 		}
 	}
 
-	void ShowView(View view) {
+	void AnimateShowView(View view) {
 		view.animate().cancel();
 		view.setAlpha(0);
 		view.setScaleX(.8F);

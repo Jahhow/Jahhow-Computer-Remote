@@ -13,7 +13,7 @@ public abstract class LongPressAndUpDetector implements View.OnTouchListener, Vi
 	long vibrateMs;
 
 	LongPressAndUpDetector(View v, MainActivity mainActivity) {
-		this(v, 50, mainActivity);
+		this(v, 30, mainActivity);
 	}
 
 	LongPressAndUpDetector(View v, long vibrateMs, MainActivity mainActivity) {
