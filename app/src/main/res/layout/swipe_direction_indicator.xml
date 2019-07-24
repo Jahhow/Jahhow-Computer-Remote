@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/AppTheme.SwipeDirectionIndicatorStyle"
-    android:src="@drawable/ic_keyboard_arrow_up_black_150dp"
+    app:srcCompat="@drawable/ic_keyboard_arrow_up_black_150dp"
     tools:ignore="ContentDescription" />

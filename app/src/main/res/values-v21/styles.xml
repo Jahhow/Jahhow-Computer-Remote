@@ -7,6 +7,6 @@
     </style>
 
     <style name="AppTheme.SwipeDirectionIndicatorStyle" parent="BaseAppTheme.SwipeDirectionIndicatorStyle">
-        <item name="android:tint">@color/colorPrimaryDark</item>
+        <item name="tint">@color/colorPrimaryDark</item>
     </style>
 </resources>

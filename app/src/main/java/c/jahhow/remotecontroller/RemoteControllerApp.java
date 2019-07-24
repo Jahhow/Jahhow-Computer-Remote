@@ -1,11 +1,11 @@
 package c.jahhow.remotecontroller;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.Keep;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
@@ -134,7 +134,7 @@ public class RemoteControllerApp extends Application implements SkuDetailsRespon
 		}
 	}
 
-	void OpenPlayStoreManageSubscription(Activity activity) {
+	void OpenPlayStoreManageSubscription(AppCompatActivity activity) {
 		activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(ManagePlaySubsUrl)));
 	}
 

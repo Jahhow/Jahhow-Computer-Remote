@@ -139,7 +139,7 @@ public class TouchPadLayout extends FrameLayout {
 						} else if (event.getPointerCount() == 2) {
 							float averageYdp = (event.getY() + event.getY(1)) / (2 * density);
 							float diffYdp = averageYdp - origin2PointerAverageYdp;
-							double adjFactor = GetScrollAdjustFactor(diffYdp);
+							double adjFactor = scrollAdjMultiplier * GetAdjustFactor(0, diffYdp, moveMouseAdjExp);
 							double adjDiffYdp = adjFactor * diffYdp;
 							int roundAdjDiffYdp = (int) Math.round(adjDiffYdp);
 							if (roundAdjDiffYdp != 0) {
@@ -284,16 +284,12 @@ public class TouchPadLayout extends FrameLayout {
 		}
 	}
 
-	double scrollAdjMultiplier = 4;
-
-	double GetScrollAdjustFactor(double dp) {
-		return scrollAdjMultiplier * Math.pow(Math.abs(dp), moveMouseAdjExp - 1);
-	}
+	double scrollAdjMultiplier = 3;
 
 	double moveMouseAdjExp = 1.2;
 
 	static double GetAdjustFactor(double dxDp, double dyDp, double expFactor) {
-		return Math.pow(dxDp * dxDp + dyDp * dyDp, expFactor - 1);
+		return Math.pow(dxDp * dxDp + dyDp * dyDp, .5 * (expFactor - 1));
 	}
 
 	static class DownEventList extends ArrayList<DownEventList.DownEvent> {

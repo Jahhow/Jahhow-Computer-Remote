@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -74,7 +75,7 @@
                 android:alpha=".6"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="SendClick_Up"
-                android:src="@drawable/ic_keyboard_arrow_up_black_80dp"
+                app:srcCompat="@drawable/ic_keyboard_arrow_up_black_80dp"
                 tools:ignore="ContentDescription" />
 
             <LinearLayout
@@ -91,7 +92,7 @@
                     android:alpha=".6"
                     android:background="?selectableItemBackgroundBorderless"
                     android:onClick="SendClick_Left"
-                    android:src="@drawable/ic_keyboard_arrow_left_black_80dp"
+                    app:srcCompat="@drawable/ic_keyboard_arrow_left_black_80dp"
                     tools:ignore="ContentDescription,RtlHardcoded" />
 
                 <ImageView
@@ -101,7 +102,7 @@
                     android:alpha=".6"
                     android:background="?selectableItemBackgroundBorderless"
                     android:onClick="SendClick_Right"
-                    android:src="@drawable/ic_keyboard_arrow_right_black_80dp"
+                    app:srcCompat="@drawable/ic_keyboard_arrow_right_black_80dp"
                     tools:ignore="ContentDescription" />
             </LinearLayout>
 
@@ -113,7 +114,7 @@
                 android:alpha=".6"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="SendClick_Down"
-                android:src="@drawable/ic_keyboard_arrow_down_black_80dp"
+                app:srcCompat="@drawable/ic_keyboard_arrow_down_black_80dp"
                 tools:ignore="ContentDescription" />
         </LinearLayout>
     </LinearLayout>

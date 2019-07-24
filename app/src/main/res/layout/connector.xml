@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -74,11 +75,11 @@
                 android:layout_marginLeft="10dp"
                 android:alpha=".12"
                 android:background="?selectableItemBackgroundBorderless"
-                android:onClick="buttonShowHelpFragment"
+                android:onClick="ShowHelpFragment"
                 android:padding="2dp"
-                android:src="@drawable/ic_help_black_24dp"
                 android:text="@string/connect"
                 android:visibility="gone"
+                app:srcCompat="@drawable/ic_help_black_24dp"
                 tools:ignore="ContentDescription"
                 tools:visibility="visible" />
         </LinearLayout>

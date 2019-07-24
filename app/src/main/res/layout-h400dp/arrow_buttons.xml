@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:background="#0000"
+        android:background="@color/Transparent"
         android:gravity="center_horizontal"
         android:minHeight="?actionBarSize">
 
@@ -38,7 +39,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#0000"
+        android:background="@color/Transparent"
         android:gravity="center_horizontal"
         android:minHeight="?actionBarSize">
 
@@ -58,9 +59,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:translationY="-16dp"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:translationY="-16dp">
 
         <ImageView
             android:id="@+id/buttonUp"
@@ -69,7 +70,7 @@
             android:alpha=".6"
             android:background="?selectableItemBackgroundBorderless"
             android:onClick="SendClick_Up"
-            android:src="@drawable/ic_keyboard_arrow_up_black_80dp"
+            app:srcCompat="@drawable/ic_keyboard_arrow_up_black_80dp"
             tools:ignore="ContentDescription" />
 
         <LinearLayout
@@ -86,7 +87,7 @@
                 android:alpha=".6"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="SendClick_Left"
-                android:src="@drawable/ic_keyboard_arrow_left_black_80dp"
+                app:srcCompat="@drawable/ic_keyboard_arrow_left_black_80dp"
                 tools:ignore="ContentDescription,RtlHardcoded" />
 
             <ImageView
@@ -96,7 +97,7 @@
                 android:alpha=".6"
                 android:background="?selectableItemBackgroundBorderless"
                 android:onClick="SendClick_Right"
-                android:src="@drawable/ic_keyboard_arrow_right_black_80dp"
+                app:srcCompat="@drawable/ic_keyboard_arrow_right_black_80dp"
                 tools:ignore="ContentDescription" />
         </LinearLayout>
 
@@ -108,7 +109,7 @@
             android:alpha=".6"
             android:background="?selectableItemBackgroundBorderless"
             android:onClick="SendClick_Down"
-            android:src="@drawable/ic_keyboard_arrow_down_black_80dp"
+            app:srcCompat="@drawable/ic_keyboard_arrow_down_black_80dp"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 </LinearLayout>

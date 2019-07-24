@@ -25,14 +25,15 @@
     <string name="Check_Connection">請檢查連線</string>
     <string name="retry">重試</string>
     <string name="Annual_Subscription">一年訂閱</string>
+    <string name="This_device_doesnt_supportMotionMouse">此裝置不支援體感滑鼠</string>
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">目前僅支援 Windows</string>
-    <string name="Build_a_Connection_to_Your_PC">連線至您的電腦</string>
-    <string name="open_connection_guide">閱讀連線指南</string>
+    <string name="Build_a_Connection_to_Your_PC">準備連線至您的電腦</string>
+    <string name="read_connection_guide">請閱讀 連線指南</string>
     <string name="please_run_the_receiver_program_on_your_pc_nthe_download_link_is_in_the_website_below">請在電腦上執行接收器程式。\n下載連結在這個網站中：</string>
     <string name="you_could_make_a_search_on_your_pc_to_reach_the_website">您可以在電腦上搜尋到此網站</string>
-    <string name="the_receiver_program_will_show_its_ip_address_try_them_in_this_app">這個電腦程式會顯示 IP 位址。\n請在此裝置上輸入這些 IP</string>
+    <string name="the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app">這個電腦程式會顯示 IP 數字。\n請在此裝置上輸入這些 IP</string>
     <string name="ok">了解</string>
 
     <!--Connection Conditions-->

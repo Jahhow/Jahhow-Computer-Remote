@@ -12,10 +12,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
 import static c.jahhow.remotecontroller.TouchPadLayout.GetAdjustFactor;
@@ -34,8 +32,6 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 		mainActivity = (MainActivity) getActivity();
 	}
 
-	Button mouseLeft, mouseRight;
-
 	@SuppressLint("ClickableViewAccessibility")
 	@Nullable
 	@Override
@@ -45,43 +41,68 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 			rotationVectorSensor = sensorManager.getDefaultSensor(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 ? Sensor.TYPE_GAME_ROTATION_VECTOR : Sensor.TYPE_ROTATION_VECTOR);
 		}
 		if (rotationVectorSensor == null) {
-			Toast.makeText(getContext(), "This device doesn't support Motion Mouse", Toast.LENGTH_LONG).show();
+			Toast.makeText(getContext(), getContext().getString(R.string.This_device_doesnt_supportMotionMouse), Toast.LENGTH_LONG).show();
 		}
 		layout = inflater.inflate(R.layout.motion_mouse, container, false);
-		mouseLeft = layout.findViewById(R.id.MouseLeftButton);
-		mouseLeft.setOnTouchListener(new View.OnTouchListener() {
+		new TouchDownUpDetector(layout.findViewById(R.id.MouseLeftButton)) {
 			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				switch (event.getAction()) {
-					case MotionEvent.ACTION_DOWN:
-						mainActivity.SendMouseLeftDown();
-						break;
-					case MotionEvent.ACTION_UP:
-					case MotionEvent.ACTION_CANCEL:
-					case MotionEvent.ACTION_OUTSIDE:
-						mainActivity.SendMouseLeftUp();
-						break;
-				}
-				return false;
+			void OnDown() {
+				mainActivity.SendMouseLeftDown();
 			}
-		});
-		mouseRight = layout.findViewById(R.id.MouseRightButton);
-		mouseRight.setOnTouchListener(new View.OnTouchListener() {
+
 			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				switch (event.getAction()) {
-					case MotionEvent.ACTION_DOWN:
-						mainActivity.SendMouseRightDown();
-						break;
-					case MotionEvent.ACTION_UP:
-					case MotionEvent.ACTION_CANCEL:
-					case MotionEvent.ACTION_OUTSIDE:
-						mainActivity.SendMouseRightUp();
-						break;
-				}
-				return false;
+			void OnUp() {
+				mainActivity.SendMouseLeftUp();
 			}
-		});
+		};
+		new TouchDownUpDetector(layout.findViewById(R.id.MouseRightButton)) {
+			@Override
+			void OnDown() {
+				mainActivity.SendMouseRightDown();
+			}
+
+			@Override
+			void OnUp() {
+				mainActivity.SendMouseRightUp();
+			}
+		};
+		new TouchDownUpDetector(layout.findViewById(R.id.ImagePauseMoving)) {
+			@Override
+			void OnDown() {
+				PauseMovingMouse();
+			}
+
+			@Override
+			void OnUp() {
+				ResumeMovingMouse();
+			}
+		};
+		new TouchDownUpDetector(layout.findViewById(R.id.imageScroll)) {
+			@Override
+			void OnDown() {
+				scroll = true;
+				hasSetOrigin = false;
+			}
+
+			@Override
+			void OnUp() {
+				scroll = false;
+				hasSetOrigin = false;
+			}
+		};
+		new TouchDownUpDetector(layout.findViewById(R.id.imageDriftScroll)) {
+			@Override
+			void OnDown() {
+				driftScroll = true;
+				hasSetOrigin = false;
+			}
+
+			@Override
+			void OnUp() {
+				driftScroll = false;
+				hasSetOrigin = false;
+			}
+		};
 		return layout;
 	}
 
@@ -97,7 +118,7 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 		super.onPause();
 		if (rotationVectorSensor != null)
 			sensorManager.unregisterListener(this);
-		hasLastRotateZ = false;
+		hasSetOrigin = false;
 	}
 
 	float speed = 512;
@@ -108,45 +129,80 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 
 	double originAcosZ;
 	float originRotateZ;
-	boolean hasLastRotateZ = false;
+	boolean hasSetOrigin = false;
+	boolean pauseMovingMouse = false;
+	boolean scroll = false;
+	boolean driftScroll = false;
 
+	double scrollAdjMultiplier = 3;
 	double moveMouseAdjExp = 1.2;
-	float upperBoundZ = .9f;
+	float upperBoundZ = .9375f;
 	float _1minusUpperBoundZ = 1 - upperBoundZ;
+	float square_1minusUpperBoundZ = _1minusUpperBoundZ * _1minusUpperBoundZ;
+
+	void PauseMovingMouse() {
+		hasSetOrigin = false;
+		pauseMovingMouse = true;
+	}
+
+	void ResumeMovingMouse() {
+		pauseMovingMouse = false;
+	}
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		if (hasLastRotateZ) {
-			SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
-			MatrixMultiply(rotationMatrix, mainVector, rotatedVector);
-			float rotateZ = (float) Math.atan2(rotatedVector[0], rotatedVector[1]);
-			float diffRotateZ = rotateZ - originRotateZ;
-			if (diffRotateZ > Math.PI) {
-				diffRotateZ -= 2 * Math.PI;
-			} else if (diffRotateZ < -Math.PI) {
-				diffRotateZ += 2 * Math.PI;
+		if (!pauseMovingMouse) {
+			if (hasSetOrigin) {
+				SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+				MatrixMultiply(rotationMatrix, mainVector, rotatedVector);
+				float rotateZ = (float) Math.atan2(rotatedVector[0], rotatedVector[1]);
+				float z = rotatedVector[2];
+
+				double diffRotateZdp;
+				if (scroll | driftScroll) {
+					diffRotateZdp = 0;
+				} else {
+					float diffRotateZ = rotateZ - originRotateZ;
+					if (diffRotateZ > Math.PI) {
+						diffRotateZ -= 2 * Math.PI;
+					} else if (diffRotateZ < -Math.PI) {
+						diffRotateZ += 2 * Math.PI;
+					}
+					diffRotateZdp = diffRotateZ * speed;// if float, can see significant drifting
+					float absZ = Math.abs(z);
+					if (absZ > upperBoundZ) {
+						float r = 1 - absZ;
+						diffRotateZdp = diffRotateZdp * r * r / (square_1minusUpperBoundZ);
+					}
+				}
+				float diffArcCosZdp = (float) ((Math.acos(z) - originAcosZ) * speed /* * Math.PI / 2*/);// *PI/2 is for converting unit to be as adjustedDiffRotateZ
+
+				if (driftScroll) {
+					mainActivity.SendMouseWheel(Math.round(diffArcCosZdp * .1f));
+				} else {
+					float adjFactor = (float) GetAdjustFactor(diffRotateZdp, diffArcCosZdp, moveMouseAdjExp);
+					if (scroll) {
+						adjFactor *= scrollAdjMultiplier;
+					}
+					int roundAdjDiffRotateZdp = (int) Math.round(adjFactor * diffRotateZdp);
+					int roundAdjDiffArcCosZdp = Math.round(adjFactor * diffArcCosZdp);
+					if (roundAdjDiffRotateZdp != 0 || roundAdjDiffArcCosZdp != 0) {
+						if (scroll) {
+							mainActivity.SendMouseWheel(roundAdjDiffArcCosZdp);
+						} else {
+							mainActivity.SendMouseMove((short) roundAdjDiffRotateZdp, (short) roundAdjDiffArcCosZdp);
+						}
+						originRotateZ += roundAdjDiffRotateZdp / (adjFactor * speed);
+						originAcosZ += roundAdjDiffArcCosZdp / (adjFactor * speed);
+					}
+				}
+			} else {
+				SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+				MatrixMultiply(rotationMatrix, mainVector, rotatedVector);
+				originRotateZ = (float) Math.atan2(rotatedVector[0], rotatedVector[1]);
+				originAcosZ = Math.acos(rotatedVector[2]);
+				hasSetOrigin = true;
 			}
-			float z = rotatedVector[2];
-			float diffRotateZdp = diffRotateZ * speed;
-			float absZ = Math.abs(z);
-			if (absZ > upperBoundZ) {
-				diffRotateZdp *= (1 - absZ) / (_1minusUpperBoundZ);
-			}
-			float diffArcCosZdp = (float) ((Math.acos(z) - originAcosZ) * speed /* * Math.PI / 2*/);// *PI/2 is for converting unit to be as adjustedDiffRotateZ
-			float adjFactor = (float) GetAdjustFactor(diffRotateZdp, diffArcCosZdp, moveMouseAdjExp);
-			int roundAdjDiffRotateZdp = Math.round(adjFactor * diffRotateZdp);
-			int roundAdjDiffArcCosZdp = Math.round(adjFactor * diffArcCosZdp);
-			if (roundAdjDiffRotateZdp != 0 || roundAdjDiffArcCosZdp != 0) {
-				mainActivity.SendMouseMove((short) roundAdjDiffRotateZdp, (short) roundAdjDiffArcCosZdp);
-				originRotateZ += roundAdjDiffRotateZdp / (adjFactor * speed);
-				originAcosZ += roundAdjDiffArcCosZdp / (adjFactor * speed);
-			}
-		} else {
-			SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
-			MatrixMultiply(rotationMatrix, mainVector, rotatedVector);
-			originRotateZ = (float) Math.atan2(rotatedVector[0], rotatedVector[1]);
-			originAcosZ = Math.acos(rotatedVector[2]);
-			hasLastRotateZ = true;
 		}
 	}
 

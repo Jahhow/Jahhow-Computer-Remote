@@ -42,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
 			KeyPrefer_Swiped = "4",
 			KeyPrefer_InputText = "5",
 			KeyPrefer_VibrateOnDown = "6",
-			KeyPrefer_ShowHelpButton = "7";
+			KeyPrefer_ShowHelpButton = "7",
+			KeyPrefer_ShowHelpOnCreate = "8";
 
 	Toast toast;
 	Vibrator vibrator;
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
 	static final String FragmentTag_Connector = "0";
 
-	@SuppressLint({"ShowToast", "InflateParams"})
+	@SuppressLint("ShowToast")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -94,8 +95,10 @@ public class MainActivity extends AppCompatActivity {
 		mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 		if (savedInstanceState == null) {
 			//connectorFragment = new ConnectorFragment();
-			getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+			getSupportFragmentManager().beginTransaction()//.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.add(android.R.id.content, new ConnectorFragment(), FragmentTag_Connector).commit();
+			if (preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
+				ShowHelpFragment(null);
 		}
 	}
 
@@ -115,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(JahhowAppWebsite)));
 	}
 
-	public void buttonShowHelpFragment(View v) {
+	public void ShowHelpFragment(View v) {
 		getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 				.addToBackStack(null)
 				.replace(android.R.id.content, new HelpFragment()).commit();
@@ -388,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
 		if (mainViewModel.socket != null) {
 			mainViewModel.socketHandlerThread.quit();
 			mainViewModel.socketHandlerThread = null;
-			mainViewModel.socketHandler = null;//todo
+			mainViewModel.socketHandler = null;
 			try {
 				mainViewModel.socket.close();
 			} catch (Exception e) {

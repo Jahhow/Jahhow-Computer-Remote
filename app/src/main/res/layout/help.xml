@@ -25,7 +25,7 @@
             android:id="@+id/buttonOpenConnectionGuide"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/open_connection_guide"
+            android:text="@string/read_connection_guide"
             android:textAllCaps="false"
             android:textSize="16sp"
             android:theme="@style/AppTheme.LightButton" />
@@ -64,7 +64,7 @@
         <TextView
             style="@style/AppTheme.Help_Text.Title"
             android:layout_marginTop="36sp"
-            android:text="@string/the_receiver_program_will_show_its_ip_address_try_them_in_this_app" />
+            android:text="@string/the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app" />
 
         <Button
             style="@style/Widget.AppCompat.Button.Colored"

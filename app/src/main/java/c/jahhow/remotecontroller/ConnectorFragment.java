@@ -1,6 +1,5 @@
 package c.jahhow.remotecontroller;
 
-import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +13,7 @@ import android.support.transition.AutoTransition;
 import android.support.transition.TransitionManager;
 import android.support.transition.TransitionSet;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -167,16 +167,6 @@ public class ConnectorFragment extends Fragment {
 		OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
 	}
 
-	/*void HideHelpButton() {
-		mainActivity.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				mainActivity.runOnUiThread(TransitionManager.beginDelayedTransition(connectButtonsParentLayout, new AutoTransition().setInterpolator(new AccelerateDecelerateInterpolator()));
-				buttonHelp.setVisibility(View.GONE);
-			}
-		});
-	}*/
-
 	static final byte[] Header = {'R', 'C', 'R', 'H'};
 	static final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
 	static final int SupportServerVersion = 1;
@@ -240,6 +230,8 @@ public class ConnectorFragment extends Fragment {
 			setButtonsStateOnCreateView = true;
 			connectButtonEnabled = true;
 			helpButtonVisibility = View.GONE;
+
+			preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowHelpOnCreate, false).apply();
 		}
 	};
 }
