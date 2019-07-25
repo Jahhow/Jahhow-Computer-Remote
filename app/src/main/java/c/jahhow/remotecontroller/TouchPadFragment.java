@@ -12,8 +12,8 @@ public class TouchPadFragment extends Fragment {
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		MainActivity mainActivity = (MainActivity) getActivity();
-		TouchPadLayout touchPadLayout = (TouchPadLayout) inflater.inflate(R.layout.touchpad_layout, container, false);
-		touchPadLayout.Initialize(mainActivity);
-		return touchPadLayout;
+		TouchPadView touchPadView = (TouchPadView) inflater.inflate(R.layout.touchpad_layout, container, false);
+		touchPadView.Initialize(mainActivity);
+		return touchPadView;
 	}
 }

@@ -11,25 +11,25 @@ import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 
-public class TouchPadLayout extends FrameLayout {
+public class TouchPadView extends FrameLayout {
 
 	MainActivity mainActivity;
 	boolean vibrateOnDownOnly;
 
-	public TouchPadLayout(@NonNull Context context) {
+	public TouchPadView(@NonNull Context context) {
 		super(context);
 	}
 
-	public TouchPadLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
+	public TouchPadView(@NonNull Context context, @Nullable AttributeSet attrs) {
 		super(context, attrs);
 	}
 
-	public TouchPadLayout(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+	public TouchPadView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
 
 	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-	public TouchPadLayout(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+	public TouchPadView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 	}
 

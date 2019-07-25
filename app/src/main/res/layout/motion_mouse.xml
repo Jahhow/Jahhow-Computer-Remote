@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
+    android:keepScreenOn="true"
     android:orientation="vertical">
 
     <LinearLayout
@@ -29,24 +30,20 @@
 
             <ImageView
                 android:id="@+id/imageScroll"
+                style="@style/AppTheme.ImageViewButton"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="3"
-                android:background="?selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                app:srcCompat="@drawable/ic_arrow_up_down_24dp"
+                app:srcCompat="@drawable/ic_motion_scroll_24dp"
                 tools:ignore="ContentDescription" />
 
             <ImageView
                 android:id="@+id/imageDriftScroll"
+                style="@style/AppTheme.ImageViewButton"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:background="?selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                app:srcCompat="@drawable/ic_arrow_up_down_24dp"
+                app:srcCompat="@drawable/ic_motion_drift_scroll_24dp"
                 tools:ignore="ContentDescription" />
         </LinearLayout>
 
@@ -56,28 +53,14 @@
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:theme="@style/AppTheme.LightButton" />
-        <!-- <FrameLayout
-             android:layout_width="0dp"
-             android:layout_height="match_parent"
-             android:layout_weight="2">
-
-             <ImageView
-                 android:layout_width="80dp"
-                 android:layout_height="80dp"
-                 android:layout_gravity="center"
-                 android:alpha=".5"
-                 android:src="@drawable/ic_mouse_right_24dp" />
-         </FrameLayout>-->
     </LinearLayout>
 
     <ImageView
         android:id="@+id/ImagePauseMoving"
+        style="@style/AppTheme.ImageViewButton"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="?selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
         android:scaleType="center"
         app:srcCompat="@drawable/ic_pause_black_24dp"
         tools:ignore="ContentDescription" />
