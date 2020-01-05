@@ -33,7 +33,7 @@ public class MotionMouseCardView extends CardView {
         super(context, attrs, defStyleAttr);
     }
 
-    public void a(int i) {
+    public void Indicate(int i) {
         View view;
         if (!this.t) {
             if (i == 0) {
@@ -66,8 +66,8 @@ public class MotionMouseCardView extends CardView {
         }
     }
 
-    public void a(Interpolator interpolator) {
-        V.a((CardView) this);
+    public void Init(Interpolator interpolator) {
+        MyCardView.SetupCardView(this);
         this.j = interpolator;
         c();
     }
@@ -83,7 +83,7 @@ public class MotionMouseCardView extends CardView {
     public void d() {
         if (this.t) {
             this.t = false;
-            a(this.k);
+            Indicate(this.k);
         }
     }
 }

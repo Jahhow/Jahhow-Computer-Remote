@@ -1,22 +1,20 @@
 package c.jahhow.remotecontroller;
 
-import c.jahhow.remotecontroller.MotionMouseCardView;
-
 class L implements Runnable {
 
     /* renamed from: a  reason: collision with root package name */
-    public final /* synthetic */ M f1700a;
+    public final /* synthetic */ MotionMouseLayout f1700a;
 
-    public L(M m) {
-        this.f1700a = m;
+    public L(MotionMouseLayout motionMouseLayout) {
+        this.f1700a = motionMouseLayout;
     }
 
     public void run() {
-        M m = this.f1700a;
-        m.I--;
-        MotionMouseCardView motionMouseCardView = m.f1703c;
-        if (motionMouseCardView.l == motionMouseCardView.o && m.I == 0) {
-            motionMouseCardView.a(-1);
+        MotionMouseLayout motionMouseLayout = this.f1700a;
+        motionMouseLayout.I--;
+        MotionMouseCardView motionMouseCardView = motionMouseLayout.mouseCardView;
+        if (motionMouseCardView.l == motionMouseCardView.o && motionMouseLayout.I == 0) {
+            motionMouseCardView.Indicate(-1);
         }
     }
 }

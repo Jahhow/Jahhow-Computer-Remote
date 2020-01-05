@@ -20,6 +20,6 @@ class I implements Runnable {
     }
 
     public void run() {
-        this.f1697c.f1698a.f1703c.animate().translationX(this.f1695a).setDuration(1250).setInterpolator(this.f1696b);
+        this.f1697c.f1698a.mouseCardView.animate().translationX(this.f1695a).setDuration(1250).setInterpolator(this.f1696b);
     }
 }

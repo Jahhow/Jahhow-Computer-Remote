@@ -20,6 +20,6 @@ class H implements Runnable {
     }
 
     public void run() {
-        this.f1694c.f1698a.f1703c.animate().translationY(this.f1692a).setDuration(1250).setInterpolator(this.f1693b);
+        this.f1694c.f1698a.mouseCardView.animate().translationY(this.f1692a).setDuration(1250).setInterpolator(this.f1693b);
     }
 }

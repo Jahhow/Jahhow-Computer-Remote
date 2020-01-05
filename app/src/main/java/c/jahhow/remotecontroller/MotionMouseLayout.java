@@ -9,13 +9,9 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
-import c.jahhow.remotecontroller.MainActivity;
-import c.jahhow.remotecontroller.MotionMouseCardView;
-import c.jahhow.remotecontroller.MotionMouseFragment;
-import c.jahhow.remotecontroller.R;
-import c.jahhow.remotecontroller.TouchPadView;
 
-public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListener {
+@SuppressLint("ViewConstructor")
+public class MotionMouseLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener {
     public float A;
     public float B = 0.0625f;
     public float C = 3.0f;
@@ -37,14 +33,14 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
     public MotionMouseFragment f1702b;
 
     /* renamed from: c  reason: collision with root package name */
-    public MotionMouseCardView f1703c;
+    public MotionMouseCardView mouseCardView;
 
     /* renamed from: d  reason: collision with root package name */
-    public ValueAnimator f1704d = new aa();
+    public ValueAnimator f1704d = new CompatTimeAnimator();
 
     /* renamed from: e  reason: collision with root package name */
-    public Interpolator f1705e = new DecelerateInterpolator(2.0f);
-    public Interpolator f = new AccelerateDecelerateInterpolator();
+    public Interpolator decelerateInterpolator = new DecelerateInterpolator(2.0f);
+    public Interpolator accelerateDecelerateInterpolator = new AccelerateDecelerateInterpolator();
     public int g;
     public float h;
     public float i;
@@ -66,12 +62,12 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
     public boolean y;
     public int z;
 
-    public M(MainActivity mainActivity, MotionMouseFragment motionMouseFragment) {
+    public MotionMouseLayout(MainActivity mainActivity, MotionMouseFragment motionMouseFragment) {
         super(mainActivity);
-        this.f1703c = (MotionMouseCardView) mainActivity.getLayoutInflater().inflate(R.layout.motion_mouse_card_view, this, false);
-        this.f1703c.a(this.f);
-        this.f1703c.animate();
-        addView(this.f1703c);
+        this.mouseCardView = (MotionMouseCardView) mainActivity.getLayoutInflater().inflate(R.layout.motion_mouse_card_view, this, false);
+        this.mouseCardView.Init(this.accelerateDecelerateInterpolator);
+        this.mouseCardView.animate();
+        addView(this.mouseCardView);
         setKeepScreenOn(true);
         this.f1704d.addUpdateListener(this);
         this.f1701a = mainActivity;
@@ -84,8 +80,8 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
     }
 
     public void a(int i2) {
-        this.f1703c.a(i2);
-        this.f1703c.animate().setInterpolator(this.f1705e).setDuration(this.r).translationX(0.0f).translationY(0.0f);
+        this.mouseCardView.Indicate(i2);
+        this.mouseCardView.animate().setInterpolator(this.decelerateInterpolator).setDuration(this.r).translationX(0.0f).translationY(0.0f);
     }
 
     public void a(MotionEvent motionEvent, int i2) {
@@ -108,14 +104,14 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
 
     public void onAnimationUpdate(ValueAnimator valueAnimator) {
         if (this.x) {
-            MotionMouseCardView motionMouseCardView = this.f1703c;
+            MotionMouseCardView motionMouseCardView = this.mouseCardView;
             N n2 = this.F;
             n2.f1706a = (n2.f1706a * n2.f1708c) + (this.E * n2.f1707b);
             motionMouseCardView.setTranslationY(n2.f1706a * this.C);
             this.E = 0.0f;
             return;
         }
-        MotionMouseCardView motionMouseCardView2 = this.f1703c;
+        MotionMouseCardView motionMouseCardView2 = this.mouseCardView;
         N n3 = this.G;
         n3.f1706a = (n3.f1706a * n3.f1708c) + (this.D * n3.f1707b);
         motionMouseCardView2.setTranslationX(n3.f1706a * this.C);
@@ -130,7 +126,7 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
 
     public void onDetachedFromWindow() {
         this.s = false;
-        Log.i(M.class.getSimpleName(), "onDetachedFromWindow()");
+        Log.i(MotionMouseLayout.class.getSimpleName(), "onDetachedFromWindow()");
         super.onDetachedFromWindow();
     }
 
@@ -168,12 +164,8 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
                             } else {
                                 this.E = y2 - this.o;
                                 double d2 = (double) (this.E / this.p);
-                                Double.isNaN(d2);
-                                Double.isNaN(d2);
                                 double a2 = TouchPadView.scrollAdjMultiplier * TouchPadView.GetAdjustFactor(0.0d, d2, this.H) * d2;
                                 double d3 = (double) this.A;
-                                Double.isNaN(d3);
-                                Double.isNaN(d3);
                                 this.A = (float) (d3 + a2);
                                 int round = Math.round(this.A);
                                 if (round != 0) {
@@ -202,14 +194,14 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
                                 if (z2) {
                                     this.f1701a.r();
                                     this.f1701a.SendMouseLeftDown();
-                                    motionMouseCardView = this.f1703c;
+                                    motionMouseCardView = this.mouseCardView;
                                 } else {
                                     this.f1701a.o();
                                     this.f1701a.q();
-                                    motionMouseCardView = this.f1703c;
+                                    motionMouseCardView = this.mouseCardView;
                                     i3 = 1;
                                 }
-                                motionMouseCardView.a(i3);
+                                motionMouseCardView.Indicate(i3);
                                 this.M = -this.M;
                                 this.L = z2;
                             }
@@ -224,11 +216,11 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
                         this.x = abs2 > abs;
                         if (this.x) {
                             this.o = y2;
-                            this.F.f1706a = this.f1703c.getTranslationY() / this.C;
+                            this.F.f1706a = this.mouseCardView.getTranslationY() / this.C;
                             this.A = 0.0f;
                         } else {
                             this.n = x2;
-                            this.G.f1706a = this.f1703c.getTranslationX() / this.C;
+                            this.G.f1706a = this.mouseCardView.getTranslationX() / this.C;
                             this.f1702b.a(0);
                             if (this.j < 0.0f) {
                                 z2 = true;
@@ -249,7 +241,7 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
                             }
                         }
                         this.f1704d.start();
-                        this.f1703c.a(i4);
+                        this.mouseCardView.Indicate(i4);
                     }
                 } else if (actionMasked == 3) {
                     a(-1);
@@ -295,13 +287,13 @@ public class M extends FrameLayout implements ValueAnimator.AnimatorUpdateListen
             this.j = 0.0f;
             this.h = motionEvent.getX();
             this.i = motionEvent.getY();
-            this.f1703c.getTranslationX();
-            this.f1703c.getTranslationY();
+            this.mouseCardView.getTranslationX();
+            this.mouseCardView.getTranslationY();
             this.g = motionEvent.getPointerId(0);
             this.v = true;
             this.l = motionEvent.getX(0);
             this.m = motionEvent.getY(0);
-            this.f1703c.animate().cancel();
+            this.mouseCardView.animate().cancel();
             this.z = 1;
             this.f1702b.a(1);
             postDelayed(this.J, (long) this.t);

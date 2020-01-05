@@ -37,8 +37,8 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-		M m = new M(mainActivity,this);
-		this.cardView = m.f1703c;
+		MotionMouseLayout motionMouseLayout = new MotionMouseLayout(mainActivity,this);
+		this.cardView = motionMouseLayout.mouseCardView;
 		if (sensorManager == null) {
 			sensorManager = (SensorManager) mainActivity.getSystemService(Context.SENSOR_SERVICE);
 			rotationVectorSensor = sensorManager.getDefaultSensor(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 ? Sensor.TYPE_GAME_ROTATION_VECTOR : Sensor.TYPE_ROTATION_VECTOR);
@@ -46,7 +46,7 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 		if (rotationVectorSensor == null) {
 			Toast.makeText(getContext(), getContext().getString(R.string.This_device_doesnt_supportMotionMouse), Toast.LENGTH_LONG).show();
 		}
-		return m;
+		return motionMouseLayout;
 	}
 
 	@Override
@@ -74,11 +74,8 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 
 	double originAcosZ;
 	float originRotateZ;
-	float diffDriftScrollZdp;
 	boolean hasSetOrigin = false;
 	boolean pauseMovingMouse = false;
-	boolean scroll = false;
-	boolean driftScroll = false;
 
 	double moveMouseAdjExp = 1.2;
 	float upperBoundZ = .9375f;
@@ -126,7 +123,7 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 				if (absZ > upperBoundZ) {
 					float r = 1 - absZ;
 					diffRotateZdp = diffRotateZdp * r * r / (square_1minusUpperBoundZ);
-					this.cardView.a(4);
+					this.cardView.Indicate(4);
 				} else {
 					this.cardView.d();
 				}

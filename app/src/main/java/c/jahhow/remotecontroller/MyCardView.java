@@ -6,31 +6,31 @@ import android.support.v7.widget.CardView;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
-public class V extends CardView {
+public class MyCardView extends CardView {
     public ImageView j;
     public float k;
     public boolean l = false;
 
-    public V(Activity mVar, Interpolator interpolator) {
+    public MyCardView(Activity mVar, Interpolator interpolator) {
         super(mVar);
-        a(this);
+        SetupCardView(this);
         this.j = (ImageView) mVar.getLayoutInflater().inflate(R.layout.swipe_direction_indicator, this, false);
         this.j.animate().setInterpolator(interpolator);
         addView(this.j);
     }
 
-    public static void a(CardView cardView) {
+    public static void SetupCardView(CardView cardView) {
         int i;
-        float f = cardView.getResources().getDisplayMetrics().density;
+        float density = cardView.getResources().getDisplayMetrics().density;
         int i2 = 0;
         cardView.setPreventCornerOverlap(false);
-        cardView.setRadius(36.0f * f);
-        float f2 = 24.0f * f;
+        cardView.setRadius(36.0f * density);
+        float f2 = 24.0f * density;
         cardView.setMaxCardElevation(f2);
         cardView.setCardElevation(f2);
         LayoutParams layoutParams = new LayoutParams(-1, -1);
         if (Build.VERSION.SDK_INT >= 21) {
-            i2 = (int) (f * 32.0f);
+            i2 = (int) (density * 32.0f);
             i = i2;
         } else {
             i = cardView.getPaddingBottom() - cardView.getPaddingLeft();
