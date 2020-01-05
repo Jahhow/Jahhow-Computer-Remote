@@ -8,10 +8,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Keep;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,32 +64,21 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 		hasSetOrigin = false;
 	}
 
-	float speed = 2048;
-	float scrollSpeed = 1.5f * speed;
-	float driftScrollSpeed = .015625f * speed;
+	float speed = 1800;
 
 	final float[]
 			mainVector = {0, 1, 0},
 			rotatedVector = new float[3];
 
-	double originAcosZ;
+	double originZ;
 	float originRotateZ;
 	boolean hasSetOrigin = false;
 	boolean pauseMovingMouse = false;
 
-	double moveMouseAdjExp = 1.2;
+	public static final double moveMouseAdjExp = 1.2;
 	float upperBoundZ = .9375f;
 	float _1minusUpperBoundZ = 1 - upperBoundZ;
 	float square_1minusUpperBoundZ = _1minusUpperBoundZ * _1minusUpperBoundZ;
-
-	void PauseMovingMouse() {
-		hasSetOrigin = false;
-		pauseMovingMouse = true;
-	}
-
-	void ResumeMovingMouse() {
-		pauseMovingMouse = false;
-	}
 
 	public void a(int pauseMovingMouse) {
 		boolean _c2 = pauseMovingMouse != 0;
@@ -111,42 +100,45 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 				float rotateZ = (float) Math.atan2(rotatedVector[0], rotatedVector[1]);
 				float z = rotatedVector[2];
 
-				double diffRotateZdp;
-				float diffRotateZ = rotateZ - originRotateZ;
-				if (diffRotateZ > Math.PI) {
-					diffRotateZ -= 2 * Math.PI;
-				} else if (diffRotateZ < -Math.PI) {
-					diffRotateZ += 2 * Math.PI;
-				}
-				diffRotateZdp = diffRotateZ;// if float, can see significant drifting
+				double diffRotateZ = NormalizeRadian(rotateZ - originRotateZ);// if use 'float', can see significant drifting
 				float absZ = Math.abs(z);
 				if (absZ > upperBoundZ) {
 					float r = 1 - absZ;
-					diffRotateZdp = diffRotateZdp * r * r / (square_1minusUpperBoundZ);
+					diffRotateZ = diffRotateZ * r * r / (square_1minusUpperBoundZ);
 					this.cardView.Indicate(4);
 				} else {
 					this.cardView.d();
 				}
 
-				float diffArcCosZdp = (float) (Math.acos(z) - originAcosZ);
+				float diffZ = (float) (Math.acos(z) - originZ);
 
-				float adjFactor = (float) GetAdjustFactor(diffRotateZdp, diffArcCosZdp, moveMouseAdjExp);
-				adjFactor *= speed;
-				int roundAdjDiffRotateZdp = (int) Math.round(adjFactor * diffRotateZdp);
-				int roundAdjDiffArcCosZdp = Math.round(adjFactor * diffArcCosZdp);
+				float adjFactor = (float) GetAdjustFactor(diffRotateZ, diffZ, moveMouseAdjExp, speed);
+				int roundAdjDiffRotateZdp = (int) Math.round(adjFactor * diffRotateZ);
+				int roundAdjDiffArcCosZdp = Math.round(adjFactor * diffZ);
 				if (roundAdjDiffRotateZdp != 0 || roundAdjDiffArcCosZdp != 0) {
 					mainActivity.SendMouseMove((short) roundAdjDiffRotateZdp, (short) roundAdjDiffArcCosZdp);
 					originRotateZ += roundAdjDiffRotateZdp / adjFactor;
-					originAcosZ += roundAdjDiffArcCosZdp / adjFactor;
+					originZ += roundAdjDiffArcCosZdp / adjFactor;
+					originRotateZ = (float) NormalizeRadian(originRotateZ);
 				}
 			} else {
 				SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
 				MatrixMultiply(rotationMatrix, mainVector, rotatedVector);
 				originRotateZ = (float) Math.atan2(rotatedVector[0], rotatedVector[1]);
-				originAcosZ = Math.acos(rotatedVector[2]);
+				originZ = Math.acos(rotatedVector[2]);
 				hasSetOrigin = true;
 			}
 		}
+	}
+
+	// Keep radian in [-PI,PI]
+	double NormalizeRadian(double radian){
+		if (radian > Math.PI) {
+			radian -= 2 * Math.PI;
+		} else if (radian < -Math.PI) {
+			radian += 2 * Math.PI;
+		}
+		return radian;
 	}
 
 	void MatrixMultiply(float[] leftM, float[] vector, float[] result) {

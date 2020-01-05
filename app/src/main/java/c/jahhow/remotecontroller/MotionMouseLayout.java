@@ -50,8 +50,8 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
     public float m;
     public float n;
     public float o;
-    public final float p = getResources().getDisplayMetrics().density;
-    public float q = (this.p * 4.0f);
+    public final float density = getResources().getDisplayMetrics().density;
+    public float q = (this.density * 4.0f);
     public long r = 800;
     public boolean s;
     public int t = 300;
@@ -163,10 +163,9 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                                 }
                             } else {
                                 this.E = y2 - this.o;
-                                double d2 = (double) (this.E / this.p);
-                                double a2 = TouchPadView.scrollAdjMultiplier * TouchPadView.GetAdjustFactor(0.0d, d2, this.H) * d2;
-                                double d3 = (double) this.A;
-                                this.A = (float) (d3 + a2);
+                                double d2 = (double) (this.E / this.density);
+                                double a2 = TouchPadView.GetAdjustFactor(0, d2, this.H, 1) * d2;
+                                this.A += a2;
                                 int round = Math.round(this.A);
                                 if (round != 0) {
                                     this.f1701a.SendMouseWheel(round);

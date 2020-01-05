@@ -1,9 +1,8 @@
 package c.jahhow.remotecontroller;
 
-import android.arch.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModel;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.view.View;
 
 import java.io.OutputStream;
 import java.net.Socket;

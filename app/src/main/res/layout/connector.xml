@@ -17,11 +17,11 @@
         android:paddingTop="@dimen/paddingTop_connectorRootLinearLayout"
         android:paddingBottom="@dimen/paddingBottom_connectorRootLinearLayout">
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-            <android.support.design.widget.TextInputEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextIp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -34,14 +34,14 @@
                 android:textSize="32sp"
                 tools:ignore="HardcodedText" />
 
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp">
 
-            <android.support.design.widget.TextInputEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextPort"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -52,7 +52,7 @@
                 android:textAlignment="center"
                 android:textSize="32sp"
                 tools:ignore="HardcodedText" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
             android:id="@+id/connectButtonsParentLayout"

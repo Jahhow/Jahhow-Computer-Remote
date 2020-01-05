@@ -13,14 +13,14 @@
         android:paddingTop="20dp"
         android:paddingBottom="20dp">
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp">
 
-            <android.support.design.widget.TextInputEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/SendTextEditText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -29,7 +29,7 @@
                 android:inputType="textMultiLine"
                 android:minWidth="280dp"
                 android:textSize="24sp" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!--FrameLayout is for clipping the selectableBackground properly-->
         <FrameLayout

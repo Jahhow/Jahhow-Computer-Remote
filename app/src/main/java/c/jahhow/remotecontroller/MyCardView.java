@@ -2,7 +2,7 @@ package c.jahhow.remotecontroller;
 
 import android.app.Activity;
 import android.os.Build;
-import android.support.v7.widget.CardView;
+import androidx.cardview.widget.CardView;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
 

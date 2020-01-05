@@ -14,7 +14,7 @@
         android:layout_weight="3"
         android:clipToPadding="false">
 
-        <android.support.v7.widget.AppCompatButton
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/MouseLeftButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -47,7 +47,7 @@
                 tools:ignore="ContentDescription" />
         </LinearLayout>
 
-        <android.support.v7.widget.AppCompatButton
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/MouseRightButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"

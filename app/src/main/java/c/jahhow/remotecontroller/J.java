@@ -13,7 +13,7 @@ public class J implements Runnable {
 
     public void run() {
         Log.i(MotionMouseLayout.class.getSimpleName(), "Start DEMO LOOP");
-        float f = this.f1698a.p * -32.0f;
+        float f = this.f1698a.density * -32.0f;
         O o = new O(5);
         try {
             Thread.sleep(1000);
