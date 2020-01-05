@@ -3,6 +3,7 @@
     <color name="White">#FFF</color>
     <color name="colorPrimaryDark">#BBB</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="colorWarning">#c62828</color>
     <color name="titleTextColor">#646464</color>
     <color name="Transparent">#0000</color>
 </resources>

@@ -2,4 +2,5 @@
 <resources>
     <dimen name="CompatMarginBottom_lineSpacing_helpTitle2">0px</dimen>
     <dimen name="CompatMarginBottom_lineSpacing_helpText">0px</dimen>
+    <dimen name="CompatMarginBottom_lineSpacing_PerpendicularWarn">0px</dimen>
 </resources>

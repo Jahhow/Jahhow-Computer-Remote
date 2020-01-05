@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<c.jahhow.remotecontroller.MotionMouseCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/pause"
+        style="@style/AppTheme.IndicatorStyle"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:srcCompat="@drawable/ic_pause_black_24dp" />
+
+    <ImageView
+        android:id="@+id/mouseRight"
+        style="@style/AppTheme.IndicatorStyle"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        app:srcCompat="@drawable/ic_mouse_right_24dp" />
+
+    <ImageView
+        android:id="@+id/mouseLeft"
+        style="@style/AppTheme.IndicatorStyle"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        app:srcCompat="@drawable/ic_mouse_left_24dp" />
+
+    <ImageView
+        android:id="@+id/scroll"
+        style="@style/AppTheme.IndicatorStyle"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:srcCompat="@drawable/ic_motion_scroll_24dp" />
+
+    <LinearLayout
+        android:id="@+id/perpendicularWarn"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:tint="@color/colorWarning"
+            app:srcCompat="@drawable/ic_warning_black_24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="@dimen/CompatMarginBottom_lineSpacing_PerpendicularWarn"
+            android:gravity="center_horizontal"
+            android:lineSpacingExtra="9sp"
+            android:text="@string/please_avoid_this_device_to_be_perpendicular"
+            android:textColor="@color/colorWarning" />
+    </LinearLayout>
+</c.jahhow.remotecontroller.MotionMouseCardView>

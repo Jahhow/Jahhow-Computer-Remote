@@ -280,6 +280,32 @@ public class MainActivity extends AppCompatActivity {
 		SendMsg(Msg.MouseRightClick);
 	}
 
+
+
+	public void m() {
+		SendMsg((byte) 3);
+	}
+
+	public void n() {
+		SendMsg((byte) 4);
+	}
+
+	public void o() {
+		SendMsg((byte) 5);
+	}
+
+	public void p() {
+		SendMsg((byte) 6);
+	}
+
+	public void q() {
+		SendMsg((byte) 7);
+	}
+
+	public void r() {
+		SendMsg((byte) 8);
+	}
+
 	public void SendMsg(final byte msg) {
 		if (mainViewModel.socketHandler != null)
 			mainViewModel.socketHandler.post(new Runnable() {
@@ -399,5 +425,9 @@ public class MainActivity extends AppCompatActivity {
 			}
 			mainViewModel.socket = null;
 		}
+	}
+
+	public void s() {
+		Vibrate(30);
 	}
 }

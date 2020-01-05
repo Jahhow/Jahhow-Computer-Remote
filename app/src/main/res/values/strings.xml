@@ -24,6 +24,7 @@
     <string name="Check_Connection">Check Connection</string>
     <string name="retry">RETRY</string>
     <string name="Annual_Subscription">Annual Subscription</string>
+    <string name="please_avoid_this_device_to_be_perpendicular">Please avoid this device being perpendicular to the ground</string>
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">Currently works with Windows only.</string>

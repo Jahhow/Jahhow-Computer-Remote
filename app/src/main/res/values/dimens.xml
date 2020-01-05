@@ -6,4 +6,5 @@
     <dimen name="CompatMarginBottom_lineSpacing_helpTitle2">-16sp</dimen>
     <dimen name="lineSpacingExtra_helpText">16sp</dimen>
     <dimen name="CompatMarginBottom_lineSpacing_helpText">-16sp</dimen>
+    <dimen name="CompatMarginBottom_lineSpacing_PerpendicularWarn">-9sp</dimen>
 </resources>

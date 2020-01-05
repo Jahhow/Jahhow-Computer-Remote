@@ -26,6 +26,7 @@
     <string name="retry">重試</string>
     <string name="Annual_Subscription">一年訂閱</string>
     <string name="This_device_doesnt_supportMotionMouse">此裝置不支援體感滑鼠</string>
+    <string name="please_avoid_this_device_to_be_perpendicular">請避免此裝置垂直於地面</string>
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">目前僅支援 Windows</string>

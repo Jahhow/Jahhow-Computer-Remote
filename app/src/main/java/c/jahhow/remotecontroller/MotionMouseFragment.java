@@ -8,6 +8,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,7 +21,7 @@ import static c.jahhow.remotecontroller.TouchPadView.GetAdjustFactor;
 
 public class MotionMouseFragment extends Fragment implements SensorEventListener {
 	MainActivity mainActivity;
-	View layout = null;
+	public MotionMouseCardView cardView;
 
 	private SensorManager sensorManager;
 	private Sensor rotationVectorSensor;
@@ -36,77 +37,16 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-		layout = inflater.inflate(R.layout.motion_mouse, container, false);
-
+		M m = new M(mainActivity,this);
+		this.cardView = m.f1703c;
 		if (sensorManager == null) {
 			sensorManager = (SensorManager) mainActivity.getSystemService(Context.SENSOR_SERVICE);
 			rotationVectorSensor = sensorManager.getDefaultSensor(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 ? Sensor.TYPE_GAME_ROTATION_VECTOR : Sensor.TYPE_ROTATION_VECTOR);
 		}
 		if (rotationVectorSensor == null) {
 			Toast.makeText(getContext(), getContext().getString(R.string.This_device_doesnt_supportMotionMouse), Toast.LENGTH_LONG).show();
-		} else {
-			new TouchDownUpDetector(layout.findViewById(R.id.MouseLeftButton)) {
-				@Override
-				void OnDown() {
-					mainActivity.SendMouseLeftDown();
-				}
-
-				@Override
-				void OnUp() {
-					mainActivity.SendMouseLeftUp();
-				}
-			};
-			new TouchDownUpDetector(layout.findViewById(R.id.MouseRightButton)) {
-				@Override
-				void OnDown() {
-					mainActivity.SendMouseRightDown();
-				}
-
-				@Override
-				void OnUp() {
-					mainActivity.SendMouseRightUp();
-				}
-			};
-			new TouchDownUpDetector(layout.findViewById(R.id.ImagePauseMoving)) {
-				@Override
-				void OnDown() {
-					PauseMovingMouse();
-				}
-
-				@Override
-				void OnUp() {
-					ResumeMovingMouse();
-				}
-			};
-			new TouchDownUpDetector(layout.findViewById(R.id.imageScroll)) {
-				@Override
-				void OnDown() {
-					scroll = true;
-					hasSetOrigin = false;
-				}
-
-				@Override
-				void OnUp() {
-					scroll = false;
-					hasSetOrigin = false;
-				}
-			};
-			new TouchDownUpDetector(layout.findViewById(R.id.imageDriftScroll)) {
-				@Override
-				void OnDown() {
-					driftScroll = true;
-					diffDriftScrollZdp = 0;
-					hasSetOrigin = false;
-				}
-
-				@Override
-				void OnUp() {
-					driftScroll = false;
-					hasSetOrigin = false;
-				}
-			};
 		}
-		return layout;
+		return m;
 	}
 
 	@Override
@@ -154,6 +94,14 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 		pauseMovingMouse = false;
 	}
 
+	public void a(int pauseMovingMouse) {
+		boolean _c2 = pauseMovingMouse != 0;
+		if (this.pauseMovingMouse != _c2) {
+			this.pauseMovingMouse = _c2;
+			this.hasSetOrigin = false;
+		}
+	}
+
 	//int i = 0;
 
 	@Override
@@ -167,50 +115,32 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 				float z = rotatedVector[2];
 
 				double diffRotateZdp;
-				if (scroll | driftScroll) {
-					diffRotateZdp = 0;
-				} else {
-					float diffRotateZ = rotateZ - originRotateZ;
-					if (diffRotateZ > Math.PI) {
-						diffRotateZ -= 2 * Math.PI;
-					} else if (diffRotateZ < -Math.PI) {
-						diffRotateZ += 2 * Math.PI;
-					}
-					diffRotateZdp = diffRotateZ;// if float, can see significant drifting
-					float absZ = Math.abs(z);
-					if (absZ > upperBoundZ) {
-						float r = 1 - absZ;
-						diffRotateZdp = diffRotateZdp * r * r / (square_1minusUpperBoundZ);
-					}
+				float diffRotateZ = rotateZ - originRotateZ;
+				if (diffRotateZ > Math.PI) {
+					diffRotateZ -= 2 * Math.PI;
+				} else if (diffRotateZ < -Math.PI) {
+					diffRotateZ += 2 * Math.PI;
 				}
+				diffRotateZdp = diffRotateZ;// if float, can see significant drifting
+				float absZ = Math.abs(z);
+				if (absZ > upperBoundZ) {
+					float r = 1 - absZ;
+					diffRotateZdp = diffRotateZdp * r * r / (square_1minusUpperBoundZ);
+					this.cardView.a(4);
+				} else {
+					this.cardView.d();
+				}
+
 				float diffArcCosZdp = (float) (Math.acos(z) - originAcosZ);
 
-				if (driftScroll) {
-					diffDriftScrollZdp += diffArcCosZdp;
-					float d = diffDriftScrollZdp * driftScrollSpeed;
-					int roundDiffDriftScroll = Math.round(d);
-					if (roundDiffDriftScroll != 0) {
-						mainActivity.SendMouseWheel(roundDiffDriftScroll);
-						diffDriftScrollZdp -= roundDiffDriftScroll / driftScrollSpeed;
-					}
-				} else {
-					float adjFactor = (float) GetAdjustFactor(diffRotateZdp, diffArcCosZdp, moveMouseAdjExp);
-					if (scroll) {
-						adjFactor *= scrollSpeed;
-					} else {
-						adjFactor *= speed;
-					}
-					int roundAdjDiffRotateZdp = (int) Math.round(adjFactor * diffRotateZdp);
-					int roundAdjDiffArcCosZdp = Math.round(adjFactor * diffArcCosZdp);
-					if (roundAdjDiffRotateZdp != 0 || roundAdjDiffArcCosZdp != 0) {
-						if (scroll) {
-							mainActivity.SendMouseWheel(roundAdjDiffArcCosZdp);
-						} else {
-							mainActivity.SendMouseMove((short) roundAdjDiffRotateZdp, (short) roundAdjDiffArcCosZdp);
-						}
-						originRotateZ += roundAdjDiffRotateZdp / adjFactor;
-						originAcosZ += roundAdjDiffArcCosZdp / adjFactor;
-					}
+				float adjFactor = (float) GetAdjustFactor(diffRotateZdp, diffArcCosZdp, moveMouseAdjExp);
+				adjFactor *= speed;
+				int roundAdjDiffRotateZdp = (int) Math.round(adjFactor * diffRotateZdp);
+				int roundAdjDiffArcCosZdp = Math.round(adjFactor * diffArcCosZdp);
+				if (roundAdjDiffRotateZdp != 0 || roundAdjDiffArcCosZdp != 0) {
+					mainActivity.SendMouseMove((short) roundAdjDiffRotateZdp, (short) roundAdjDiffArcCosZdp);
+					originRotateZ += roundAdjDiffRotateZdp / adjFactor;
+					originAcosZ += roundAdjDiffArcCosZdp / adjFactor;
 				}
 			} else {
 				SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
@@ -229,6 +159,7 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 	}
 
 	@Override
+	@Keep
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 	}
 }
