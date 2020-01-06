@@ -12,14 +12,13 @@ import android.widget.FrameLayout;
 
 @SuppressLint("ViewConstructor")
 public class MotionMouseLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener {
-    public float A;
+    public double scrollBuffer;
     public float B = 0.0625f;
     public float C = 3.0f;
     public float D = 0.0f;
-    public float E = 0.0f;
-    public N F = new N(this.B);
-    public N G = new N(this.B);
-    public double H = 1.2d;
+    public float animationDiffY = 0.0f;
+    public ExponentialSmoothing F = new ExponentialSmoothing(this.B);
+    public ExponentialSmoothing G = new ExponentialSmoothing(this.B);
     public int I = 0;
     public Runnable J = new K(this);
     public Runnable K = new L(this);
@@ -41,26 +40,26 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
     /* renamed from: e  reason: collision with root package name */
     public Interpolator decelerateInterpolator = new DecelerateInterpolator(2.0f);
     public Interpolator accelerateDecelerateInterpolator = new AccelerateDecelerateInterpolator();
-    public int g;
-    public float h;
-    public float i;
-    public float j;
-    public float k;
-    public float l;
-    public float m;
+    public int focusingPointerID;
+    public float focusingPointerOriginX;
+    public float focusingPointerOriginY;
+    public float diffX;
+    public float diffY;
+    public float startFocusingX;
+    public float startFocusingY;
     public float n;
-    public float o;
+    public float focusingPointerLastY;
     public final float density = getResources().getDisplayMetrics().density;
     public float q = (this.density * 4.0f);
     public long r = 800;
     public boolean s;
     public int t = 300;
     public int u = 300;
-    public boolean v = false;
-    public boolean w;
-    public boolean x;
+    public boolean preventJump = false;
+    public boolean aFocusingPointerActuallyMoved;
+    public boolean scroll;
     public boolean y;
-    public int z;
+    public int maxPointerCount;
 
     public MotionMouseLayout(MainActivity mainActivity, MotionMouseFragment motionMouseFragment) {
         super(mainActivity);
@@ -74,9 +73,9 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
         this.f1702b = motionMouseFragment;
     }
 
-    public void a(float f2, float f3, float f4, float f5) {
-        this.h = (f4 - f2) + this.h;
-        this.i = (f5 - f3) + this.i;
+    public void SwitchOrigin(float x, float y, float newX, float newY) {
+        focusingPointerOriginX += (newX - x);
+        focusingPointerOriginY += (newY - y);
     }
 
     public void a(int i2) {
@@ -84,37 +83,37 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
         this.mouseCardView.animate().setInterpolator(this.decelerateInterpolator).setDuration(this.r).translationX(0.0f).translationY(0.0f);
     }
 
-    public void a(MotionEvent motionEvent, int i2) {
-        this.v = true;
-        this.l = motionEvent.getX(i2);
-        this.m = motionEvent.getY(i2);
-        int findPointerIndex = motionEvent.findPointerIndex(this.g);
-        if (this.x) {
-            this.o = motionEvent.getY(i2);
+    public void changeFocusingPointer(MotionEvent motionEvent, int newPointerIndex) {
+        this.preventJump = true;
+        this.startFocusingX = motionEvent.getX(newPointerIndex);
+        this.startFocusingY = motionEvent.getY(newPointerIndex);
+        int findPointerIndex = motionEvent.findPointerIndex(this.focusingPointerID);
+        if (this.scroll) {
+            this.focusingPointerLastY = motionEvent.getY(newPointerIndex);
         } else {
-            a(motionEvent.getX(findPointerIndex), motionEvent.getY(findPointerIndex), motionEvent.getX(i2), motionEvent.getY(i2));
+            SwitchOrigin(motionEvent.getX(findPointerIndex), motionEvent.getY(findPointerIndex), motionEvent.getX(newPointerIndex), motionEvent.getY(newPointerIndex));
         }
-        this.g = motionEvent.getPointerId(i2);
+        this.focusingPointerID = motionEvent.getPointerId(newPointerIndex);
     }
 
-    public void b(MotionEvent motionEvent, int i2) {
-        this.j = motionEvent.getX(i2) - this.h;
-        this.k = motionEvent.getY(i2) - this.i;
+    public void b(MotionEvent motionEvent, int focusingPointerIndex) {
+        this.diffX = motionEvent.getX(focusingPointerIndex) - this.focusingPointerOriginX;
+        this.diffY = motionEvent.getY(focusingPointerIndex) - this.focusingPointerOriginY;
     }
 
     public void onAnimationUpdate(ValueAnimator valueAnimator) {
-        if (this.x) {
+        if (this.scroll) {
             MotionMouseCardView motionMouseCardView = this.mouseCardView;
-            N n2 = this.F;
-            n2.f1706a = (n2.f1706a * n2.f1708c) + (this.E * n2.f1707b);
-            motionMouseCardView.setTranslationY(n2.f1706a * this.C);
-            this.E = 0.0f;
+            ExponentialSmoothing n2 = this.F;
+            n2.value = (n2.value * n2.oldValueWeight) + (this.animationDiffY * n2.newValueWeight);
+            motionMouseCardView.setTranslationY(n2.value * this.C);
+            this.animationDiffY = 0.0f;
             return;
         }
         MotionMouseCardView motionMouseCardView2 = this.mouseCardView;
-        N n3 = this.G;
-        n3.f1706a = (n3.f1706a * n3.f1708c) + (this.D * n3.f1707b);
-        motionMouseCardView2.setTranslationX(n3.f1706a * this.C);
+        ExponentialSmoothing n3 = this.G;
+        n3.value = (n3.value * n3.oldValueWeight) + (this.D * n3.newValueWeight);
+        motionMouseCardView2.setTranslationX(n3.value * this.C);
         this.D = 0.0f;
     }
 
@@ -144,84 +143,123 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
         int actionIndex;
         int actionMasked = motionEvent.getActionMasked();
         boolean z2 = false;
-        if (actionMasked != MotionEvent.ACTION_DOWN) {
+        if (actionMasked == MotionEvent.ACTION_DOWN) {
+            this.s = false;
+            this.aFocusingPointerActuallyMoved = false;
+            this.y = true;
+            this.diffY = 0.0f;
+            this.diffX = 0.0f;
+            this.focusingPointerOriginX = motionEvent.getX();
+            this.focusingPointerOriginY = motionEvent.getY();
+            this.mouseCardView.getTranslationX();
+            this.mouseCardView.getTranslationY();
+            this.focusingPointerID = motionEvent.getPointerId(0);
+            this.preventJump = true;
+            this.startFocusingX = motionEvent.getX(0);
+            this.startFocusingY = motionEvent.getY(0);
+            this.mouseCardView.animate().cancel();
+            this.maxPointerCount = 1;
+            this.f1702b.a(1);
+            postDelayed(this.J, (long) this.t);
+        } else {
             int i2 = -1;
             int i3 = 3;
-            if (actionMasked != MotionEvent.ACTION_UP) {
+            if (actionMasked == MotionEvent.ACTION_UP) {
+                if (this.aFocusingPointerActuallyMoved) {
+                    if (!this.scroll) {
+                        this.f1701a.s();
+                        if (this.L) {
+                            this.f1701a.o();
+                        } else {
+                            this.f1701a.r();
+                        }
+                    }
+                    this.f1704d.cancel();
+                } else if (this.maxPointerCount == 1 && motionEvent.getEventTime() - motionEvent.getDownTime() < ((long) this.t)) {
+                    this.f1701a.s();
+                    this.f1701a.m();
+                    this.I++;
+                    postDelayed(this.K, (long) this.u);
+                    i2 = 3;
+                }
+                this.f1702b.a(0);
+                a(i2);
+                this.y = false;
+            } else {
                 int i4 = 2;
                 if (actionMasked == MotionEvent.ACTION_MOVE) {
-                    int findPointerIndex = motionEvent.findPointerIndex(this.g);
-                    float x2 = motionEvent.getX(findPointerIndex);
-                    float y2 = motionEvent.getY(findPointerIndex);
-                    if (this.w) {
-                        if (this.x) {
-                            if (this.v) {
-                                this.E = 0.0f;
-                                if (y2 != this.m) {
-                                    this.o = y2;
-                                    this.v = false;
+                    int focusingPointerIndex = motionEvent.findPointerIndex(this.focusingPointerID);
+                    float curFocusingX = motionEvent.getX(focusingPointerIndex);
+                    float curFocusingY = motionEvent.getY(focusingPointerIndex);
+                    if (this.aFocusingPointerActuallyMoved) {
+                        if (this.scroll) {
+                            if (this.preventJump) {
+                                if (curFocusingY != this.startFocusingY) {
+                                    this.focusingPointerLastY = curFocusingY;
+                                    this.preventJump = false;
                                 }
                             } else {
-                                this.E = y2 - this.o;
-                                double d2 = (double) (this.E / this.density);
-                                double a2 = TouchPadView.GetAdjustFactor(0, d2, this.H, 1) * d2;
-                                this.A += a2;
-                                int round = Math.round(this.A);
+                                this.animationDiffY = curFocusingY - this.focusingPointerLastY;
+                                double animationDiffYDp = ((double) this.animationDiffY) / this.density;
+                                double adjustedDiffYDp = TouchPadView.GetAdjustFactor(0, animationDiffYDp, 1.08, 1) * animationDiffYDp;
+                                this.scrollBuffer += adjustedDiffYDp;
+                                int round = (int) Math.round(this.scrollBuffer);
                                 if (round != 0) {
                                     this.f1701a.SendMouseWheel(round);
-                                    this.A -= (float) round;
+                                    this.scrollBuffer -= round;
                                 }
-                                this.o = y2;
-                            }
-                        } else if (this.v) {
-                            this.D = 0.0f;
-                            float f2 = this.l;
-                            if (x2 != f2) {
-                                this.n = x2;
-                                this.v = false;
-                                a(f2, this.m, x2, y2);
+                                this.focusingPointerLastY = curFocusingY;
                             }
                         } else {
-                            this.D = x2 - this.n;
-                            this.n = x2;
-                            b(motionEvent, findPointerIndex);
-                            if (this.j < this.M) {
-                                z2 = true;
-                            }
-                            if (this.L ^ z2) {
-                                this.f1701a.s();
-                                if (z2) {
-                                    this.f1701a.r();
-                                    this.f1701a.SendMouseLeftDown();
-                                    motionMouseCardView = this.mouseCardView;
-                                } else {
-                                    this.f1701a.o();
-                                    this.f1701a.q();
-                                    motionMouseCardView = this.mouseCardView;
-                                    i3 = 1;
+                            if (this.preventJump) {
+                                float f2 = this.startFocusingX;
+                                if (curFocusingX != f2) {
+                                    this.n = curFocusingX;
+                                    this.preventJump = false;
+                                    SwitchOrigin(f2, this.startFocusingY, curFocusingX, curFocusingY);
                                 }
-                                motionMouseCardView.Indicate(i3);
-                                this.M = -this.M;
-                                this.L = z2;
+                            } else {
+                                this.D = curFocusingX - this.n;
+                                this.n = curFocusingX;
+                                b(motionEvent, focusingPointerIndex);
+                                if (this.diffX < this.M) {
+                                    z2 = true;
+                                }
+                                if (this.L ^ z2) {
+                                    this.f1701a.s();
+                                    if (z2) {
+                                        this.f1701a.r();
+                                        this.f1701a.SendMouseLeftDown();
+                                        motionMouseCardView = this.mouseCardView;
+                                    } else {
+                                        this.f1701a.o();
+                                        this.f1701a.q();
+                                        motionMouseCardView = this.mouseCardView;
+                                        i3 = 1;
+                                    }
+                                    motionMouseCardView.Indicate(i3);
+                                    this.M = -this.M;
+                                    this.L = z2;
+                                }
                             }
                         }
-                    } else if (!(x2 == this.l && y2 == this.m)) {
-                        this.v = false;
-                        this.w = true;
-                        b(motionEvent, findPointerIndex);
-                        float abs = Math.abs(this.j);
-                        float abs2 = Math.abs(this.k);
+                    } else if (curFocusingX != this.startFocusingX || curFocusingY != this.startFocusingY) {
+                        this.preventJump = false;
+                        this.aFocusingPointerActuallyMoved = true;
+                        b(motionEvent, focusingPointerIndex);
+                        float absDiffX = Math.abs(this.diffX);
+                        float absDiffY = Math.abs(this.diffY);
                         this.f1701a.s();
-                        this.x = abs2 > abs;
-                        if (this.x) {
-                            this.o = y2;
-                            this.F.f1706a = this.mouseCardView.getTranslationY() / this.C;
-                            this.A = 0.0f;
+                        this.scroll = absDiffY > absDiffX;
+                        if (this.scroll) {
+                            this.focusingPointerLastY = curFocusingY;
+                            this.F.value = this.mouseCardView.getTranslationY() / this.C;
+                            this.scrollBuffer = 0.0f;
                         } else {
-                            this.n = x2;
-                            this.G.f1706a = this.mouseCardView.getTranslationX() / this.C;
+                            this.n = curFocusingX;
+                            this.G.value = this.mouseCardView.getTranslationX() / this.C;
                             this.f1702b.a(0);
-                            if (this.j < 0.0f) {
+                            if (this.diffX < 0.0f) {
                                 z2 = true;
                             }
                             this.L = z2;
@@ -232,7 +270,7 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                                 this.f1701a.q();
                                 i4 = 1;
                             }
-                            a(this.l, this.m, x2, y2);
+                            SwitchOrigin(this.startFocusingX, this.startFocusingY, curFocusingX, curFocusingY);
                             float f3 = this.q;
                             this.M = f3;
                             if (!this.L) {
@@ -244,58 +282,19 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                     }
                 } else if (actionMasked == 3) {
                     a(-1);
-                } else if (actionMasked == 5) {
-                    a(motionEvent, motionEvent.getActionIndex());
+                } else if (actionMasked == MotionEvent.ACTION_POINTER_DOWN) {
+                    changeFocusingPointer(motionEvent, motionEvent.getActionIndex());
                     int pointerCount = motionEvent.getPointerCount();
-                    if (pointerCount > this.z) {
-                        this.z = pointerCount;
+                    if (pointerCount > this.maxPointerCount) {
+                        this.maxPointerCount = pointerCount;
                     }
-                } else if (actionMasked == 6 && motionEvent.findPointerIndex(this.g) == (actionIndex = motionEvent.getActionIndex())) {
+                } else if (actionMasked == MotionEvent.ACTION_POINTER_UP && motionEvent.findPointerIndex(this.focusingPointerID) == (actionIndex = motionEvent.getActionIndex())) {
                     if (actionIndex == 0) {
                         z2 = true;
                     }
-                    a(motionEvent, z2 ? 1 : 0);
+                    changeFocusingPointer(motionEvent, z2 ? 1 : 0);
                 }
-            } else {
-                if (this.w) {
-                    if (!this.x) {
-                        this.f1701a.s();
-                        if (this.L) {
-                            this.f1701a.o();
-                        } else {
-                            this.f1701a.r();
-                        }
-                    }
-                    this.f1704d.cancel();
-                } else if (this.z == 1 && motionEvent.getEventTime() - motionEvent.getDownTime() < ((long) this.t)) {
-                    this.f1701a.s();
-                    this.f1701a.m();
-                    this.I++;
-                    postDelayed(this.K, (long) this.u);
-                    i2 = 3;
-                }
-                this.f1702b.a(0);
-                a(i2);
-                this.y = false;
             }
-        } else {
-            this.s = false;
-            this.w = false;
-            this.y = true;
-            this.k = 0.0f;
-            this.j = 0.0f;
-            this.h = motionEvent.getX();
-            this.i = motionEvent.getY();
-            this.mouseCardView.getTranslationX();
-            this.mouseCardView.getTranslationY();
-            this.g = motionEvent.getPointerId(0);
-            this.v = true;
-            this.l = motionEvent.getX(0);
-            this.m = motionEvent.getY(0);
-            this.mouseCardView.animate().cancel();
-            this.z = 1;
-            this.f1702b.a(1);
-            postDelayed(this.J, (long) this.t);
         }
         return true;
     }

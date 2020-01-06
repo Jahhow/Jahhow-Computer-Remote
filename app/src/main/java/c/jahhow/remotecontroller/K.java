@@ -11,7 +11,7 @@ class K implements Runnable {
 
     public void run() {
         MotionMouseLayout motionMouseLayout = this.f1699a;
-        if (motionMouseLayout.y && (!motionMouseLayout.w)) {
+        if (motionMouseLayout.y && (!motionMouseLayout.aFocusingPointerActuallyMoved)) {
             motionMouseLayout.mouseCardView.Indicate(0);
         }
     }
