@@ -5,16 +5,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import com.google.android.material.textfield.TextInputEditText;
-import androidx.transition.AutoTransition;
-import androidx.transition.TransitionManager;
-import androidx.transition.TransitionSet;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +13,16 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.transition.AutoTransition;
+import androidx.transition.TransitionManager;
+import androidx.transition.TransitionSet;
+
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -34,27 +34,27 @@ import java.util.Arrays;
 public class ConnectorFragment extends Fragment {
 	View layout = null;
 
-	RemoteControllerApp remoteControllerApp;
-	TextInputEditText tiEditTextIp, tiEditTextPort;
-	Button buttonConnect;
-	ImageView buttonHelp;
-	LinearLayout connectButtonsParentLayout;
+	private RemoteControllerApp remoteControllerApp;
+	private TextInputEditText tiEditTextIp, tiEditTextPort;
+	private Button buttonConnect;
+	private ImageView buttonHelp;
+	private LinearLayout connectButtonsParentLayout;
 
 	MainActivity mainActivity;
-	SharedPreferences preferences;
-	MainViewModel mainViewModel;
-	ControllerSwitcherFragment controllersFragment;
+	private SharedPreferences preferences;
+	private MainViewModel mainViewModel;
+	private ControllerSwitcherFragment controllersFragment;
 
 	// set buttons state on next onCreateView()
-	boolean setButtonsStateOnCreateView = false;
-	int helpButtonVisibility;
-	boolean connectButtonEnabled;
+	private boolean setButtonsStateOnCreateView = false;
+	private int helpButtonVisibility;
+	private boolean connectButtonEnabled;
 
-	@Override
+	/*@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		Log.i(getClass().getSimpleName(), "onCreate()");
 		super.onCreate(savedInstanceState);
-	}
+	}*/
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -65,7 +65,7 @@ public class ConnectorFragment extends Fragment {
 			else
 				layoutIsPossiblyAttachedToWindow = true;
 		}
-		Log.i(getClass().getSimpleName(), "onCreateView()");
+		//Log.i(getClass().getSimpleName(), "onCreateView()");
 		/*if (layoutIsPossiblyAttachedToWindow)
 			Log.e(getClass().getSimpleName(), "layoutIsPossiblyAttachedToWindow == " + layoutIsPossiblyAttachedToWindow);*/
 		boolean shouldInflateNewLayout = layoutIsPossiblyAttachedToWindow || layout == null || savedInstanceState != null;
@@ -98,7 +98,7 @@ public class ConnectorFragment extends Fragment {
 
 		if (savedInstanceState == null) {
 			tiEditTextIp.setText(preferences.getString(MainActivity.KeyPrefer_IP, "192.168.1.3"));
-			tiEditTextPort.setText(preferences.getString(MainActivity.KeyPrefer_Port, "5555"));
+			tiEditTextPort.setText(preferences.getString(MainActivity.KeyPrefer_Port, "1597"));
 		}
 
 		if (setButtonsStateOnCreateView) {
@@ -112,7 +112,7 @@ public class ConnectorFragment extends Fragment {
 		return layout;
 	}
 
-	void SavePreferences() {
+	private void SavePreferences() {
 		int _helpButtonVisibility = setButtonsStateOnCreateView ? helpButtonVisibility : buttonHelp.getVisibility();
 		//Log.i(getClass().getSimpleName(), "SavePreferences KeyPrefer_ShowHelpButton " + (_helpButtonVisibility == View.VISIBLE));
 		preferences.edit()
@@ -144,12 +144,12 @@ public class ConnectorFragment extends Fragment {
 
 
 	// Run it on Ui Thread
-	void AnimateShowHelpButton() {
+	private void AnimateShowHelpButton() {
 		TransitionManager.beginDelayedTransition(connectButtonsParentLayout, new AutoTransition().setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500).setOrdering(TransitionSet.ORDERING_TOGETHER));
 		buttonHelp.setVisibility(View.VISIBLE);
 	}
 
-	void OnErrorConnecting(@StringRes final int showToast, final int toastDuration) {
+	private void OnErrorConnecting(@StringRes final int showToast, final int toastDuration) {
 		mainActivity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -163,14 +163,14 @@ public class ConnectorFragment extends Fragment {
 		});
 	}
 
-	void OnErrorConnecting(@StringRes final int showToast) {
+	private void OnErrorConnecting(@StringRes final int showToast) {
 		OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
 	}
 
-	static final byte[] Header = {'R', 'C', 'R', 'H'};
-	static final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
-	static final int SupportServerVersion = 1;
-	public Runnable connectRunnable = new Runnable() {
+	private static final byte[] Header = {'R', 'C', 'R', 'H'};
+	private static final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
+	private static final int SupportServerVersion = 1;
+	private Runnable connectRunnable = new Runnable() {
 		@Override
 		public void run() {
 			try {
@@ -220,7 +220,7 @@ public class ConnectorFragment extends Fragment {
 	};
 
 	// On Ui Thread
-	Runnable runnableOpenControllerFragment = new Runnable() {
+	private Runnable runnableOpenControllerFragment = new Runnable() {
 		@Override
 		public void run() {
 			mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)

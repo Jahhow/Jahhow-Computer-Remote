@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 		return super.onCreateOptionsMenu(menu);
 	}
 
-	static final String FragmentTag_Connector = "0";
+	//static final String FragmentTag_Connector = "0";
 
 	@SuppressLint("ShowToast")
 	@Override
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
 		if (savedInstanceState == null) {
 			//connectorFragment = new ConnectorFragment();
 			getSupportFragmentManager().beginTransaction()//.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-					.add(android.R.id.content, new ConnectorFragment(), FragmentTag_Connector).commit();
+					.add(android.R.id.content, new ConnectorFragment()/*, FragmentTag_Connector*/).commit();
 			if (preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
 				ShowHelpFragment(null);
 		}
@@ -131,6 +131,10 @@ public class MainActivity extends AppCompatActivity {
 	void Vibrate(long ms) {
 		if (ms > 0 && vibrator != null)
 			vibrator.vibrate(ms);
+	}
+
+	public void Vibrate() {
+		Vibrate(30);
 	}
 
 	public void SendClick_Left(View v) {
@@ -227,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
 
 	static final String SendTextEncode = "UTF-16LE";
 
+	// mode = InputTextMode.{SendInput, Paste}
 	public void SendInputText(final String text, byte mode, boolean Hold) {
 		if (mainViewModel.socketHandler == null || text.length() == 0)
 			return;
@@ -234,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
 		try {
 			int textByteLen = text.length() << 1;
 			final byte[] packet = ByteBuffer.allocate(7 + textByteLen)
-					.put(Msg.PasteText)
+					.put(Msg.InputText)
 					.putInt(textByteLen)
 					.put(mode)
 					.put((byte) (Hold ? 1 : 0))
@@ -278,32 +283,6 @@ public class MainActivity extends AppCompatActivity {
 
 	public void SendMouseRightClick() {
 		SendMsg(Msg.MouseRightClick);
-	}
-
-
-
-	public void m() {
-		SendMsg((byte) 3);
-	}
-
-	public void n() {
-		SendMsg((byte) 4);
-	}
-
-	public void o() {
-		SendMsg((byte) 5);
-	}
-
-	public void p() {
-		SendMsg((byte) 6);
-	}
-
-	public void q() {
-		SendMsg((byte) 7);
-	}
-
-	public void r() {
-		SendMsg((byte) 8);
 	}
 
 	public void SendMsg(final byte msg) {
@@ -372,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	void ShowToast(@StringRes int resId, int duration) {
-		ShowToast(getString(resId), Toast.LENGTH_SHORT);
+		ShowToast(getString(resId), duration);
 	}
 
 	void ShowToast(String text, int duration) {
@@ -425,9 +404,5 @@ public class MainActivity extends AppCompatActivity {
 			}
 			mainViewModel.socket = null;
 		}
-	}
-
-	public void s() {
-		Vibrate(30);
 	}
 }

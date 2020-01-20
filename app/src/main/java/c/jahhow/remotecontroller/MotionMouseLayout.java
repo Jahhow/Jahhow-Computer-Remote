@@ -167,17 +167,17 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
             if (actionMasked == MotionEvent.ACTION_UP) {
                 if (this.aFocusingPointerActuallyMoved) {
                     if (!this.scroll) {
-                        this.f1701a.s();
+                        this.f1701a.Vibrate();
                         if (this.L) {
-                            this.f1701a.o();
+                            this.f1701a.SendMouseLeftUp();
                         } else {
-                            this.f1701a.r();
+                            this.f1701a.SendMouseRightUp();
                         }
                     }
                     this.f1704d.cancel();
                 } else if (this.maxPointerCount == 1 && motionEvent.getEventTime() - motionEvent.getDownTime() < ((long) this.t)) {
-                    this.f1701a.s();
-                    this.f1701a.m();
+                    this.f1701a.Vibrate();
+                    this.f1701a.SendMouseLeftClick();
                     this.I++;
                     postDelayed(this.K, (long) this.u);
                     i2 = 3;
@@ -226,14 +226,14 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                                     z2 = true;
                                 }
                                 if (this.L ^ z2) {
-                                    this.f1701a.s();
+                                    this.f1701a.Vibrate();
                                     if (z2) {
-                                        this.f1701a.r();
+                                        this.f1701a.SendMouseRightUp();
                                         this.f1701a.SendMouseLeftDown();
                                         motionMouseCardView = this.mouseCardView;
                                     } else {
-                                        this.f1701a.o();
-                                        this.f1701a.q();
+                                        this.f1701a.SendMouseLeftUp();
+                                        this.f1701a.SendMouseRightDown();
                                         motionMouseCardView = this.mouseCardView;
                                         i3 = 1;
                                     }
@@ -249,7 +249,7 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                         b(motionEvent, focusingPointerIndex);
                         float absDiffX = Math.abs(this.diffX);
                         float absDiffY = Math.abs(this.diffY);
-                        this.f1701a.s();
+                        this.f1701a.Vibrate();
                         this.scroll = absDiffY > absDiffX;
                         if (this.scroll) {
                             this.focusingPointerLastY = curFocusingY;
@@ -267,7 +267,7 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                                 this.f1701a.SendMouseLeftDown();
                                 i4 = 3;
                             } else {
-                                this.f1701a.q();
+                                this.f1701a.SendMouseRightDown();
                                 i4 = 1;
                             }
                             SwitchOrigin(this.startFocusingX, this.startFocusingY, curFocusingX, curFocusingY);

@@ -12,5 +12,5 @@ public final class Msg {
 			MouseRightDown               =  7,
 			MouseRightUp                 =  8,
 			MouseWheel                   =  9,
-			PasteText                    = 10;
+			InputText                    = 10;
 }

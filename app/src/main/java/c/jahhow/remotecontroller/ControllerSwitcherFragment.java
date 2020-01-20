@@ -17,18 +17,18 @@ import com.android.billingclient.api.Purchase.PurchaseState;
 public class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
 	MainActivity mainActivity;
 
-	Fragment showingController = null;
-	BottomNavigationView navigationView;
+	private Fragment showingController = null;
+	private BottomNavigationView navigationView;
 
-	ArrowButtonFragment arrowButtonFragment = new ArrowButtonFragment();
-	SwipeControllerFragment swipeControllerFragment = new SwipeControllerFragment();
-	MotionMouseFragment motionMouseFragment = new MotionMouseFragment();
-	TouchPadFragment touchPadFragment = new TouchPadFragment();
-	InputTextFragment inputTextFragment = new InputTextFragment();
+	private ArrowButtonFragment arrowButtonFragment = new ArrowButtonFragment();
+	private SwipeControllerFragment swipeControllerFragment = new SwipeControllerFragment();
+	private MotionMouseFragment motionMouseFragment = new MotionMouseFragment();
+	private TouchPadFragment touchPadFragment = new TouchPadFragment();
+	private InputTextFragment inputTextFragment = new InputTextFragment();
 
-	PurchaseFragment purchaseFragment = new PurchaseFragment();
+	private PurchaseFragment purchaseFragment = new PurchaseFragment();
 
-	RemoteControllerApp remoteControllerApp;
+	private RemoteControllerApp remoteControllerApp;
 
 	@Nullable
 	@Override
@@ -94,7 +94,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 		}
 	}
 
-	void ShowFragment(Fragment fragment) {
+	private void ShowFragment(Fragment fragment) {
 		if (showingController != fragment) {
 			FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction()
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
@@ -109,7 +109,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 		showFragmentById(navigationView.getSelectedItemId());
 	}
 
-	void SavePreference() {
+	private void SavePreference() {
 		mainActivity.preferences.edit().putInt(MainActivity.KeyPrefer_Controller, navigationView.getSelectedItemId()).apply();
 	}
 
@@ -125,7 +125,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 		super.onPause();
 	}
 
-	@Override
+	/*@Override
 	public void onStop() {
 		Log.i(getClass().getSimpleName(), "onStop()");
 		super.onStop();
@@ -135,9 +135,9 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 	public void onDestroy() {
 		Log.i(getClass().getSimpleName(), "onDestroy()");
 		super.onDestroy();
-	}
+	}*/
 
-	void showFragmentById(int id) {
+	private void showFragmentById(int id) {
 		if (remoteControllerApp.fullAccessState == PurchaseState.PURCHASED) {
 			switch (id) {
 				case R.id.navButtonUseButtonController:
