@@ -51,4 +51,8 @@
     <string name="cut">剪下</string>
     <string name="Copy">複製</string>
     <string name="Paste">貼上</string>
+
+    <!--Connector Switcher-->
+    <string name="internet">網路</string>
+    <string name="bluetooth">藍芽</string>
 </resources>

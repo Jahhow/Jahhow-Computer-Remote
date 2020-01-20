@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
 		if (savedInstanceState == null) {
 			//connectorFragment = new ConnectorFragment();
 			getSupportFragmentManager().beginTransaction()//.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-					.add(android.R.id.content, new ConnectorFragment()/*, FragmentTag_Connector*/).commit();
+					.add(android.R.id.content, new ConnectorSwitcherFragment()/*, FragmentTag_Connector*/).commit();
 			if (preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
 				ShowHelpFragment(null);
 		}

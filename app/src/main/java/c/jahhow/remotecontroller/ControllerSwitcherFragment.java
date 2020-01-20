@@ -1,18 +1,18 @@
 package c.jahhow.remotecontroller;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.android.billingclient.api.Purchase.PurchaseState;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
 	MainActivity mainActivity;
@@ -115,7 +115,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 
 	@Override
 	public void onPause() {
-		Log.i(getClass().getSimpleName(), "onPause(), isRemoving() == " + isRemoving());
+		//Log.i(getClass().getSimpleName(), "onPause(), isRemoving() == " + isRemoving());
 		if (isRemoving()) {
 			showingController = null;
 			remoteControllerApp.controllerSwitcherFragment = null;
