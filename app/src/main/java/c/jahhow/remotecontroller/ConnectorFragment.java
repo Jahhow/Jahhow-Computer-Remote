@@ -212,12 +212,12 @@ public class ConnectorFragment extends Fragment {
     private Runnable runnableOpenControllerFragment = new Runnable() {
         @Override
         public void run() {
-            mainActivity.getSupportFragmentManager().saveFragmentInstanceState(
+            /*mainActivity.getSupportFragmentManager().saveFragmentInstanceState(
                     mainActivity.getSupportFragmentManager().getFragments().get(0)
-            );
+            );*/
             mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .replace(android.R.id.content, controllersFragment).commit();
+                    .replace(android.R.id.content, controllersFragment).commitAllowingStateLoss();
 
             setButtonsStateOnCreateView = true;
             connectButtonEnabled = true;
