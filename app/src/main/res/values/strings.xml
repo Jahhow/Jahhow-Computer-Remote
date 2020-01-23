@@ -57,4 +57,9 @@
     <string name="internet">Internet</string>
     <string name="bluetooth">Bluetooth</string>
     <string name="this_device_doesn_t_support_bluetooth">This device doesn\'t support Bluetooth.</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="turning_on_bluetooth">Turning On Bluetooth</string>
+    <string name="turn_on">Turn On</string>
 </resources>

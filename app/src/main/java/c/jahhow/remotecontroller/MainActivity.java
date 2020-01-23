@@ -31,7 +31,7 @@ import c.jahhow.remotecontroller.msg.SCS1;
 public class MainActivity extends AppCompatActivity {
 	RemoteControllerApp remoteControllerApp;
 	MainViewModel mainViewModel;
-	//ConnectorFragment connectorFragment;
+	//TcpIpConnectorFragment connectorFragment;
 
 	SharedPreferences preferences;
 	static final String name_CommonSharedPrefer = "CommonSettings",
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 		toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
 		mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 		if (savedInstanceState == null) {
-			//connectorFragment = new ConnectorFragment();
+			//connectorFragment = new TcpIpConnectorFragment();
 			getSupportFragmentManager().beginTransaction()//.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.add(android.R.id.content, new ConnectorSwitcherFragment()/*, FragmentTag_Connector*/).commit();
 			if (preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
@@ -368,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
 
 	/*@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
-		//connectorFragment = (ConnectorFragment) getSupportFragmentManager().findFragmentByTag(FragmentTag_Connector);
+		//connectorFragment = (TcpIpConnectorFragment) getSupportFragmentManager().findFragmentByTag(FragmentTag_Connector);
 		super.onRestoreInstanceState(savedInstanceState);
 	}*/
 

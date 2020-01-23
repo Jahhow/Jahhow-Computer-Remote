@@ -16,7 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class ConnectorSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     private Fragment showingFragment = null;
-    private ConnectorFragment connectorFragment = new ConnectorFragment();
+    private TcpIpConnectorFragment tcpIpConnectorFragment = new TcpIpConnectorFragment();
     private BluetoothConnectorFragment bluetoothConnectorFragment = new BluetoothConnectorFragment();
 
     private boolean called_onCreateView = false;
@@ -30,7 +30,7 @@ public class ConnectorSwitcherFragment extends Fragment implements BottomNavigat
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         /*if (savedInstanceState == null) {
-            connectorFragment = new ConnectorFragment();
+            tcpIpConnectorFragment = new TcpIpConnectorFragment();
             bluetoothConnectorFragment = new BluetoothConnectorFragment();
         }*/
         View layout = inflater.inflate(R.layout.fragment_connector_switcher, container, false);
@@ -62,7 +62,7 @@ public class ConnectorSwitcherFragment extends Fragment implements BottomNavigat
         showingFragment = getChildFragmentManager().getFragments().get(0);
         switch (navBar.getSelectedItemId()) {
             case R.id.navButtonInternet:
-                connectorFragment = (ConnectorFragment) showingFragment;
+                tcpIpConnectorFragment = (TcpIpConnectorFragment) showingFragment;
                 break;
             case R.id.navButtonBluetooth:
                 bluetoothConnectorFragment = (BluetoothConnectorFragment) showingFragment;
@@ -75,7 +75,7 @@ public class ConnectorSwitcherFragment extends Fragment implements BottomNavigat
         Fragment fragmentToShow = null;
         switch (menuItem.getItemId()) {
             case R.id.navButtonInternet:
-                fragmentToShow = connectorFragment;
+                fragmentToShow = tcpIpConnectorFragment;
                 break;
             case R.id.navButtonBluetooth:
                 fragmentToShow = bluetoothConnectorFragment;

@@ -30,7 +30,7 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class ConnectorFragment extends Fragment {
+public class TcpIpConnectorFragment extends Fragment {
 
     private RemoteControllerApp remoteControllerApp;
     private TextInputEditText tiEditTextIp, tiEditTextPort;

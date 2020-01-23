@@ -1,19 +1,15 @@
 package c.jahhow.remotecontroller;
 
 import android.bluetooth.BluetoothAdapter;
-import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 public class BluetoothConnectorFragment extends Fragment {
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -28,13 +24,15 @@ public class BluetoothConnectorFragment extends Fragment {
             myBroadcastReceiver = null;
         } else {
             bluetoothOriginalState_isEnabled = bluetoothAdapter.isEnabled();
-            myBroadcastReceiver = new MyBroadcastReceiver();
+            myBroadcastReceiver = new MyBroadcastReceiver(this);
             IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             getContext().registerReceiver(myBroadcastReceiver, intentFilter);
-            if (!bluetoothAdapter.enable()) {
-                Toast.makeText(getContext(), "Error turning on Bluetooth", Toast.LENGTH_SHORT).show();
+            if (bluetoothAdapter.isEnabled()) {
+                getChildFragmentManager().beginTransaction().
+                        replace(R.id.bluetoothConnectorInnerFragmentContainer, new SelectBluetoothDeviceFragment()).commit();
+            } else {
+                TurnOnBluetooth();
             }
-
             layout = inflater.inflate(R.layout.fragment_bluetooth_connector, container, false);
         }
         return layout;
@@ -43,11 +41,31 @@ public class BluetoothConnectorFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        getContext().unregisterReceiver(myBroadcastReceiver);
         if (bluetoothAdapter != null) {
+            getContext().unregisterReceiver(myBroadcastReceiver);
             if (!bluetoothOriginalState_isEnabled) {
                 bluetoothAdapter.disable();
             }
         }
+    }
+
+    void TurnOnBluetooth() {
+        if (bluetoothAdapter.enable()) {
+            getChildFragmentManager().beginTransaction().
+                    replace(R.id.bluetoothConnectorInnerFragmentContainer, new TurningOnBluetoothFragment()).commit();
+        } else {
+            getChildFragmentManager().beginTransaction().
+                    replace(R.id.bluetoothConnectorInnerFragmentContainer, new TurnOnBluetoothFragment(this)).commit();
+        }
+    }
+
+    void onBluetoothStateON() {
+        getChildFragmentManager().beginTransaction().
+                replace(R.id.bluetoothConnectorInnerFragmentContainer, new SelectBluetoothDeviceFragment()).commit();
+    }
+
+    void onBluetoothStateOFF() {
+        getChildFragmentManager().beginTransaction().
+                replace(R.id.bluetoothConnectorInnerFragmentContainer, new TurnOnBluetoothFragment(this)).commit();
     }
 }

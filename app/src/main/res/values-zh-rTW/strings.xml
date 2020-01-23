@@ -57,4 +57,6 @@
     <string name="internet">網路</string>
     <string name="bluetooth">藍芽</string>
     <string name="this_device_doesn_t_support_bluetooth">此裝置沒有藍芽功能</string>
+    <string name="turning_on_bluetooth">正在開啟藍芽</string>
+    <string name="turn_on">開啟</string>
 </resources>
