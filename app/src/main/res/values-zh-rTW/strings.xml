@@ -51,8 +51,10 @@
     <string name="cut">剪下</string>
     <string name="Copy">複製</string>
     <string name="Paste">貼上</string>
+    <string name="complete_text_on_this_device_then_press_send_button">請在此裝置上輸入文字後\n按下送出按鈕</string>
 
     <!--Connector Switcher-->
     <string name="internet">網路</string>
     <string name="bluetooth">藍芽</string>
+    <string name="this_device_doesn_t_support_bluetooth">此裝置沒有藍芽功能</string>
 </resources>

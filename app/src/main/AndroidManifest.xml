@@ -7,7 +7,6 @@
     <uses-permission android:name="com.android.vending.BILLING" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <!--<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
 
     <application
         android:name=".RemoteControllerApp"
@@ -17,6 +16,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <receiver
+            android:name=".MyBroadcastReceiver"
+            android:enabled="false"
+            android:exported="true"></receiver>
+
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTask"
@@ -29,4 +33,5 @@
             </intent-filter>
         </activity>
     </application>
+
 </manifest>

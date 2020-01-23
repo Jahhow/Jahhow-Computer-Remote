@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:clipToPadding="false"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="28dp">
+
+        <ImageView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="24dp"
+            android:alpha="0.4"
+            app:srcCompat="@drawable/ic_info_outline_black_24dp"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            style="@style/AppTheme.Help_Text.Title"
+            android:text="@string/complete_text_on_this_device_then_press_send_button"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:textStyle="normal" />
+
+        <ImageView
+            android:id="@+id/buttonSend"
+            style="@style/AppTheme.InputTextButton.Accent"
+            android:layout_marginTop="6sp"
+            app:srcCompat="@drawable/ic_send_24dp"
+            tools:ignore="ContentDescription" />
+
+        <Button
+            android:id="@+id/buttonOk"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/ok" />
+    </LinearLayout>
+</ScrollView>

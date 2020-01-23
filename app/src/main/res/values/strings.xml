@@ -51,8 +51,10 @@
     <string name="Copy">Copy</string>
     <string name="Paste">Paste</string>
     <string name="This_device_doesnt_supportMotionMouse">This device doesn\'t support Motion Mouse</string>
+    <string name="complete_text_on_this_device_then_press_send_button">Please complete text on this device\nthen press Send button</string>
 
     <!--Connector Switcher-->
     <string name="internet">Internet</string>
     <string name="bluetooth">Bluetooth</string>
+    <string name="this_device_doesn_t_support_bluetooth">This device doesn\'t support Bluetooth.</string>
 </resources>
