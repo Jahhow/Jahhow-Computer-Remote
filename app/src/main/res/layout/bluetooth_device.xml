@@ -6,4 +6,4 @@
     android:text="BT Device Name"
     android:padding="16dp"
     android:textColor="?android:textColorPrimary"
-    android:textSize="18sp" />
+    android:textSize="16sp" />

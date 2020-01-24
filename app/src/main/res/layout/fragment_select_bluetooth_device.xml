@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:orientation="vertical">
 
     <TextView
@@ -18,21 +20,54 @@
         android:id="@+id/listSavedBluetoothDevice"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        tools:listitem="@layout/bluetooth_device" />
 
-    <TextView
-        android:layout_width="wrap_content"
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:layout_marginTop="8dp"
+        android:background="#0000">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:text="Device Nearby"
+            android:textColor="?colorAccent" />
+
+        <Button
+            android:id="@+id/btScanButton"
+            style="@style/AppTheme.KeyboardShortcutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|end"
+            android:text="Scan"
+            android:textSize="14sp" />
+
+    </FrameLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBarBTScanning"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="Device Nearby"
-        android:textColor="?colorAccent" />
+        android:layout_gravity="bottom"
+        android:layout_marginTop="-3dp"
+        android:indeterminate="true"
+        android:layout_marginBottom="-4dp"
+        android:visibility="gone"
+        tools:visibility="gone" />
 
     <ListView
         android:id="@+id/listBluetoothDeviceNearby"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_marginTop="-2dp"
+        android:layout_weight="1"
+        android:animateLayoutChanges="true"
+        tools:animateLayoutChanges="false"
+        tools:listitem="@layout/nearby_bluetooth_device" />
 </LinearLayout>

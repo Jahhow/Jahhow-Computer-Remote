@@ -156,9 +156,9 @@ public class TcpIpConnectorFragment extends Fragment {
         OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
     }
 
-    private static final byte[] Header = {'R', 'C', 'R', 'H'};
-    private static final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
-    private static final int SupportServerVersion = 1;
+    static final byte[] Header = {'R', 'C', 'R', 'H'};
+    static final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
+    static final int SupportServerVersion = 1;
     private Runnable connectRunnable = new Runnable() {
         @Override
         public void run() {
