@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,8 +29,7 @@ public class BluetoothConnectorFragment extends Fragment {
             IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             getContext().registerReceiver(myBroadcastReceiver, intentFilter);
             if (bluetoothAdapter.isEnabled()) {
-                getChildFragmentManager().beginTransaction().
-                        replace(R.id.bluetoothConnectorInnerFragmentContainer, new SelectBluetoothDeviceFragment()).commit();
+                replaceChildFragment(new SelectBluetoothDeviceFragment());
             } else {
                 TurnOnBluetooth();
             }
@@ -51,21 +51,23 @@ public class BluetoothConnectorFragment extends Fragment {
 
     void TurnOnBluetooth() {
         if (bluetoothAdapter.enable()) {
-            getChildFragmentManager().beginTransaction().
-                    replace(R.id.bluetoothConnectorInnerFragmentContainer, new TurningOnBluetoothFragment()).commit();
+            replaceChildFragment(new LoadingFragment());
         } else {
-            getChildFragmentManager().beginTransaction().
-                    replace(R.id.bluetoothConnectorInnerFragmentContainer, new TurnOnBluetoothFragment(this)).commit();
+            replaceChildFragment(new TurnOnBluetoothFragment(this));
         }
     }
 
     void onBluetoothStateON() {
-        getChildFragmentManager().beginTransaction().
-                replace(R.id.bluetoothConnectorInnerFragmentContainer, new SelectBluetoothDeviceFragment()).commit();
+        replaceChildFragment(new SelectBluetoothDeviceFragment());
     }
 
     void onBluetoothStateOFF() {
-        getChildFragmentManager().beginTransaction().
-                replace(R.id.bluetoothConnectorInnerFragmentContainer, new TurnOnBluetoothFragment(this)).commit();
+        replaceChildFragment(new TurnOnBluetoothFragment(this));
+    }
+
+    void replaceChildFragment(Fragment newFragment) {
+        getChildFragmentManager().beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.bluetoothConnectorInnerFragmentContainer, newFragment).commit();
     }
 }

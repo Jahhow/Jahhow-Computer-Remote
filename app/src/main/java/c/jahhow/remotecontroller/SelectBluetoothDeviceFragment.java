@@ -52,6 +52,7 @@ import static c.jahhow.remotecontroller.TcpIpConnectorFragment.SupportServerVers
 public class SelectBluetoothDeviceFragment extends Fragment {
     MainActivity mainActivity;
     MainViewModel mainViewModel;
+    BluetoothConnectorFragment bluetoothConnectorFragment;
 
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private BluetoothDiscoveryBroadcastReceiver bluetoothDiscoveryBroadcastReceiver = new BluetoothDiscoveryBroadcastReceiver();
@@ -67,6 +68,7 @@ public class SelectBluetoothDeviceFragment extends Fragment {
                              Bundle savedInstanceState) {
         mainActivity = (MainActivity) getActivity();
         mainViewModel = mainActivity.mainViewModel;
+        bluetoothConnectorFragment = (BluetoothConnectorFragment) getParentFragment();
         View layout = inflater.inflate(R.layout.fragment_select_bluetooth_device, container, false);
         ListView pairedBTListView = layout.findViewById(R.id.listSavedBluetoothDevice);
         ListView nearbyBTListView = layout.findViewById(R.id.listBluetoothDeviceNearby);
@@ -117,6 +119,8 @@ public class SelectBluetoothDeviceFragment extends Fragment {
         nearbyBTListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //Log.i(SelectBluetoothDeviceFragment.class.getSimpleName(), " getParentFragment() => " + getParentFragment().getClass().getSimpleName());
+                bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment("Connecting"));
                 BluetoothDevice bluetoothDevice = (BluetoothDevice) parent.getItemAtPosition(position);
                 mainViewModel.socketHandlerThread = new HandlerThread("");
                 mainViewModel.socketHandlerThread.start();
@@ -143,11 +147,11 @@ public class SelectBluetoothDeviceFragment extends Fragment {
         getContext().unregisterReceiver(bluetoothDiscoveryBroadcastReceiver);
     }
 
-    void startBluetoothDiscovery() {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+    private void startBluetoothDiscovery() {
+        if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             bluetoothAdapter.startDiscovery();
         } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         }
     }
 
@@ -178,7 +182,7 @@ public class SelectBluetoothDeviceFragment extends Fragment {
     private class ConnectRunnable implements Runnable {
         private final BluetoothSocket mmSocket;
 
-        public ConnectRunnable(BluetoothDevice device) {
+        ConnectRunnable(BluetoothDevice device) {
             // Use a temporary object that is later assigned to mmSocket
             // because mmSocket is final.
             BluetoothSocket tmp = null;
@@ -191,34 +195,44 @@ public class SelectBluetoothDeviceFragment extends Fragment {
             mmSocket = tmp;
         }
 
+        boolean timeout;
+
         public void run() {
             // Cancel discovery because it otherwise slows down the connection.
             bluetoothAdapter.cancelDiscovery();
+            timeout = false;
 
-            try {
-                // Connect to the remote device through the socket. This call blocks
-                // until it succeeds or throws an exception.
-                mmSocket.connect();
-            } catch (IOException connectException) {
-                // Unable to connect; close the socket and return.
-                try {
-                    mmSocket.close();
-                } catch (IOException closeException) {
-                    Log.e(getClass().getSimpleName(), "Could not close the client socket", closeException);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        Log.i("timeoutThread", e.toString());
+                    }
+                    if (!mmSocket.isConnected()) {
+                        try {
+                            timeout = true;
+                            mmSocket.close();
+                        } catch (IOException ignored) {
+                        }
+                        Log.i("timeoutThread", "mmSocket.isConnected() => false");
+                    } else {
+                        Log.i("timeoutThread", "mmSocket.isConnected() => true");
+                    }
                 }
-                return;
-            }
+            }).start();
 
-            // The connection attempt succeeded. Perform work associated with
-            // the connection in a separate thread.
             try {
-                MainActivity mainActivity = (MainActivity) getActivity();
+                mmSocket.connect();
+                Log.e(getClass().getSimpleName(), "connected");
                 if (mainActivity != null) {
                     MainViewModel mainViewModel = ViewModelProviders.of(mainActivity).get(MainViewModel.class);
                     mainViewModel.bluetoothSocket = mmSocket;
                     mainViewModel.socketOutput = mmSocket.getOutputStream();
                     mainViewModel.socketOutput.write(Header);
 
+                    Log.e(getClass().getSimpleName(), "write(Header);");
                     InputStream inputStream = mmSocket.getInputStream();
                     byte[] buf = new byte[ServerHeader.length];
                     if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {
@@ -244,33 +258,42 @@ public class SelectBluetoothDeviceFragment extends Fragment {
                     mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            getActivity().getSupportFragmentManager().beginTransaction().addToBackStack(null)
+                            mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
                                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                                     .replace(android.R.id.content, new ControllerSwitcherFragment()).commitAllowingStateLoss();
                         }
                     });
                 }
-            } catch (SocketTimeoutException e) {
-                OnErrorConnecting(R.string.TimeoutCheckIPportOrUpdate, Toast.LENGTH_LONG);
+            } catch (IOException connectException) {
+                // Unable to connect; close the socket and return.
+                if (timeout) {
+                    OnErrorConnecting(R.string.bluetooth_timeout);
+                } else {
+                    try {
+                        mmSocket.close();
+                    } catch (IOException ignored) {
+                    }
+                    OnErrorConnecting(R.string.ConnectionError);
+                    Log.e(getClass().getSimpleName(), "IOException: " + connectException);
+                }
             } catch (Exception e) {
                 OnErrorConnecting(R.string.ConnectionError);
-                e.printStackTrace();
+                Log.e(getClass().getSimpleName(), "final catch " + e);
             }
         }
     }
 
     private void OnErrorConnecting(@StringRes final int showToast, final int duration) {
-        final MainActivity mainActivity = (MainActivity) getActivity();
-        if (mainActivity != null)
-            mainActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!isRemoving()) {
-                        Toast.makeText(getContext(), showToast, duration).show();
-                    }
-                    mainActivity.CloseConnection();
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!isRemoving()) {
+                    Toast.makeText(mainActivity, showToast, duration).show();
                 }
-            });
+                bluetoothConnectorFragment.replaceChildFragment(SelectBluetoothDeviceFragment.this);
+                mainActivity.CloseConnection();
+            }
+        });
     }
 
     private void OnErrorConnecting(@StringRes final int showToast) {
