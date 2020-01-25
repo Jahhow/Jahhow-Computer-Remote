@@ -36,9 +36,6 @@ import androidx.lifecycle.ViewModelProviders;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,26 +46,26 @@ import static c.jahhow.remotecontroller.TcpIpConnectorFragment.Header;
 import static c.jahhow.remotecontroller.TcpIpConnectorFragment.ServerHeader;
 import static c.jahhow.remotecontroller.TcpIpConnectorFragment.SupportServerVersion;
 
-public class SelectBluetoothDeviceFragment extends Fragment {
+public class SelectBluetoothDeviceFragment extends Fragment implements AdapterView.OnItemClickListener {
     MainActivity mainActivity;
-    MainViewModel mainViewModel;
-    BluetoothConnectorFragment bluetoothConnectorFragment;
+    private MainViewModel mainViewModel;
+    private BluetoothConnectorFragment bluetoothConnectorFragment;
 
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private BluetoothDiscoveryBroadcastReceiver bluetoothDiscoveryBroadcastReceiver = new BluetoothDiscoveryBroadcastReceiver();
-    private ArrayAdapter<BluetoothDevice> nearbyBTArrayAdapter;
     private ProgressBar progressBar;
     private Button scanButton;
 
     private static final short PERMISSION_REQUEST_CODE = 8513;
-    private static final UUID BT_SERVICE_UUID = new UUID(0xC937E0B78C64C221L, 0x4A25F40120B3064EL);
+    private static final UUID BT_SERVICE_UUID = UUID.fromString("C937E0B7-8C64-C221-4A25-F40120B3064E");
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mainActivity = (MainActivity) getActivity();
         mainViewModel = mainActivity.mainViewModel;
         bluetoothConnectorFragment = (BluetoothConnectorFragment) getParentFragment();
+
         View layout = inflater.inflate(R.layout.fragment_select_bluetooth_device, container, false);
         ListView pairedBTListView = layout.findViewById(R.id.listSavedBluetoothDevice);
         ListView nearbyBTListView = layout.findViewById(R.id.listBluetoothDeviceNearby);
@@ -76,25 +73,26 @@ public class SelectBluetoothDeviceFragment extends Fragment {
         scanButton = layout.findViewById(R.id.btScanButton);
 
         Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
-        ArrayAdapter<BluetoothDevice> arrayAdapter = new ArrayAdapter<BluetoothDevice>(getContext(), R.layout.bluetooth_device, new ArrayList<>(bondedDevices)) {
+        ArrayAdapter<BluetoothDevice> arrayAdapter = new ArrayAdapter<BluetoothDevice>(mainActivity, R.layout.nearby_bluetooth_device, new ArrayList<>(bondedDevices)) {
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                TextView view = (TextView) convertView;
+                LinearLayout view = (LinearLayout) convertView;
                 if (view == null) {
-                    view = (TextView) getLayoutInflater().inflate(R.layout.bluetooth_device, parent, false);
+                    view = (LinearLayout) inflater.inflate(R.layout.nearby_bluetooth_device, parent, false);
                 }
-                view.setText(getItem(position).getName());
+                ((TextView) view.getChildAt(0)).setText(getItem(position).getName());
+                ((TextView) view.getChildAt(1)).setText(getItem(position).getAddress());
                 return view;
             }
         };
         pairedBTListView.setAdapter(arrayAdapter);
+        pairedBTListView.setOnItemClickListener(this);
 
         IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        getContext().registerReceiver(bluetoothDiscoveryBroadcastReceiver, intentFilter);
-        startBluetoothDiscovery();
+        mainActivity.registerReceiver(bluetoothDiscoveryBroadcastReceiver, intentFilter);
 
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,32 +100,24 @@ public class SelectBluetoothDeviceFragment extends Fragment {
                 startBluetoothDiscovery();
             }
         });
-        nearbyBTArrayAdapter = new ArrayAdapter<BluetoothDevice>(getContext(), R.layout.bluetooth_device) {
-            @NonNull
-            @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                LinearLayout view = (LinearLayout) convertView;
-                if (view == null) {
-                    view = (LinearLayout) getLayoutInflater().inflate(R.layout.nearby_bluetooth_device, parent, false);
+        if (mainViewModel.nearbyBTArrayAdapter == null) {
+            mainViewModel.nearbyBTArrayAdapter = new ArrayAdapter<BluetoothDevice>(mainActivity, R.layout.nearby_bluetooth_device) {
+                @NonNull
+                @Override
+                public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                    LinearLayout view = (LinearLayout) convertView;
+                    if (view == null) {
+                        view = (LinearLayout) inflater.inflate(R.layout.nearby_bluetooth_device, parent, false);
+                    }
+                    ((TextView) view.getChildAt(0)).setText(getItem(position).getName());
+                    ((TextView) view.getChildAt(1)).setText(getItem(position).getAddress());
+                    return view;
                 }
-                ((TextView) view.getChildAt(0)).setText(getItem(position).getName());
-                ((TextView) view.getChildAt(1)).setText(getItem(position).getAddress());
-                return view;
-            }
-        };
-        nearbyBTListView.setAdapter(nearbyBTArrayAdapter);
-        nearbyBTListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Log.i(SelectBluetoothDeviceFragment.class.getSimpleName(), " getParentFragment() => " + getParentFragment().getClass().getSimpleName());
-                bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment("Connecting"));
-                BluetoothDevice bluetoothDevice = (BluetoothDevice) parent.getItemAtPosition(position);
-                mainViewModel.socketHandlerThread = new HandlerThread("");
-                mainViewModel.socketHandlerThread.start();
-                mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
-                mainViewModel.socketHandler.post(new ConnectRunnable(bluetoothDevice));
-            }
-        });
+            };
+            startBluetoothDiscovery();
+        }
+        nearbyBTListView.setAdapter(mainViewModel.nearbyBTArrayAdapter);
+        nearbyBTListView.setOnItemClickListener(this);
 
         return layout;
     }
@@ -144,7 +134,7 @@ public class SelectBluetoothDeviceFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        getContext().unregisterReceiver(bluetoothDiscoveryBroadcastReceiver);
+        mainActivity.unregisterReceiver(bluetoothDiscoveryBroadcastReceiver);
     }
 
     private void startBluetoothDiscovery() {
@@ -155,18 +145,27 @@ public class SelectBluetoothDeviceFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment("Connecting"));
+        BluetoothDevice bluetoothDevice = (BluetoothDevice) parent.getItemAtPosition(position);
+        mainViewModel.socketHandlerThread = new HandlerThread("");
+        mainViewModel.socketHandlerThread.start();
+        mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
+        mainViewModel.socketHandler.post(new BluetoothConnectRunnable(bluetoothDevice));
+    }
+
     class BluetoothDiscoveryBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
                 case BluetoothDevice.ACTION_FOUND:
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    Log.i(getClass().getSimpleName(), "BluetoothDevice Found : " + device.getName());
-                    nearbyBTArrayAdapter.add(device);
+                    mainViewModel.nearbyBTArrayAdapter.add(device);
                     break;
                 case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
                     Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_STARTED");
-                    nearbyBTArrayAdapter.clear();
+                    mainViewModel.nearbyBTArrayAdapter.clear();
                     scanButton.setVisibility(View.GONE);
                     progressBar.setVisibility(View.VISIBLE);
                     break;
@@ -179,10 +178,10 @@ public class SelectBluetoothDeviceFragment extends Fragment {
         }
     }
 
-    private class ConnectRunnable implements Runnable {
+    private class BluetoothConnectRunnable implements Runnable {
         private final BluetoothSocket mmSocket;
 
-        ConnectRunnable(BluetoothDevice device) {
+        BluetoothConnectRunnable(BluetoothDevice device) {
             // Use a temporary object that is later assigned to mmSocket
             // because mmSocket is final.
             BluetoothSocket tmp = null;
@@ -207,8 +206,7 @@ public class SelectBluetoothDeviceFragment extends Fragment {
                 public void run() {
                     try {
                         Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        Log.i("timeoutThread", e.toString());
+                    } catch (InterruptedException ignored) {
                     }
                     if (!mmSocket.isConnected()) {
                         try {
@@ -216,23 +214,18 @@ public class SelectBluetoothDeviceFragment extends Fragment {
                             mmSocket.close();
                         } catch (IOException ignored) {
                         }
-                        Log.i("timeoutThread", "mmSocket.isConnected() => false");
-                    } else {
-                        Log.i("timeoutThread", "mmSocket.isConnected() => true");
                     }
                 }
             }).start();
 
             try {
                 mmSocket.connect();
-                Log.e(getClass().getSimpleName(), "connected");
                 if (mainActivity != null) {
                     MainViewModel mainViewModel = ViewModelProviders.of(mainActivity).get(MainViewModel.class);
                     mainViewModel.bluetoothSocket = mmSocket;
                     mainViewModel.socketOutput = mmSocket.getOutputStream();
                     mainViewModel.socketOutput.write(Header);
 
-                    Log.e(getClass().getSimpleName(), "write(Header);");
                     InputStream inputStream = mmSocket.getInputStream();
                     byte[] buf = new byte[ServerHeader.length];
                     if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {
@@ -290,7 +283,7 @@ public class SelectBluetoothDeviceFragment extends Fragment {
                 if (!isRemoving()) {
                     Toast.makeText(mainActivity, showToast, duration).show();
                 }
-                bluetoothConnectorFragment.replaceChildFragment(SelectBluetoothDeviceFragment.this);
+                bluetoothConnectorFragment.replaceChildFragment(new SelectBluetoothDeviceFragment());
                 mainActivity.CloseConnection();
             }
         });

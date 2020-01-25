@@ -13,7 +13,21 @@
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
-        android:text="Saved Device"
+        android:text="Recently Used"
+        android:textColor="?colorAccent" />
+
+    <include
+        android:id="@+id/recentlyUsedBluetoothDevice"
+        layout="@layout/nearby_bluetooth_device" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="Saved"
         android:textColor="?colorAccent" />
 
     <ListView
@@ -21,14 +35,13 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        tools:listitem="@layout/bluetooth_device" />
+        tools:listitem="@layout/nearby_bluetooth_device" />
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="38dp"
         android:layout_marginTop="8dp"
-        android:animateLayoutChanges="true"
-        android:background="#0000">
+        android:animateLayoutChanges="true">
 
         <TextView
             android:layout_width="wrap_content"
@@ -57,8 +70,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_marginTop="-3dp"
-        android:indeterminate="true"
         android:layout_marginBottom="-4dp"
+        android:indeterminate="true"
         android:visibility="gone"
         tools:visibility="gone" />
 
