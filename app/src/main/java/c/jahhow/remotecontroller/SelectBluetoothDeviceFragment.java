@@ -28,25 +28,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 
-import static c.jahhow.remotecontroller.TcpIpConnectorFragment.Header;
-import static c.jahhow.remotecontroller.TcpIpConnectorFragment.ServerHeader;
-import static c.jahhow.remotecontroller.TcpIpConnectorFragment.SupportServerVersion;
-
-public class SelectBluetoothDeviceFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class SelectBluetoothDeviceFragment extends Fragment implements AdapterView.OnItemClickListener, ServerVerifier.ErrorCallback {
     MainActivity mainActivity;
     private MainViewModel mainViewModel;
     private BluetoothConnectorFragment bluetoothConnectorFragment;
@@ -141,7 +133,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             bluetoothAdapter.startDiscovery();
         } else {
-            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         }
     }
 
@@ -223,39 +215,15 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 if (mainActivity != null) {
                     MainViewModel mainViewModel = ViewModelProviders.of(mainActivity).get(MainViewModel.class);
                     mainViewModel.bluetoothSocket = mmSocket;
-                    mainViewModel.socketOutput = mmSocket.getOutputStream();
-                    mainViewModel.socketOutput.write(Header);
-
-                    InputStream inputStream = mmSocket.getInputStream();
-                    byte[] buf = new byte[ServerHeader.length];
-                    if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {
-                        OnErrorConnecting(R.string.ConnectionError);
-                        return;
-                    }
-                    if (!Arrays.equals(buf, ServerHeader)) {
-                        OnErrorConnecting(R.string.ConnectionError);
-                        return;
-                    }
-                    if (4 != inputStream.read(buf, 0, 4)) {
-                        OnErrorConnecting(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
-                        return;
-                    }
-                    int serverVersion = ByteBuffer.wrap(buf).getInt();
-                    if (serverVersion < SupportServerVersion) {
-                        OnErrorConnecting(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
-                        return;
-                    } else if (serverVersion > SupportServerVersion) {
-                        OnErrorConnecting(R.string.PleaseUpdateThisApp);
-                        return;
-                    }
-                    mainActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
-                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                    .replace(android.R.id.content, new ControllerSwitcherFragment()).commitAllowingStateLoss();
-                        }
-                    });
+                    if (ServerVerifier.isValid(mainViewModel, mmSocket.getInputStream(), mmSocket.getOutputStream(), SelectBluetoothDeviceFragment.this))
+                        mainActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
+                                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                        .replace(android.R.id.content, new ControllerSwitcherFragment()).commitAllowingStateLoss();
+                            }
+                        });
                 }
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and return.
@@ -276,7 +244,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         }
     }
 
-    private void OnErrorConnecting(@StringRes final int showToast, final int duration) {
+    public void OnErrorConnecting(@StringRes final int showToast, final int duration) {
         mainActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -289,7 +257,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         });
     }
 
-    private void OnErrorConnecting(@StringRes final int showToast) {
+    public void OnErrorConnecting(@StringRes final int showToast) {
         OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
     }
 }

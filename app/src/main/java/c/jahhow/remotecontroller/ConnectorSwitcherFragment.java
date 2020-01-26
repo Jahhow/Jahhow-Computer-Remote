@@ -14,25 +14,10 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ConnectorSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
-
-    private Fragment showingFragment = null;
-    private TcpIpConnectorFragment tcpIpConnectorFragment = new TcpIpConnectorFragment();
-    private BluetoothConnectorFragment bluetoothConnectorFragment = new BluetoothConnectorFragment();
-
     private boolean called_onCreateView = false;
-
-    /*@Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.i(this.getClass().getSimpleName(), String.format("onCreate (savedInstanceState == null) -> %b", savedInstanceState == null));
-    }*/
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        /*if (savedInstanceState == null) {
-            tcpIpConnectorFragment = new TcpIpConnectorFragment();
-            bluetoothConnectorFragment = new BluetoothConnectorFragment();
-        }*/
         View layout = inflater.inflate(R.layout.fragment_connector_switcher, container, false);
         BottomNavigationView navBar = layout.findViewById(R.id.navBarConnectors);
         navBar.setOnNavigationItemSelectedListener(this);
@@ -43,53 +28,27 @@ public class ConnectorSwitcherFragment extends Fragment implements BottomNavigat
         return layout;
     }
 
-    /*@Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.i(this.getClass().getSimpleName(), String.format("onSaveInstanceState outState %c= null", outState == null ? '=' : '!'));
-    }*/
 
-    /*@Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.i(this.getClass().getSimpleName(), "onDestroyView");
-    }*/
-
-    /*@Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        Log.i(this.getClass().getSimpleName(), String.format("onViewStateRestored savedInstanceState %c= null", savedInstanceState == null ? '=' : '!'));
-        super.onViewStateRestored(savedInstanceState);
-        showingFragment = getChildFragmentManager().getFragments().get(0);
-        switch (navBar.getSelectedItemId()) {
-            case R.id.navButtonInternet:
-                tcpIpConnectorFragment = (TcpIpConnectorFragment) showingFragment;
-                break;
-            case R.id.navButtonBluetooth:
-                bluetoothConnectorFragment = (BluetoothConnectorFragment) showingFragment;
-                break;
-        }
-    }*/
+    private int showingFragmentID = 0;
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        Fragment fragmentToShow = null;
-        switch (menuItem.getItemId()) {
-            case R.id.navButtonInternet:
-                fragmentToShow = tcpIpConnectorFragment;
-                break;
-            case R.id.navButtonBluetooth:
-                fragmentToShow = bluetoothConnectorFragment;
-                break;
-        }
-        if (showingFragment != fragmentToShow) {
+        int id = menuItem.getItemId();
+        if (id != showingFragmentID) {
+            showingFragmentID = id;
+            Fragment fragmentToShow = null;
+            switch (id) {
+                case R.id.navButtonInternet:
+                    fragmentToShow = new TcpIpConnectorFragment();
+                    break;
+                case R.id.navButtonBluetooth:
+                    fragmentToShow = new BluetoothConnectorFragment();
+                    break;
+            }
             Log.i(this.getClass().getSimpleName(), "fragmentTransaction");
-            FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction()
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            if (showingFragment != null)
-                fragmentTransaction.remove(showingFragment);
-            assert fragmentToShow != null;
-            fragmentTransaction.add(R.id.ConnectorFragmentContainer, fragmentToShow).commit();
-            showingFragment = fragmentToShow;
+            getChildFragmentManager().beginTransaction()
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                    .replace(R.id.ConnectorFragmentContainer, fragmentToShow).commit();
         }
         return true;
     }

@@ -2,25 +2,21 @@ package c.jahhow.remotecontroller;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModelProviders;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
-
-import androidx.annotation.StringRes;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase.PurchaseState;
@@ -36,7 +32,6 @@ import c.jahhow.remotecontroller.msg.SCS1;
 public class MainActivity extends AppCompatActivity {
     RemoteControllerApp remoteControllerApp;
     MainViewModel mainViewModel;
-    //TcpIpConnectorFragment connectorFragment;
 
     SharedPreferences preferences;
     static final String name_CommonSharedPrefer = "CommonSettings",
@@ -99,9 +94,8 @@ public class MainActivity extends AppCompatActivity {
         toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
         mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         if (savedInstanceState == null) {
-            //connectorFragment = new TcpIpConnectorFragment();
-            getSupportFragmentManager().beginTransaction()//.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .add(android.R.id.content, new ConnectorSwitcherFragment()/*, FragmentTag_Connector*/).commit();
+            getSupportFragmentManager().beginTransaction()
+                    .add(android.R.id.content, new ConnectorSwitcherFragment()).commit();
             if (preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
                 ShowHelpFragment(null);
         }
@@ -109,10 +103,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        //Log.e(getLocalClassName(), "onDestroy() isFinishing() == " + isFinishing());
-		/*if (isFinishing()) {
-			remoteControllerApp.EndBillingClient();
-		}*/
         remoteControllerApp.fetchFullAccessSkuListener = null;
         super.onDestroy();
     }
@@ -365,18 +355,6 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 
-	/*@Override
-	protected void onPause() {
-		Log.e(getLocalClassName(), "onPause() isFinishing() == " + isFinishing());
-		super.onPause();
-	}*/
-
-	/*@Override
-	protected void onRestoreInstanceState(Bundle savedInstanceState) {
-		//connectorFragment = (TcpIpConnectorFragment) getSupportFragmentManager().findFragmentByTag(FragmentTag_Connector);
-		super.onRestoreInstanceState(savedInstanceState);
-	}*/
-
     void OnSendCommandError(@StringRes final int showToast, final int toastDuration) {
         runOnUiThread(new Runnable() {
             @Override
@@ -398,38 +376,23 @@ public class MainActivity extends AppCompatActivity {
 
     // Please Call it on UI Thread
     void CloseConnection() {
-        if (mainViewModel.socket != null) {
+        if (mainViewModel.socketHandler != null) {
             mainViewModel.socketHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        mainViewModel.socket.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    mainViewModel.socketHandlerThread.quit();
-
-                    mainViewModel.socketHandlerThread = null;
-                    mainViewModel.socketOutput = null;
-                    mainViewModel.socketHandler = null;
-                    mainViewModel.socket = null;
-                }
-            });
-        } else if (mainViewModel.bluetoothSocket != null) {
-            mainViewModel.socketHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        mainViewModel.bluetoothSocket.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    if (mainViewModel.socketOutput != null)
+                        try {
+                            mainViewModel.socketOutput.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     mainViewModel.socketHandlerThread.quit();
 
                     mainViewModel.bluetoothSocket = null;
                     mainViewModel.socketHandlerThread = null;
                     mainViewModel.socketHandler = null;
                     mainViewModel.socketOutput = null;
+                    mainViewModel.socket = null;
                 }
             });
         }

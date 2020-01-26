@@ -30,7 +30,7 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class TcpIpConnectorFragment extends Fragment {
+public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.ErrorCallback {
 
     private RemoteControllerApp remoteControllerApp;
     private TextInputEditText tiEditTextIp, tiEditTextPort;
@@ -138,7 +138,7 @@ public class TcpIpConnectorFragment extends Fragment {
         buttonHelp.setVisibility(View.VISIBLE);
     }
 
-    private void OnErrorConnecting(@StringRes final int showToast, final int toastDuration) {
+    public void OnErrorConnecting(@StringRes final int showToast, final int toastDuration) {
         mainActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -152,13 +152,10 @@ public class TcpIpConnectorFragment extends Fragment {
         });
     }
 
-    private void OnErrorConnecting(@StringRes final int showToast) {
+    public void OnErrorConnecting(@StringRes final int showToast) {
         OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
     }
 
-    static final byte[] Header = {'R', 'C', 'R', 'H'};
-    static final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
-    static final int SupportServerVersion = 2;
     private Runnable connectRunnable = new Runnable() {
         @Override
         public void run() {
@@ -167,37 +164,14 @@ public class TcpIpConnectorFragment extends Fragment {
                         tiEditTextIp.getText().toString(),
                         Integer.parseInt(tiEditTextPort.getText().toString())
                 );
-                mainViewModel.socket = new Socket();
-                mainViewModel.socket.setTcpNoDelay(true);
-                mainViewModel.socket.connect(inetaddr, 1500);
-                mainViewModel.socketOutput = mainViewModel.socket.getOutputStream();
-                mainViewModel.socketOutput.write(Header);
-
-                mainViewModel.socket.setSoTimeout(1500);
-                InputStream inputStream = mainViewModel.socket.getInputStream();
-                byte[] buf = new byte[ServerHeader.length];
-                if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {
-                    OnErrorConnecting(R.string.ConnectionError);
-                    return;
-                }
-                if (!Arrays.equals(buf, ServerHeader)) {
-                    OnErrorConnecting(R.string.ConnectionError);
-                    return;
-                }
-                if (4 != inputStream.read(buf, 0, 4)) {
-                    OnErrorConnecting(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
-                    return;
-                }
-                int serverVersion = ByteBuffer.wrap(buf).getInt();
-                if (serverVersion < SupportServerVersion) {
-                    OnErrorConnecting(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
-                    return;
-                } else if (serverVersion > SupportServerVersion) {
-                    OnErrorConnecting(R.string.PleaseUpdateThisApp);
-                    return;
-                }
-                mainViewModel.socket.shutdownInput();
-                mainActivity.runOnUiThread(runnableOpenControllerFragment);
+                Socket mmSocket = new Socket();
+                mainViewModel.socket = mmSocket;
+                mmSocket.setTcpNoDelay(true);
+                mmSocket.connect(inetaddr, 1500);
+                mmSocket.setSoTimeout(1500);
+                if (ServerVerifier.isValid(mainViewModel, mmSocket.getInputStream(),
+                        mmSocket.getOutputStream(), TcpIpConnectorFragment.this))
+                    mainActivity.runOnUiThread(runnableOpenControllerFragment);
             } catch (SocketTimeoutException e) {
                 OnErrorConnecting(R.string.TimeoutCheckIPportOrUpdate, Toast.LENGTH_LONG);
             } catch (Exception e) {

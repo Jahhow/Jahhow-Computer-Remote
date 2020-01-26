@@ -17,6 +17,6 @@
         android:id="@+id/navBarConnectors"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/BottomNavigationTheme"
+        android:theme="@style/AppTheme.BottomNavigationTheme"
         app:menu="@menu/connectors" />
 </LinearLayout>
