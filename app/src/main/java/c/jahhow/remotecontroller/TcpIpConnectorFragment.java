@@ -158,7 +158,7 @@ public class TcpIpConnectorFragment extends Fragment {
 
     static final byte[] Header = {'R', 'C', 'R', 'H'};
     static final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
-    static final int SupportServerVersion = 1;
+    static final int SupportServerVersion = 2;
     private Runnable connectRunnable = new Runnable() {
         @Override
         public void run() {

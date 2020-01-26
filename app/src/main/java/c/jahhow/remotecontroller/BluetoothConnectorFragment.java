@@ -15,16 +15,21 @@ import android.view.ViewGroup;
 public class BluetoothConnectorFragment extends Fragment {
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private MyBroadcastReceiver myBroadcastReceiver;
-    private boolean bluetoothOriginalState_isEnabled;
+    private MainViewModel mainViewModel;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        mainViewModel = mainActivity.mainViewModel;
         View layout;
         if (bluetoothAdapter == null) {
             layout = inflater.inflate(R.layout.no_bluetooth, container, false);
             myBroadcastReceiver = null;
         } else {
-            bluetoothOriginalState_isEnabled = bluetoothAdapter.isEnabled();
+            if (!mainViewModel.hasSet_bluetoothOriginalState) {
+                mainViewModel.hasSet_bluetoothOriginalState = true;
+                mainViewModel.bluetoothOriginalState_isEnabled = bluetoothAdapter.isEnabled();
+            }
             myBroadcastReceiver = new MyBroadcastReceiver(this);
             IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             getContext().registerReceiver(myBroadcastReceiver, intentFilter);
@@ -43,7 +48,7 @@ public class BluetoothConnectorFragment extends Fragment {
         super.onDestroyView();
         if (bluetoothAdapter != null) {
             getContext().unregisterReceiver(myBroadcastReceiver);
-            if (!bluetoothOriginalState_isEnabled) {
+            if (!mainViewModel.bluetoothOriginalState_isEnabled && mainViewModel.bluetoothSocket != null) {
                 bluetoothAdapter.disable();
             }
         }

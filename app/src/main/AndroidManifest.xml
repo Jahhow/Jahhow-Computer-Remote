@@ -17,10 +17,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver
-            android:name=".MyBroadcastReceiver"
-            android:enabled="false"
-            android:exported="true"></receiver>
 
         <activity
             android:name=".MainActivity"
@@ -34,5 +30,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>

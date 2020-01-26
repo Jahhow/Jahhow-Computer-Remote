@@ -17,9 +17,9 @@ import c.jahhow.remotecontroller.msg.InputTextMode;
 import c.jahhow.remotecontroller.msg.SCS1;
 
 public class InputTextFragment extends Fragment {
-	TextInputEditText editText;
 	MainActivity mainActivity;
-	ImageView buttonToggleInputPassword;
+	private TextInputEditText editText;
+	private ImageView buttonToggleInputPassword;
 
 	@Nullable
 	@Override

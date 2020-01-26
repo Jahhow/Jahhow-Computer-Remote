@@ -16,18 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
     MainActivity mainActivity;
-
-    private Fragment showingController = null;
     private BottomNavigationView navigationView;
-
-    private ArrowButtonFragment arrowButtonFragment = new ArrowButtonFragment();
-    private SwipeControllerFragment swipeControllerFragment = new SwipeControllerFragment();
-    private MotionMouseFragment motionMouseFragment = new MotionMouseFragment();
-    private TouchPadFragment touchPadFragment = new TouchPadFragment();
-    private InputTextFragment inputTextFragment = new InputTextFragment();
-
-    private PurchaseFragment purchaseFragment = new PurchaseFragment();
-
     private RemoteControllerApp remoteControllerApp;
 
     @Nullable
@@ -41,7 +30,6 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
         navigationView = view.findViewById(R.id.navBarControllers);
         navigationView.setOnNavigationItemSelectedListener(this);
         remoteControllerApp.controllerSwitcherFragment = this;
-        purchaseFragment.controllerSwitcherFragment = this;
 
         remoteControllerApp.SyncPurchase();
         if (savedInstanceState == null) {
@@ -65,44 +53,10 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
         SavePreference();
     }
 
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState != null) {
-            showingController = getChildFragmentManager().getFragments().get(0);
-            if (showingController instanceof PurchaseFragment) {
-                purchaseFragment = (PurchaseFragment) showingController;
-            } else {
-                switch (navigationView.getSelectedItemId()) {
-                    case R.id.navButtonUseButtonController:
-                        arrowButtonFragment = (ArrowButtonFragment) showingController;
-                        break;
-                    case R.id.navButtonUseSwiper:
-                        swipeControllerFragment = (SwipeControllerFragment) showingController;
-                        break;
-                    case R.id.navButtonUseMotionMouse:
-                        motionMouseFragment = (MotionMouseFragment) showingController;
-                        break;
-                    case R.id.navButtonUseTouchPad:
-                        touchPadFragment = (TouchPadFragment) showingController;
-                        break;
-                    case R.id.navButtonSendText:
-                        inputTextFragment = (InputTextFragment) showingController;
-                        break;
-                }
-            }
-        }
-    }
-
     private void ShowFragment(Fragment fragment) {
-        if (showingController != fragment) {
-            FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction()
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            if (showingController != null)
-                fragmentTransaction.remove(showingController);
-            fragmentTransaction.add(R.id.ControllerFragmentContainer, fragment).commitAllowingStateLoss();
-            showingController = fragment;
-        }
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        fragmentTransaction.replace(R.id.ControllerFragmentContainer, fragment).commitAllowingStateLoss();
     }
 
     void OnPurchaseStateChanged() {
@@ -115,9 +69,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 
     @Override
     public void onPause() {
-        //Log.i(getClass().getSimpleName(), "onPause(), isRemoving() == " + isRemoving());
         if (isRemoving()) {
-            showingController = null;
             remoteControllerApp.controllerSwitcherFragment = null;
             SavePreference();
             mainActivity.CloseConnection();
@@ -125,41 +77,36 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
         super.onPause();
     }
 
-	/*@Override
-	public void onStop() {
-		Log.i(getClass().getSimpleName(), "onStop()");
-		super.onStop();
-	}
-
-	@Override
-	public void onDestroy() {
-		Log.i(getClass().getSimpleName(), "onDestroy()");
-		super.onDestroy();
-	}*/
-
     private void showFragmentById(int id) {
-        if (BuildConfig.DEBUG || remoteControllerApp.fullAccessState == PurchaseState.PURCHASED) {
+        if (!BuildConfig.DEBUG && remoteControllerApp.fullAccessState != PurchaseState.PURCHASED) {
+            id = R.id.purchaseFragment;
+        }
+        if (id != showingFragmentID) {
+            showingFragmentID = id;
             switch (id) {
                 case R.id.navButtonUseButtonController:
-                    ShowFragment(arrowButtonFragment);
+                    ShowFragment(new ArrowButtonFragment());
                     break;
                 case R.id.navButtonUseSwiper:
-                    ShowFragment(swipeControllerFragment);
+                    ShowFragment(new SwipeControllerFragment());
                     break;
                 case R.id.navButtonUseMotionMouse:
-                    ShowFragment(motionMouseFragment);
+                    ShowFragment(new MotionMouseFragment());
                     break;
                 case R.id.navButtonUseTouchPad:
-                    ShowFragment(touchPadFragment);
+                    ShowFragment(new TouchPadFragment());
                     break;
                 case R.id.navButtonSendText:
-                    ShowFragment(inputTextFragment);
+                    ShowFragment(new InputTextFragment());
+                    break;
+                case R.id.purchaseFragment:
+                    ShowFragment(new PurchaseFragment(this));
                     break;
             }
-        } else {
-            ShowFragment(purchaseFragment);
         }
     }
+
+    private int showingFragmentID = 0;
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {

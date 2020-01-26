@@ -13,21 +13,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
-        android:text="Recently Used"
-        android:textColor="?colorAccent" />
-
-    <include
-        android:id="@+id/recentlyUsedBluetoothDevice"
-        layout="@layout/nearby_bluetooth_device" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="Saved"
+        android:text="@string/pairedBluetoothDevice"
         android:textColor="?colorAccent" />
 
     <ListView
@@ -49,7 +35,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="16dp"
             android:layout_marginLeft="16dp"
-            android:text="Device Nearby"
+            android:text="@string/bluetooth_device_nearby"
             android:textColor="?colorAccent" />
 
         <Button
@@ -58,7 +44,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical|end"
-            android:text="Scan"
+            android:text="@string/scan"
             android:textSize="14sp" />
 
     </FrameLayout>

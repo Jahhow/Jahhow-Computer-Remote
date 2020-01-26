@@ -18,4 +18,6 @@ public class MainViewModel extends ViewModel {
     BluetoothSocket bluetoothSocket = null;
     OutputStream socketOutput = null;
     ArrayAdapter<BluetoothDevice> nearbyBTArrayAdapter = null;
+    boolean hasSet_bluetoothOriginalState = false;
+    boolean bluetoothOriginalState_isEnabled;
 }
