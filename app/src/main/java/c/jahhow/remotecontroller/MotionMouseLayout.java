@@ -199,14 +199,14 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                                     this.preventJump = false;
                                 }
                             } else {
-                                this.animationDiffY = curFocusingY - this.focusingPointerLastY;
+                                animationDiffY = curFocusingY - this.focusingPointerLastY;
                                 double animationDiffYDp = ((double) this.animationDiffY) / this.density;
-                                double adjustedDiffYDp = TouchPadView.GetAdjustFactor(0, animationDiffYDp, 1.08, 1) * animationDiffYDp;
-                                this.scrollBuffer += adjustedDiffYDp;
+                                double adjustedDiffYDp = MotionAdjuster.GetDefaultScrollMultiplier(animationDiffYDp) * animationDiffYDp;
+                                scrollBuffer += adjustedDiffYDp;
                                 int round = (int) Math.round(this.scrollBuffer);
                                 if (round != 0) {
-                                    this.f1701a.SendMouseWheel(round);
-                                    this.scrollBuffer -= round;
+                                    f1701a.SendMouseWheel(round);
+                                    scrollBuffer = 0;
                                 }
                                 this.focusingPointerLastY = curFocusingY;
                             }

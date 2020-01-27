@@ -1,5 +1,6 @@
 package c.jahhow.remotecontroller;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 
@@ -64,10 +65,9 @@ public class TouchPadView extends FrameLayout {
     final Object vibrateLock = new Object();
     boolean vibrateMutex;
 
-    //float pxSlop = 0;
-
     DownEventList downEventList = new DownEventList(/*pxSlop*/);
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
@@ -130,23 +130,23 @@ public class TouchPadView extends FrameLayout {
                             float ydp = event.getY() / density;
                             float diffXdp = xdp - originXdp;
                             float diffYdp = ydp - originYdp;
-                            float adjFactor = (float) GetAdjustFactor(diffXdp, diffYdp, moveMouseAdjExp, 1);
-                            int roundAdjDiffXdp = Math.round(adjFactor * diffXdp);
-                            int roundAdjDiffYdp = Math.round(adjFactor * diffYdp);
+                            double adjFactor = MotionAdjuster.GetDefaultMouseMoveMultiplier(diffXdp, diffYdp);
+                            int roundAdjDiffXdp = (int) Math.round(adjFactor * diffXdp);
+                            int roundAdjDiffYdp = (int) Math.round(adjFactor * diffYdp);
                             if (roundAdjDiffXdp != 0 || roundAdjDiffYdp != 0) {
                                 mainActivity.SendMouseMove((short) roundAdjDiffXdp, (short) roundAdjDiffYdp);
-                                originXdp += roundAdjDiffXdp / adjFactor;
-                                originYdp += roundAdjDiffYdp / adjFactor;
+                                originXdp = xdp;
+                                originYdp = ydp;
                             }
                         } else if (event.getPointerCount() == 2) {
                             float averageYdp = (event.getY() + event.getY(1)) / (2 * density);
                             float diffYdp = averageYdp - origin2PointerAverageYdp;
-                            double adjFactor = GetAdjustFactor(0, diffYdp, moveMouseAdjExp, scrollAdjMultiplier);
+                            double adjFactor = MotionAdjuster.GetDefaultScrollMultiplier(diffYdp);
                             double adjDiffYdp = adjFactor * diffYdp;
                             int roundAdjDiffYdp = (int) Math.round(adjDiffYdp);
                             if (roundAdjDiffYdp != 0) {
                                 mainActivity.SendMouseWheel(roundAdjDiffYdp);
-                                origin2PointerAverageYdp += roundAdjDiffYdp / adjFactor;
+                                origin2PointerAverageYdp = averageYdp;
                             }
                         }
                     } else {
@@ -286,36 +286,7 @@ public class TouchPadView extends FrameLayout {
         }
     }
 
-    static double scrollAdjMultiplier = 3;
-
-    double moveMouseAdjExp = 1.2;
-
-    static double GetAdjustFactor(double dxDp, double dyDp, double base, double scale) {
-        return scale * Math.pow(base, Math.sqrt(dxDp * dxDp + dyDp * dyDp));
-    }
-
-
     static class DownEventList extends ArrayList<DownEventList.DownEvent> {
-		/*float squarePxSlop;
-
-		DownEventList(float pxSlop) {
-			super();
-			squarePxSlop = pxSlop * pxSlop;
-		}
-
-		boolean isMoveEventExceedSlop(MotionEvent moveEvent) {
-			for (DownEvent downEvent : this) {
-				int index = moveEvent.findPointerIndex(downEvent.ID);
-				float dx = moveEvent.getX(index) - downEvent.X;
-				float dy = moveEvent.getY(index) - downEvent.Y;
-				Log.i(TouchPadLayout.class.getSimpleName(), String.format("dx:%f dy:%f", dx, dy));
-				float dr2 = dx * dx + dy * dy;
-				if (dr2 > squarePxSlop)
-					return true;
-			}
-			return false;
-		}*/
-
         static class DownEvent {
             float X, Y;
             int ID;
@@ -327,7 +298,7 @@ public class TouchPadView extends FrameLayout {
             }
         }
 
-        static int NotFound = -1;
+        static final int NOT_FOUND = -1;
 
         // return list index
         int findById(int id) {
@@ -335,7 +306,7 @@ public class TouchPadView extends FrameLayout {
                 DownEvent downEvent = get(i);
                 if (downEvent.ID == id) return i;
             }
-            return NotFound;
+            return NOT_FOUND;
         }
 
         boolean isEqualToMoveEvent(MotionEvent moveEvent) {
