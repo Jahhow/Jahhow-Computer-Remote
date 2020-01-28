@@ -1,18 +1,21 @@
 package c.jahhow.remotecontroller;
 
-public class ExponentialSmoothing {
+class ExponentialSmoothing {
+    private float value = 0;
+    private float newValueWeight;
+    private float oldValueWeight;
 
-    /* renamed from: a  reason: collision with root package name */
-    public float value;
+    ExponentialSmoothing(float newValueWeight) {
+        this.newValueWeight = newValueWeight;
+        this.oldValueWeight = 1.0f - newValueWeight;
+    }
 
-    /* renamed from: b  reason: collision with root package name */
-    public float newValueWeight;
+    float Smoothen(float value) {
+        this.value = (this.value * oldValueWeight) + (value * newValueWeight);
+        return this.value;
+    }
 
-    /* renamed from: c  reason: collision with root package name */
-    public float oldValueWeight;
-
-    public ExponentialSmoothing(float f) {
-        this.newValueWeight = f;
-        this.oldValueWeight = 1.0f - f;
+    void setValue(float value) {
+        this.value = value;
     }
 }

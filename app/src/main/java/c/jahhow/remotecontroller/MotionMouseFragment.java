@@ -91,14 +91,14 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (!pauseMovingMouse) {
+            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+            MatrixMultiply(rotationMatrix, mainVector, rotatedVector);
             float z = rotatedVector[2];
             double rotateZ = Math.atan2(rotatedVector[0], rotatedVector[1]);
             double acosZ = Math.acos(z);
-            if (hasSetOrigin) {
-                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
-                MatrixMultiply(rotationMatrix, mainVector, rotatedVector);
 
-                double diffRotateZ = NormalizeRadian(rotateZ - originRotateZ);// if use 'float', can see significant drifting
+            if (hasSetOrigin) {
+                double diffRotateZ = NormalizeRadian(rotateZ - originRotateZ);
                 float absZ = Math.abs(z);
                 if (absZ > upperBoundZ) {
                     float r = 1 - absZ;
@@ -110,18 +110,15 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
 
                 double diffZ = acosZ - originAcosZ;
 
-                double adjFactor = MotionAdjuster.GetMultiplierV3(diffRotateZ, diffZ, 20, 500);
+                double adjFactor = MotionAdjuster.GetMultiplierV3(diffRotateZ, diffZ, 40, 500);
                 int roundAdjDiffRotateZdp = (int) Math.round(adjFactor * diffRotateZ);
                 int roundAdjDiffArcCosZdp = (int) Math.round(adjFactor * diffZ);
                 if (roundAdjDiffRotateZdp != 0 || roundAdjDiffArcCosZdp != 0) {
                     mainActivity.SendMouseMove((short) roundAdjDiffRotateZdp, (short) roundAdjDiffArcCosZdp);
                     originRotateZ = rotateZ;
                     originAcosZ = acosZ;
-                    //originRotateZ = (float) NormalizeRadian(originRotateZ);
                 }
             } else {
-                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
-                MatrixMultiply(rotationMatrix, mainVector, rotatedVector);
                 originRotateZ = rotateZ;
                 originAcosZ = acosZ;
                 hasSetOrigin = true;

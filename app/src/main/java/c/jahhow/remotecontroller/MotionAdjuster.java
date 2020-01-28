@@ -20,6 +20,6 @@ class MotionAdjuster {
 
     static double GetDefaultScrollMultiplier(double dyDp) {
         //return GetMultiplierV3(dxDp, dyDp, .4, 1);
-        return .4 * dyDp + 1;
+        return .4 * Math.abs(dyDp) + 1;
     }
 }

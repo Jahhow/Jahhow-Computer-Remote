@@ -13,12 +13,12 @@ import android.widget.FrameLayout;
 @SuppressLint("ViewConstructor")
 public class MotionMouseLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener {
     public double scrollBuffer;
-    public float B = 0.0625f;
-    public float C = 3.0f;
-    public float D = 0.0f;
+    public float newValueWeight = .258f;
+    public float scale = 3.0f;
+    public float animationDiffX = 0.0f;
     public float animationDiffY = 0.0f;
-    public ExponentialSmoothing F = new ExponentialSmoothing(this.B);
-    public ExponentialSmoothing G = new ExponentialSmoothing(this.B);
+    public ExponentialSmoothing smootherY;
+    public ExponentialSmoothing smootherX;
     public int I = 0;
     public Runnable J = new K(this);
     public Runnable K = new L(this);
@@ -63,6 +63,11 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
 
     public MotionMouseLayout(MainActivity mainActivity, MotionMouseFragment motionMouseFragment) {
         super(mainActivity);
+        float refreshRate = mainActivity.getWindowManager().getDefaultDisplay().getRefreshRate();
+        newValueWeight = (float) (1 - Math.exp(-1 / refreshRate / newValueWeight));
+        smootherY = new ExponentialSmoothing(newValueWeight);
+        smootherX = new ExponentialSmoothing(newValueWeight);
+
         this.mouseCardView = (MotionMouseCardView) mainActivity.getLayoutInflater().inflate(R.layout.motion_mouse_card_view, this, false);
         this.mouseCardView.Init(this.accelerateDecelerateInterpolator);
         this.mouseCardView.animate();
@@ -102,19 +107,13 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
     }
 
     public void onAnimationUpdate(ValueAnimator valueAnimator) {
-        if (this.scroll) {
-            MotionMouseCardView motionMouseCardView = this.mouseCardView;
-            ExponentialSmoothing n2 = this.F;
-            n2.value = (n2.value * n2.oldValueWeight) + (this.animationDiffY * n2.newValueWeight);
-            motionMouseCardView.setTranslationY(n2.value * this.C);
+        if (scroll) {
+            mouseCardView.setTranslationY(smootherY.Smoothen(animationDiffY * scale));
             this.animationDiffY = 0.0f;
-            return;
+        } else {
+            mouseCardView.setTranslationX(smootherX.Smoothen(animationDiffX * scale));
+            this.animationDiffX = 0.0f;
         }
-        MotionMouseCardView motionMouseCardView2 = this.mouseCardView;
-        ExponentialSmoothing n3 = this.G;
-        n3.value = (n3.value * n3.oldValueWeight) + (this.D * n3.newValueWeight);
-        motionMouseCardView2.setTranslationX(n3.value * this.C);
-        this.D = 0.0f;
     }
 
     public void onAttachedToWindow() {
@@ -203,7 +202,7 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                                 double animationDiffYDp = ((double) this.animationDiffY) / this.density;
                                 double adjustedDiffYDp = MotionAdjuster.GetDefaultScrollMultiplier(animationDiffYDp) * animationDiffYDp;
                                 scrollBuffer += adjustedDiffYDp;
-                                int round = (int) Math.round(this.scrollBuffer);
+                                int round = (int) Math.round(scrollBuffer);
                                 if (round != 0) {
                                     f1701a.SendMouseWheel(round);
                                     scrollBuffer = 0;
@@ -219,7 +218,7 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                                     SwitchOrigin(f2, this.startFocusingY, curFocusingX, curFocusingY);
                                 }
                             } else {
-                                this.D = curFocusingX - this.n;
+                                this.animationDiffX = curFocusingX - this.n;
                                 this.n = curFocusingX;
                                 b(motionEvent, focusingPointerIndex);
                                 if (this.diffX < this.M) {
@@ -253,11 +252,11 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                         this.scroll = absDiffY > absDiffX;
                         if (this.scroll) {
                             this.focusingPointerLastY = curFocusingY;
-                            this.F.value = this.mouseCardView.getTranslationY() / this.C;
+                            this.smootherY.setValue(mouseCardView.getTranslationY());
                             this.scrollBuffer = 0.0f;
                         } else {
                             this.n = curFocusingX;
-                            this.G.value = this.mouseCardView.getTranslationX() / this.C;
+                            this.smootherX.setValue(mouseCardView.getTranslationX());
                             this.f1702b.a(0);
                             if (this.diffX < 0.0f) {
                                 z2 = true;
