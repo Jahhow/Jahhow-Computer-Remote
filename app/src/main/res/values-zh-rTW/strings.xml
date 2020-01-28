@@ -60,4 +60,5 @@
     <string name="pairedBluetoothDevice">已儲存</string>
     <string name="bluetooth_device_nearby">鄰近的裝置</string>
     <string name="scan">掃描</string>
+    <string name="connecting">正在連線</string>
 </resources>

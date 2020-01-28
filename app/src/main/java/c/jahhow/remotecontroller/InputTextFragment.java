@@ -2,14 +2,6 @@ package c.jahhow.remotecontroller;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.google.android.material.textfield.TextInputEditText;
-
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,14 +9,25 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.textfield.TextInputEditText;
+
 import c.jahhow.remotecontroller.msg.ButtonAction;
 import c.jahhow.remotecontroller.msg.InputTextMode;
 import c.jahhow.remotecontroller.msg.SCS1;
 
 public class InputTextFragment extends Fragment {
+    private static final String
+            BundleKey_InputType = "BKIT",
+            BundleKey_ShowingHelp = "BKSH";
+
     MainActivity mainActivity;
     private TextInputEditText editText;
     private ImageView buttonToggleInputPassword;
+    private View helpLayout;
     private boolean showHelp;
 
     @Nullable
@@ -35,7 +38,14 @@ public class InputTextFragment extends Fragment {
         View layout = inflater.inflate(R.layout.input_text_switcher, container, false);
         editText = layout.findViewById(R.id.SendTextEditText);
 
-        new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonBackspace), mainActivity) {
+        View backspace=layout.findViewById(R.id.inputTextButtonBackspace);
+        backspace.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mainActivity.SendKeyboardScanCode(SCS1.Backspace, ButtonAction.Click);
+            }
+        });
+        new LongPressAndUpDetector(backspace, mainActivity) {
             @Override
             void onLongClickDown(View v) {
                 showHelp = false;
@@ -48,7 +58,14 @@ public class InputTextFragment extends Fragment {
             }
         };
 
-        new LongPressAndUpDetector(layout.findViewById(R.id.inputTextButtonEnter), mainActivity) {
+        View enter = layout.findViewById(R.id.inputTextButtonEnter);
+        enter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mainActivity.SendKeyboardScanCode(SCS1.Enter, ButtonAction.Click);
+            }
+        });
+        new LongPressAndUpDetector(enter, mainActivity) {
             @Override
             void onLongClickDown(View v) {
                 showHelp = false;
@@ -91,7 +108,14 @@ public class InputTextFragment extends Fragment {
             }
         };
 
-        new LongPressAndUpDetector(layout.findViewById(R.id.buttonCtrlV), mainActivity) {
+        View ctrlV = layout.findViewById(R.id.buttonCtrlV);
+        ctrlV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mainActivity.SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.C);
+            }
+        });
+        new LongPressAndUpDetector(ctrlV, mainActivity) {
             @Override
             void onLongClickDown(View v) {
                 showHelp = false;
@@ -121,27 +145,12 @@ public class InputTextFragment extends Fragment {
             }
         });
 
-
         showHelp = mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpInputText, true);
+
+        boolean showHelpHere;
         if (savedInstanceState == null) {
-            if (showHelp) {
-                Log.i(getClass().getSimpleName(), "Manually Showing Help Layout");
-                final View inputTextLayout = layout.findViewById(R.id.inputTextLayout);
-                final View helpLayout = layout.findViewById(R.id.helpInputTextLayout);
-
-                helpLayout.setVisibility(View.VISIBLE);
-                inputTextLayout.setVisibility(View.GONE);
-
-                View buttonOk = helpLayout.findViewById(R.id.buttonOk);
-                buttonOk.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        helpLayout.setVisibility(View.GONE);
-                        inputTextLayout.setVisibility(View.VISIBLE);
-                    }
-                });
-            }
             editText.setText(mainActivity.preferences.getString(MainActivity.KeyPrefer_InputText, null));
+            showHelpHere = showHelp;
         } else {
             int inputType = savedInstanceState.getInt(BundleKey_InputType, 0);
             if (inputType != 0) {
@@ -149,6 +158,33 @@ public class InputTextFragment extends Fragment {
                 if (!isInputTypeNormal(inputType))
                     buttonToggleInputPassword.setAlpha(1f);
             }
+            showHelpHere = savedInstanceState.getBoolean(BundleKey_ShowingHelp);
+        }
+
+        helpLayout = layout.findViewById(R.id.helpInputTextLayout);
+        if (showHelpHere) {
+
+                /* It seems that xml animateLayoutChanges can only perform one visibility change
+                     at a time for both FrameLayout and ConstraintLayout.
+                   That is, the first setVisibility() would have no animation performed.
+                   So I end up adding non-transparent background color under help_input_text.xml,
+                     then animate only help_input_text's visibility instead of both.
+                */
+
+            //Log.i(getClass().getSimpleName(), "Manually Showing Help Layout");
+            //final View inputTextLayout = layout.findViewById(R.id.inputTextLayout);
+
+            //inputTextLayout.setVisibility(View.GONE);
+            helpLayout.setVisibility(View.VISIBLE);
+
+            View buttonOk = helpLayout.findViewById(R.id.buttonOk);
+            buttonOk.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //inputTextLayout.setVisibility(View.VISIBLE);
+                    helpLayout.setVisibility(View.GONE);
+                }
+            });
         }
         return layout;
     }
@@ -156,8 +192,6 @@ public class InputTextFragment extends Fragment {
     private boolean isInputTypeNormal(int inputType) {
         return (inputType & EditorInfo.TYPE_MASK_VARIATION) == 0;
     }
-
-    private static final String BundleKey_InputType = "BKIT";
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -168,12 +202,13 @@ public class InputTextFragment extends Fragment {
                     .putBoolean(MainActivity.KeyPrefer_ShowHelpInputText, showHelp).apply();
         }
         outState.putInt(BundleKey_InputType, editText.getInputType());
-        //Log.e("InputTextFragment","onSaveInstanceState()");
+        outState.putBoolean(BundleKey_ShowingHelp, helpLayout.getVisibility() == View.VISIBLE);
+        //Log.i("InputTextFragment","onSaveInstanceState()");
     }
 
     @Override
     public void onDestroy() {
-        //Log.e("InputTextFragment", "onDestroy()");
+        //Log.i("InputTextFragment", "onDestroy()");
         super.onDestroy();
         if (!mainActivity.isChangingConfigurations()) {
             mainActivity.preferences.edit()

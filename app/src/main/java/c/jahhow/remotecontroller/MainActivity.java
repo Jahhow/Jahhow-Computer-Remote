@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -166,24 +167,12 @@ public class MainActivity extends AppCompatActivity {
         SendKeyboardScanCode(SCS1.F5, ButtonAction.Click);
     }
 
-    public void SendClick_Backspace(View v) {
-        SendKeyboardScanCode(SCS1.Backspace, ButtonAction.Click);
-    }
-
-    public void SendClick_Enter(View v) {
-        SendKeyboardScanCode(SCS1.Enter, ButtonAction.Click);
-    }
-
     public void SendClick_ShiftF5(View v) {
         SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_SHIFT, SCS1.F5);
     }
 
     public void SendClick_CtrlC(View v) {
         SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.C);
-    }
-
-    public void SendClick_CtrlV(View v) {
-        SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.V);
     }
 
     public void SendClick_CtrlA(View v) {
@@ -234,13 +223,16 @@ public class MainActivity extends AppCompatActivity {
             return;
 
         try {
-            int textByteLen = text.length() << 1;
+            byte[] textBytes = text.getBytes(SendTextEncode);
+            int textByteLen = textBytes.length;
+            //Log.i("SendInputText", String.format("text.length() = %d", text.length()));
+            //Log.i("SendInputText", String.format("textBytes.length = %d", textBytes.length));
             final byte[] packet = ByteBuffer.allocate(7 + textByteLen)
                     .put(Msg.InputText)
                     .putInt(textByteLen)
                     .put(mode)
                     .put((byte) (Hold ? 1 : 0))
-                    .put(text.getBytes(SendTextEncode)).array();
+                    .put(textBytes).array();
 
             mainViewModel.socketHandler.post(new Runnable() {
                 @Override

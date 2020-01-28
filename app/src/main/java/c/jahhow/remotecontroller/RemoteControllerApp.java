@@ -105,10 +105,11 @@ public class RemoteControllerApp extends Application implements SkuDetailsRespon
 					skuDetailsFullAccess = skuDetails;
 				}
 			}
-		} else {
-			Log.e(RemoteControllerApp.class.getSimpleName(), "onSkuDetailsResponse Not ok getResponseCode() == "
+		}/* else {
+			Log.i(RemoteControllerApp.class.getSimpleName(),
+					"onSkuDetailsResponse Not ok getResponseCode() == "
 					+ billingResult.getResponseCode() + " : " + billingResult.getDebugMessage());
-		}
+		}*/
 
 		if (fetchFullAccessSkuListener != null) {
 			fetchFullAccessSkuListener.onSkuDetailsResponse();

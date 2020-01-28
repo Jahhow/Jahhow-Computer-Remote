@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +30,6 @@ import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProviders;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -139,7 +137,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment("Connecting"));
+        bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment(getText(R.string.connecting)));
         BluetoothDevice bluetoothDevice = (BluetoothDevice) parent.getItemAtPosition(position);
         mainViewModel.socketHandlerThread = new HandlerThread("");
         mainViewModel.socketHandlerThread.start();
@@ -156,13 +154,13 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                     mainViewModel.nearbyBTArrayAdapter.add(device);
                     break;
                 case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
-                    Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_STARTED");
+                    //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_STARTED");
                     mainViewModel.nearbyBTArrayAdapter.clear();
                     scanButton.setVisibility(View.GONE);
                     progressBar.setVisibility(View.VISIBLE);
                     break;
                 case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
-                    Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_FINISHED");
+                    //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_FINISHED");
                     scanButton.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.GONE);
                     break;
@@ -181,7 +179,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             try {
                 tmp = device.createRfcommSocketToServiceRecord(BT_SERVICE_UUID);
             } catch (IOException e) {
-                Log.e(getClass().getSimpleName(), "Socket's create() method failed", e);
+                //Log.e(getClass().getSimpleName(), "Socket's create() method failed", e);
             }
             mmSocket = tmp;
         }
@@ -197,7 +195,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 @Override
                 public void run() {
                     try {
-                        Thread.sleep(30000);
+                        Thread.sleep(3000);
                     } catch (InterruptedException ignored) {
                     }
                     if (!mmSocket.isConnected()) {
@@ -233,11 +231,11 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                     } catch (IOException ignored) {
                     }
                     OnErrorConnecting(R.string.ConnectionError);
-                    Log.e(getClass().getSimpleName(), "IOException: " + connectException);
+                    //Log.e(getClass().getSimpleName(), "IOException: " + connectException);
                 }
             } catch (Exception e) {
                 OnErrorConnecting(R.string.ConnectionError);
-                Log.e(getClass().getSimpleName(), "final catch " + e);
+                //Log.e(getClass().getSimpleName(), "final catch " + e);
             }
         }
     }

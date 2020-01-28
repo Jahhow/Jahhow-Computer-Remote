@@ -42,7 +42,7 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
     public final float density = getResources().getDisplayMetrics().density;
     public float q = (this.density * 4.0f);
     public long r = 800;
-    public boolean s;
+    public boolean attachedToWindow;
     public int t = 300;
     public int u = 300;
     public boolean preventJump = false;
@@ -108,13 +108,13 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
 
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        this.s = true;
-        new Thread(new J(this)).start();
+        this.attachedToWindow = true;
+        new Thread(new SwipeCardDemoRunnable(this)).start();
     }
 
     public void onDetachedFromWindow() {
-        this.s = false;
-        Log.i(MotionMouseLayout.class.getSimpleName(), "onDetachedFromWindow()");
+        this.attachedToWindow = false;
+        //Log.i(MotionMouseLayout.class.getSimpleName(), "onDetachedFromWindow()");
         super.onDetachedFromWindow();
     }
 
@@ -133,7 +133,7 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
         int actionMasked = motionEvent.getActionMasked();
         boolean z2 = false;
         if (actionMasked == MotionEvent.ACTION_DOWN) {
-            this.s = false;
+            this.attachedToWindow = false;
             this.aFocusingPointerActuallyMoved = false;
             this.y = true;
             this.diffY = 0.0f;

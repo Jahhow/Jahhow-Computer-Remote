@@ -60,4 +60,5 @@
     <string name="pairedBluetoothDevice">Saved</string>
     <string name="bluetooth_device_nearby">Device Nearby</string>
     <string name="scan">Scan</string>
+    <string name="connecting">Connecting</string>
 </resources>

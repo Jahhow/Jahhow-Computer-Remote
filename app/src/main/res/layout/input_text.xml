@@ -8,6 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
         android:gravity="center"
         android:orientation="vertical"
         android:paddingTop="20dp"
@@ -18,12 +19,14 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp">
+            android:layout_marginRight="20dp"
+            android:animateLayoutChanges="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/SendTextEditText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:animateLayoutChanges="true"
                 android:gravity="center"
                 android:hint="@string/input_text"
                 android:inputType="textMultiLine"
@@ -52,14 +55,12 @@
                     <ImageView
                         android:id="@+id/inputTextButtonBackspace"
                         style="@style/AppTheme.InputTextButton.Accent"
-                        android:onClick="SendClick_Backspace"
                         app:srcCompat="@drawable/ic_backspace_black_24dp"
                         tools:ignore="ContentDescription" />
 
                     <ImageView
                         android:id="@+id/inputTextButtonEnter"
                         style="@style/AppTheme.InputTextButton.Accent"
-                        android:onClick="SendClick_Enter"
                         app:srcCompat="@drawable/ic_enter_24dp"
                         tools:ignore="ContentDescription" />
 
@@ -178,7 +179,6 @@
                     <Button
                         android:id="@+id/buttonCtrlV"
                         style="@style/AppTheme.KeyboardShortcutButton.Narrow"
-                        android:onClick="SendClick_CtrlV"
                         android:text="@string/Paste" />
                 </LinearLayout>
             </HorizontalScrollView>

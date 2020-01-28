@@ -1,14 +1,19 @@
 package c.jahhow.remotecontroller;
 
 class MotionAdjuster {
-    static double GetMultiplierV1(double dxDp, double dyDp, double base, double scale) {
-        return scale * Math.pow(base, Math.sqrt(dxDp * dxDp + dyDp * dyDp));
-    }
-
-    static double GetMultiplierV2(double dxDp, double dyDp, double expFactor) {
+    /*
+    // Strange
+    static double GetMultiplierV1(double dxDp, double dyDp, double expFactor) {
         return Math.pow(dxDp * dxDp + dyDp * dyDp, .5 * (expFactor - 1));
     }
 
+    // Too fast on higher speed
+    static double GetMultiplierV2(double dxDp, double dyDp, double base, double scale) {
+        return scale * Math.pow(base, Math.sqrt(dxDp * dxDp + dyDp * dyDp));
+    }
+    */
+
+    // Works like a charm!
     static double GetMultiplierV3(double dxDp, double dyDp, double intensity, double scale) {
         double x = Math.sqrt(dxDp * dxDp + dyDp * dyDp);
         return scale * (intensity * x + 1);

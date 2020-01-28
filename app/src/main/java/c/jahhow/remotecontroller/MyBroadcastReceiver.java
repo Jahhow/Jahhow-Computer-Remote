@@ -17,11 +17,11 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         switch (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1)) {
             case BluetoothAdapter.STATE_ON:
-                Log.i(getClass().getSimpleName(), "BluetoothAdapter.STATE_ON");
+                //Log.i(getClass().getSimpleName(), "BluetoothAdapter.STATE_ON");
                 bluetoothConnectorFragment.onBluetoothStateON();
                 break;
             case BluetoothAdapter.STATE_OFF:
-                Log.i(getClass().getSimpleName(), "BluetoothAdapter.STATE_OFF");
+                //Log.i(getClass().getSimpleName(), "BluetoothAdapter.STATE_OFF");
                 bluetoothConnectorFragment.onBluetoothStateOFF();
                 break;
         }
