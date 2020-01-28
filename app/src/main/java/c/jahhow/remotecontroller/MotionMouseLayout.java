@@ -13,7 +13,7 @@ import android.widget.FrameLayout;
 @SuppressLint("ViewConstructor")
 public class MotionMouseLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener {
     public double scrollBuffer;
-    public float newValueWeight = .258f;
+    public static final float expSmoothTimeConstant = .2582437027204f;
     public float scale = 3.0f;
     public float animationDiffX = 0.0f;
     public float animationDiffY = 0.0f;
@@ -24,20 +24,10 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
     public Runnable K = new L(this);
     public boolean L;
     public float M;
-
-    /* renamed from: a  reason: collision with root package name */
     public MainActivity f1701a;
-
-    /* renamed from: b  reason: collision with root package name */
     public MotionMouseFragment f1702b;
-
-    /* renamed from: c  reason: collision with root package name */
     public MotionMouseCardView mouseCardView;
-
-    /* renamed from: d  reason: collision with root package name */
     public ValueAnimator f1704d = new CompatTimeAnimator();
-
-    /* renamed from: e  reason: collision with root package name */
     public Interpolator decelerateInterpolator = new DecelerateInterpolator(2.0f);
     public Interpolator accelerateDecelerateInterpolator = new AccelerateDecelerateInterpolator();
     public int focusingPointerID;
@@ -64,9 +54,9 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
     public MotionMouseLayout(MainActivity mainActivity, MotionMouseFragment motionMouseFragment) {
         super(mainActivity);
         float refreshRate = mainActivity.getWindowManager().getDefaultDisplay().getRefreshRate();
-        newValueWeight = (float) (1 - Math.exp(-1 / refreshRate / newValueWeight));
-        smootherY = new ExponentialSmoothing(newValueWeight);
-        smootherX = new ExponentialSmoothing(newValueWeight);
+        float refreshRateAware_NewValueWeight = (float) (1 - Math.exp(-1 / refreshRate / expSmoothTimeConstant));
+        smootherY = new ExponentialSmoothing(refreshRateAware_NewValueWeight);
+        smootherX = new ExponentialSmoothing(refreshRateAware_NewValueWeight);
 
         this.mouseCardView = (MotionMouseCardView) mainActivity.getLayoutInflater().inflate(R.layout.motion_mouse_card_view, this, false);
         this.mouseCardView.Init(this.accelerateDecelerateInterpolator);

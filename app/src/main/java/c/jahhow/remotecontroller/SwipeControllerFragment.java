@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class SwipeControllerFragment extends Fragment {
-	SwipeDetectorLayout swipeDetectorLayout;
+	private SwipeDetectorLayout swipeDetectorLayout;
 	MainActivity mainActivity;
 
 	@Override

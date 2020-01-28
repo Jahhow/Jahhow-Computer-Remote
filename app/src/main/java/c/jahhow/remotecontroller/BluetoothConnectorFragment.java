@@ -1,6 +1,7 @@
 package c.jahhow.remotecontroller;
 
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.IntentFilter;
 import android.os.Bundle;
 
@@ -8,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +23,7 @@ public class BluetoothConnectorFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         MainActivity mainActivity = (MainActivity) getActivity();
         mainViewModel = mainActivity.mainViewModel;
+        mainViewModel.bluetoothConnectorFragment = this;
         View layout;
         if (bluetoothAdapter == null) {
             layout = inflater.inflate(R.layout.no_bluetooth, container, false);
@@ -40,7 +43,14 @@ public class BluetoothConnectorFragment extends Fragment {
             }
             layout = inflater.inflate(R.layout.fragment_bluetooth_connector, container, false);
         }
+        //Log.i(getClass().getSimpleName(), String.format("savedInstanceState %c= null", savedInstanceState == null ? '=' : '!'));
         return layout;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mainViewModel.bluetoothConnectorFragment = null;
     }
 
     @Override
@@ -48,7 +58,8 @@ public class BluetoothConnectorFragment extends Fragment {
         super.onDestroyView();
         if (bluetoothAdapter != null) {
             getContext().unregisterReceiver(myBroadcastReceiver);
-            if (!mainViewModel.bluetoothOriginalState_isEnabled && mainViewModel.bluetoothSocket != null) {
+            if (!mainViewModel.bluetoothOriginalState_isEnabled && mainViewModel.bluetoothSocket != null
+                    && !getActivity().isChangingConfigurations()) {
                 bluetoothAdapter.disable();
             }
         }
@@ -58,7 +69,7 @@ public class BluetoothConnectorFragment extends Fragment {
         if (bluetoothAdapter.enable()) {
             replaceChildFragment(new LoadingFragment());
         } else {
-            replaceChildFragment(new TurnOnBluetoothFragment(this));
+            replaceChildFragment(new TurnOnBluetoothFragment());
         }
     }
 
@@ -67,7 +78,7 @@ public class BluetoothConnectorFragment extends Fragment {
     }
 
     void onBluetoothStateOFF() {
-        replaceChildFragment(new TurnOnBluetoothFragment(this));
+        replaceChildFragment(new TurnOnBluetoothFragment());
     }
 
     void replaceChildFragment(Fragment newFragment) {

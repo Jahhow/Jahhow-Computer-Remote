@@ -13,7 +13,7 @@ import android.widget.TextView;
 public class LoadingFragment extends Fragment {
     private CharSequence loadingText;
 
-    LoadingFragment() {
+    public LoadingFragment() {
         this(null);
     }
 

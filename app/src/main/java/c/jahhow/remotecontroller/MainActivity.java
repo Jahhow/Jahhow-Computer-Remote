@@ -43,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
             KeyPrefer_InputText = "5",
             KeyPrefer_VibrateOnDown = "6",
             KeyPrefer_ShowHelpButton = "7",
-            KeyPrefer_ShowHelpOnCreate = "8";
+            KeyPrefer_ShowHelpOnCreate = "8",
+            KeyPrefer_ShowHelpInputText = "9";
 
     Toast toast;
     Vibrator vibrator;
@@ -93,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
         remoteControllerApp = (RemoteControllerApp) getApplication();
         toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
         mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        mainViewModel.mainActivity = this;
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(android.R.id.content, new ConnectorSwitcherFragment()).commit();

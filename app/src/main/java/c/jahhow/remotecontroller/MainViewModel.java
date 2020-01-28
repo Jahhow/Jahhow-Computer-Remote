@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 public class MainViewModel extends ViewModel {
+    MainActivity mainActivity = null;
+    BluetoothConnectorFragment bluetoothConnectorFragment = null;
     HandlerThread socketHandlerThread = null;
     Handler socketHandler = null;
     Socket socket = null;

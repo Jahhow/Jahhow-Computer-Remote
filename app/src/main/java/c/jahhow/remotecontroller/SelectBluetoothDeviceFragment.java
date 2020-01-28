@@ -197,7 +197,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 @Override
                 public void run() {
                     try {
-                        Thread.sleep(3000);
+                        Thread.sleep(30000);
                     } catch (InterruptedException ignored) {
                     }
                     if (!mmSocket.isConnected()) {
@@ -212,18 +212,16 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
 
             try {
                 mmSocket.connect();
-                if (mainActivity != null) {
-                    MainViewModel mainViewModel = ViewModelProviders.of(mainActivity).get(MainViewModel.class);
-                    mainViewModel.bluetoothSocket = mmSocket;
-                    if (ServerVerifier.isValid(mainViewModel, mmSocket.getInputStream(), mmSocket.getOutputStream(), SelectBluetoothDeviceFragment.this))
-                        mainActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
-                                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                        .replace(android.R.id.content, new ControllerSwitcherFragment()).commitAllowingStateLoss();
-                            }
-                        });
+                mainViewModel.bluetoothSocket = mmSocket;
+                if (ServerVerifier.isValid(mainViewModel, mmSocket.getInputStream(), mmSocket.getOutputStream(), SelectBluetoothDeviceFragment.this)) {
+                    mainViewModel.mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mainViewModel.mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
+                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                    .replace(android.R.id.content, new ControllerSwitcherFragment()).commitAllowingStateLoss();
+                        }
+                    });
                 }
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and return.
@@ -245,14 +243,13 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     }
 
     public void OnErrorConnecting(@StringRes final int showToast, final int duration) {
-        mainActivity.runOnUiThread(new Runnable() {
+        mainViewModel.mainActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (!isRemoving()) {
-                    Toast.makeText(mainActivity, showToast, duration).show();
-                }
-                bluetoothConnectorFragment.replaceChildFragment(new SelectBluetoothDeviceFragment());
-                mainActivity.CloseConnection();
+                Toast.makeText(mainViewModel.mainActivity, showToast, duration).show();
+                if (mainViewModel.bluetoothConnectorFragment != null)
+                    mainViewModel.bluetoothConnectorFragment.replaceChildFragment(new SelectBluetoothDeviceFragment());
+                mainViewModel.mainActivity.CloseConnection();
             }
         });
     }

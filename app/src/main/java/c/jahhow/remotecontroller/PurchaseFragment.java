@@ -24,13 +24,10 @@ public class PurchaseFragment extends Fragment {
     private Button purchaseButton;
     private TextView subtitle;
 
-    PurchaseFragment(ControllerSwitcherFragment controllerSwitcherFragment) {
-        this.controllerSwitcherFragment = controllerSwitcherFragment;
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        controllerSwitcherFragment = (ControllerSwitcherFragment) getParentFragment();
         View view = inflater.inflate(R.layout.purchase, container, false);
         activity = (AppCompatActivity) getActivity();
         assert activity != null;

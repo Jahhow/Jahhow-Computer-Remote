@@ -78,7 +78,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
     }
 
     private void showFragmentById(int id) {
-        if (!BuildConfig.DEBUG && remoteControllerApp.fullAccessState != PurchaseState.PURCHASED) {
+        if (/*!BuildConfig.DEBUG && */remoteControllerApp.fullAccessState != PurchaseState.PURCHASED) {
             id = R.id.purchaseFragment;
         }
         if (id != showingFragmentID) {
@@ -100,7 +100,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
                     ShowFragment(new InputTextFragment());
                     break;
                 case R.id.purchaseFragment:
-                    ShowFragment(new PurchaseFragment(this));
+                    ShowFragment(new PurchaseFragment());
                     break;
             }
         }

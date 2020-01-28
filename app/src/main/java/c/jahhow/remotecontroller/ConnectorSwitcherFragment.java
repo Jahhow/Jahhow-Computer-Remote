@@ -21,10 +21,11 @@ public class ConnectorSwitcherFragment extends Fragment implements BottomNavigat
         View layout = inflater.inflate(R.layout.fragment_connector_switcher, container, false);
         BottomNavigationView navBar = layout.findViewById(R.id.navBarConnectors);
         navBar.setOnNavigationItemSelectedListener(this);
-        if (!called_onCreateView) {
-            called_onCreateView = true;
+        if (!called_onCreateView && savedInstanceState == null) {
             navBar.setSelectedItemId(R.id.navButtonBluetooth/*navBar.getSelectedItemId()*/);
         }
+        called_onCreateView = true;
+        //Log.i(getClass().getSimpleName(), String.format("savedInstanceState %c= null", savedInstanceState == null ? '=' : '!'));
         return layout;
     }
 
@@ -45,7 +46,7 @@ public class ConnectorSwitcherFragment extends Fragment implements BottomNavigat
                     fragmentToShow = new BluetoothConnectorFragment();
                     break;
             }
-            Log.i(this.getClass().getSimpleName(), "fragmentTransaction");
+            Log.i(this.getClass().getSimpleName(), "Manually Added Fragment");
             getChildFragmentManager().beginTransaction()
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                     .replace(R.id.ConnectorFragmentContainer, fragmentToShow).commit();
