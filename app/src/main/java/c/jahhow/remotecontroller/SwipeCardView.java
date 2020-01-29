@@ -1,5 +1,6 @@
 package c.jahhow.remotecontroller;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,6 +8,7 @@ import androidx.cardview.widget.CardView;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
+@SuppressLint("ViewConstructor")
 public class SwipeCardView extends CardView {
 	ImageView indicator;
 	public static final int IndicatorUp = 0, IndicatorRight = 1, IndicatorDown = 2, IndicatorLeft = 3;

@@ -1,11 +1,13 @@
 package c.jahhow.remotecontroller;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Build;
 import androidx.cardview.widget.CardView;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
+@SuppressLint("ViewConstructor")
 public class MyCardView extends CardView {
     public ImageView j;
     public float k;

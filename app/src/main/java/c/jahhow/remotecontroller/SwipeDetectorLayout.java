@@ -1,5 +1,6 @@
 package c.jahhow.remotecontroller;
 
+import android.annotation.SuppressLint;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
@@ -8,6 +9,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+@SuppressLint("ViewConstructor")
 public class SwipeDetectorLayout extends FrameLayout {
 
     MainActivity mainActivity;
@@ -126,6 +128,7 @@ public class SwipeDetectorLayout extends FrameLayout {
 
     boolean ignoreSameMoves = false;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
