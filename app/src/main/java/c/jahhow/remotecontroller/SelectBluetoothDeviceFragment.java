@@ -63,8 +63,11 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         progressBar = layout.findViewById(R.id.progressBarBTScanning);
         scanButton = layout.findViewById(R.id.btScanButton);
 
-        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
-        ArrayAdapter<BluetoothDevice> arrayAdapter = new ArrayAdapter<BluetoothDevice>(mainActivity, R.layout.nearby_bluetooth_device, new ArrayList<>(bondedDevices)) {
+        ArrayList<BluetoothDevice> bondedDevices = new ArrayList<>();
+        bondedDevices.add(new BluetoothDevice("Jahhow's Laptop", "0E:36:93:68:F3:A5"));
+        bondedDevices.add(new BluetoothDevice("Car Play", "74:E3:46:A0:55:D7"));
+        bondedDevices.add(new BluetoothDevice("Headphone", "1C:E2:72:4D:B2:5B"));
+        ArrayAdapter<BluetoothDevice> arrayAdapter = new ArrayAdapter<BluetoothDevice>(mainActivity, R.layout.nearby_bluetooth_device, bondedDevices) {
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -82,7 +85,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         pairedBTListView.setAdapter(arrayAdapter);
         pairedBTListView.setOnItemClickListener(this);
 
-        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        IntentFilter intentFilter = new IntentFilter(android.bluetooth.BluetoothDevice.ACTION_FOUND);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         mainActivity.registerReceiver(bluetoothBroadcastReceiver, intentFilter);
@@ -144,7 +147,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         mainViewModel.bondingFailed = false;
         bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment(getText(R.string.connecting)));
-        BluetoothDevice bluetoothDevice = (BluetoothDevice) parent.getItemAtPosition(position);
+        android.bluetooth.BluetoothDevice bluetoothDevice = (android.bluetooth.BluetoothDevice) parent.getItemAtPosition(position);
         mainViewModel.socketHandlerThread = new HandlerThread("");
         mainViewModel.socketHandlerThread.start();
         mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
@@ -152,21 +155,28 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     }
 
     class BluetoothBroadcastReceiver extends BroadcastReceiver {
+        int index = 0;
+        ArrayList<BluetoothDevice> nearbyDevices = new ArrayList<>();
+
+        BluetoothBroadcastReceiver() {
+            nearbyDevices.add(new BluetoothDevice("Jahhow's Laptop", "0E:36:93:68:F3:A5"));
+        }
+
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action != null) {
                 switch (action) {
-                    case BluetoothDevice.ACTION_FOUND: {
-                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                        mainViewModel.nearbyBTArrayAdapter.add(device);
-                        break;
-                    }
                     case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
+                        index = 0;
                         //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_STARTED");
                         mainViewModel.nearbyBTArrayAdapter.clear();
                         scanButton.setVisibility(View.GONE);
                         progressBar.setVisibility(View.VISIBLE);
+
+                        for (int i = 0; i < nearbyDevices.size(); ++i) {
+                            mainViewModel.nearbyBTArrayAdapter.add(nearbyDevices.get(i));
+                        }
                         break;
                     case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
                         //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_FINISHED");
@@ -181,7 +191,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     private class BluetoothConnectRunnable implements Runnable {
         private final BluetoothSocket mmSocket;
 
-        BluetoothConnectRunnable(BluetoothDevice device) {
+        BluetoothConnectRunnable(android.bluetooth.BluetoothDevice device) {
             // Use a temporary object that is later assigned to mmSocket
             // because mmSocket is final.
             BluetoothSocket tmp = null;
@@ -270,5 +280,23 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
 
     public void OnErrorConnecting(@StringRes final int showToast) {
         OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
+    }
+
+    static class BluetoothDevice {
+        String name;
+        String address;
+
+        BluetoothDevice(String name, String address) {
+            this.name = name;
+            this.address = address;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getAddress() {
+            return address;
+        }
     }
 }
