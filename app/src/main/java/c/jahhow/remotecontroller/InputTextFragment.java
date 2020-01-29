@@ -2,7 +2,6 @@ package c.jahhow.remotecontroller;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +37,7 @@ public class InputTextFragment extends Fragment {
         View layout = inflater.inflate(R.layout.input_text_switcher, container, false);
         editText = layout.findViewById(R.id.SendTextEditText);
 
-        View backspace=layout.findViewById(R.id.inputTextButtonBackspace);
+        View backspace = layout.findViewById(R.id.inputTextButtonBackspace);
         backspace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

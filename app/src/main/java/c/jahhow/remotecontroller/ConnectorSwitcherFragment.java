@@ -15,7 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class ConnectorSwitcherFragment extends MyFragment implements BottomNavigationView.OnNavigationItemSelectedListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.fragment_connector_switcher, container, false);
+        View layout = inflater.inflate(R.layout.connector_switcher, container, false);
         BottomNavigationView navBar = layout.findViewById(R.id.navBarConnectors);
         navBar.setOnNavigationItemSelectedListener(this);
         if (!isRestoringState()) {
@@ -25,7 +25,6 @@ public class ConnectorSwitcherFragment extends MyFragment implements BottomNavig
         //Log.i(getClass().getSimpleName(), String.format("savedInstanceState %c= null", savedInstanceState == null ? '=' : '!'));
         return layout;
     }
-
 
     private int showingFragmentID = 0;
 

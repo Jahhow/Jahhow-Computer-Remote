@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.transition.AutoTransition;
 import androidx.transition.TransitionManager;
@@ -23,14 +23,11 @@ import androidx.transition.TransitionSet;
 
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
-public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.ErrorCallback {
+public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier.ErrorCallback {
 
     private RemoteControllerApp remoteControllerApp;
     private TextInputEditText tiEditTextIp, tiEditTextPort;
@@ -47,12 +44,6 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
     private boolean setButtonsStateOnCreateView = false;
     private int helpButtonVisibility;
     private boolean connectButtonEnabled;
-
-	/*@Override
-	public void onCreate(@Nullable Bundle savedInstanceState) {
-		Log.i(getClass().getSimpleName(), "onCreate()");
-		super.onCreate(savedInstanceState);
-	}*/
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -84,6 +75,12 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
                 mainViewModel.socketHandler.post(connectRunnable);
             }
         });
+        buttonHelp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ShowGuideTcpIp();
+            }
+        });
 
         if (savedInstanceState == null) {
             tiEditTextIp.setText(preferences.getString(MainActivity.KeyPrefer_IP, "192.168.1.3"));
@@ -97,18 +94,35 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
         } else {
             //Log.i(getClass().getSimpleName(), "preferences.getBoolean(KeyPrefer_ShowHelpButton, true) == " + preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true));
             buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true) ? View.VISIBLE : View.GONE);
+
+        }
+
+        if (!isRestoringState()) {
+            if (preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, true)) {
+                ShowGuideTcpIp();
+            }
         }
         return layout;
     }
 
+    private void ShowGuideTcpIp() {
+        getParentFragmentManager().beginTransaction()
+                .addToBackStack(null)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.ConnectorFragmentContainer, new GuideTcpIpConnectionFragment())
+                .commit();
+    }
+
     private void SavePreferences() {
-        int _helpButtonVisibility = setButtonsStateOnCreateView ? helpButtonVisibility : buttonHelp.getVisibility();
-        //Log.i(getClass().getSimpleName(), "SavePreferences KeyPrefer_ShowHelpButton " + (_helpButtonVisibility == View.VISIBLE));
-        preferences.edit()
-                .putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
-                .putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
-                .putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
-                .apply();
+        if (buttonHelp != null) {
+            int _helpButtonVisibility = setButtonsStateOnCreateView ? helpButtonVisibility : buttonHelp.getVisibility();
+            //Log.i(getClass().getSimpleName(), "SavePreferences KeyPrefer_ShowHelpButton " + (_helpButtonVisibility == View.VISIBLE));
+            preferences.edit()
+                    .putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
+                    .putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
+                    .putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
+                    .apply();
+        }
     }
 
 	/*@Override
@@ -119,14 +133,18 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
 
     @Override
     public void onDestroy() {
+        //Log.i(getClass().getSimpleName(), "onDestroy()");
         super.onDestroy();
-        remoteControllerApp.fetchFullAccessSkuListener = null;
-        if (!mainActivity.isChangingConfigurations())
-            SavePreferences();
+        if (remoteControllerApp != null) {
+            remoteControllerApp.fetchFullAccessSkuListener = null;
+            if (!mainActivity.isChangingConfigurations())
+                SavePreferences();
+        }
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
+        //Log.i(getClass().getSimpleName(), "onSaveInstanceState()");
         super.onSaveInstanceState(outState);
         SavePreferences();
     }
@@ -169,9 +187,10 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
                 mmSocket.setTcpNoDelay(true);
                 mmSocket.connect(inetaddr, 1500);
                 mmSocket.setSoTimeout(1500);
-                if (ServerVerifier.isValid(mainViewModel, mmSocket.getInputStream(),
+                if (ServerVerifier.isValid(preferences, mainViewModel, mmSocket.getInputStream(),
                         mmSocket.getOutputStream(), TcpIpConnectorFragment.this))
                     mainActivity.runOnUiThread(runnableOpenControllerFragment);
+                preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, false);
             } catch (SocketTimeoutException e) {
                 OnErrorConnecting(R.string.TimeoutCheckIPportOrUpdate, Toast.LENGTH_LONG);
             } catch (Exception e) {
@@ -196,8 +215,6 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
             setButtonsStateOnCreateView = true;
             connectButtonEnabled = true;
             helpButtonVisibility = View.GONE;
-
-            preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowHelpOnCreate, false).apply();
         }
     };
 }

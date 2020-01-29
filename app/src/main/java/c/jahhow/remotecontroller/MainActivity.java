@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,7 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase.PurchaseState;
@@ -45,7 +44,8 @@ public class MainActivity extends AppCompatActivity {
             KeyPrefer_VibrateOnDown = "6",
             KeyPrefer_ShowHelpButton = "7",
             KeyPrefer_ShowHelpOnCreate = "8",
-            KeyPrefer_ShowHelpInputText = "9";
+            KeyPrefer_ShowHelpInputText = "9",
+            KeyPrefer_ShowTcpIpGuide = "a";
 
     Toast toast;
     Vibrator vibrator;
@@ -94,12 +94,12 @@ public class MainActivity extends AppCompatActivity {
         preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
         remoteControllerApp = (RemoteControllerApp) getApplication();
         toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
-        mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         mainViewModel.mainActivity = this;
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(android.R.id.content, new ConnectorSwitcherFragment()).commit();
-            if (preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
+            if (/*BuildConfig.DEBUG ||*/ preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
                 ShowHelpFragment(null);
         }
     }
@@ -112,14 +112,14 @@ public class MainActivity extends AppCompatActivity {
 
     static final String JahhowAppWebsite = "http://jahhowapp.blogspot.com/2019/07/computer-remote-controller.html";
 
-    public void OpenJahhowAppWebsite(View v) {
+    public void OpenJahhowAppWebsite(View ignored) {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(JahhowAppWebsite)));
     }
 
     public void ShowHelpFragment(View v) {
         getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .addToBackStack(null)
-                .replace(android.R.id.content, new HelpFragment()).commit();
+                .replace(android.R.id.content, new MainHelpFragment()).commit();
     }
 
     public void PopFragmentStack(View v) {

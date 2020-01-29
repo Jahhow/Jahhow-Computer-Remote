@@ -75,7 +75,6 @@
                 android:layout_marginLeft="10dp"
                 android:alpha=".12"
                 android:background="?selectableItemBackgroundBorderless"
-                android:onClick="ShowHelpFragment"
                 android:padding="2dp"
                 android:text="@string/connect"
                 android:visibility="gone"

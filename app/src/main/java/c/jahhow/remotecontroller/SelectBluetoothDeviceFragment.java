@@ -56,7 +56,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         mainViewModel = mainActivity.mainViewModel;
         bluetoothConnectorFragment = (BluetoothConnectorFragment) getParentFragment();
 
-        View layout = inflater.inflate(R.layout.fragment_select_bluetooth_device, container, false);
+        View layout = inflater.inflate(R.layout.select_bluetooth_device, container, false);
         ListView pairedBTListView = layout.findViewById(R.id.listSavedBluetoothDevice);
         ListView nearbyBTListView = layout.findViewById(R.id.listBluetoothDeviceNearby);
         progressBar = layout.findViewById(R.id.progressBarBTScanning);
@@ -211,7 +211,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             try {
                 mmSocket.connect();
                 mainViewModel.bluetoothSocket = mmSocket;
-                if (ServerVerifier.isValid(mainViewModel, mmSocket.getInputStream(), mmSocket.getOutputStream(), SelectBluetoothDeviceFragment.this)) {
+                if (ServerVerifier.isValid(mainActivity.preferences, mainViewModel, mmSocket.getInputStream(), mmSocket.getOutputStream(), SelectBluetoothDeviceFragment.this)) {
                     mainViewModel.mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

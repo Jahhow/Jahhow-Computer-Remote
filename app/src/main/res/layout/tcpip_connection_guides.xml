@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -13,12 +14,29 @@
 
         <TextView
             style="@style/AppTheme.Help_Text.Title"
+            android:text="@string/Connect_Via_Internet"
+            android:textSize="20sp" />
+
+        <TextView
+            style="@style/AppTheme.Help_Text"
+            android:layout_marginTop="14sp"
+            android:layout_marginBottom="2sp"
+            android:text="@string/please_run_the_receiver_program_on_your_pc" />
+
+        <TextView
+            style="@style/AppTheme.Help_Text.Title"
+            android:layout_marginTop="20sp"
+            android:text="@string/the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app" />
+
+        <TextView
+            style="@style/AppTheme.Help_Text.Title"
+            android:layout_marginTop="36sp"
             android:text="@string/connection_guide"
             android:textSize="20sp" />
 
         <TextView
             style="@style/AppTheme.Help_Text.Title"
-            android:layout_marginTop="28sp"
+            android:layout_marginTop="26sp"
             android:text="@string/if_your_pc_could_connect_to_wifi" />
 
         <TextView
@@ -48,11 +66,11 @@
             android:text="@string/success_rate_is_low_njust_connect_your_pc_and_this_device_to_the_internet_then_go_to_the_next_step" />
 
         <Button
+            android:id="@+id/buttonOk"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:onClick="PopFragmentStack"
             android:text="@string/ok" />
     </LinearLayout>
 </ScrollView>

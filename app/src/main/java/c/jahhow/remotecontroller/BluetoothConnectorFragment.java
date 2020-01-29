@@ -12,19 +12,22 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 public class BluetoothConnectorFragment extends Fragment {
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private MyBroadcastReceiver myBroadcastReceiver;
     private MainViewModel mainViewModel;
 
+    public BluetoothConnectorFragment() {
+    }
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         // MainActivity.onCreate() might have not been called.
         // onCreateView() might have not been called before onDetach()
-        mainViewModel = ViewModelProviders.of(getActivity()).get(MainViewModel.class);
+        mainViewModel = new ViewModelProvider(getActivity()).get(MainViewModel.class);
         mainViewModel.bluetoothConnectorFragment = this;
     }
 
@@ -42,16 +45,21 @@ public class BluetoothConnectorFragment extends Fragment {
             myBroadcastReceiver = new MyBroadcastReceiver(this);
             IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             getContext().registerReceiver(myBroadcastReceiver, intentFilter);
-            if (savedInstanceState == null) {
+            if (mainViewModel.bluetoothConnectorFragment_changingConfigurations) {
+                mainViewModel.bluetoothConnectorFragment_changingConfigurations = false;
+            } else {
                 if (bluetoothAdapter.isEnabled()) {
                     replaceChildFragment(new SelectBluetoothDeviceFragment());
                 } else {
                     TurnOnBluetooth();
                 }
+                Log.i(getClass().getSimpleName(), "INIT");
             }
-            layout = inflater.inflate(R.layout.fragment_bluetooth_connector, container, false);
+            //Log.i(getClass().getSimpleName(), String.format("getArguments() %c= null", getArguments() == null ? '=' : '!'));
+            //Log.i(getClass().getSimpleName(), String.format("savedInstanceState %c= null", savedInstanceState == null ? '=' : '!'));
+            //setArguments(null);
+            layout = inflater.inflate(R.layout.bluetooth_connector, container, false);
         }
-        Log.i(getClass().getSimpleName(), String.format("savedInstanceState %c= null", savedInstanceState == null ? '=' : '!'));
         return layout;
     }
 
@@ -61,10 +69,17 @@ public class BluetoothConnectorFragment extends Fragment {
         mainViewModel.bluetoothConnectorFragment = null;
     }
 
+    /*@Override
+    public void onPause() {
+        super.onPause();
+        //setArguments(getActivity().isChangingConfigurations() ? new Bundle() : null);
+    }*/
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (bluetoothAdapter != null) {
+            mainViewModel.bluetoothConnectorFragment_changingConfigurations = getActivity().isChangingConfigurations();
             getContext().unregisterReceiver(myBroadcastReceiver);
             if (!mainViewModel.bluetoothOriginalState_isEnabled && mainViewModel.bluetoothSocket != null
                     && !getActivity().isChangingConfigurations()) {
@@ -72,6 +87,12 @@ public class BluetoothConnectorFragment extends Fragment {
             }
         }
     }
+
+    /*@Override
+    public void onDestroy() {
+        Log.i(getClass().getSimpleName(), "onDestroy()");
+        super.onDestroy();
+    }*/
 
     void TurnOnBluetooth() {
         if (bluetoothAdapter.enable()) {

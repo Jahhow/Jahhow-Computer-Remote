@@ -1,5 +1,6 @@
 package c.jahhow.remotecontroller;
 
+import android.content.SharedPreferences;
 import android.widget.Toast;
 
 import androidx.annotation.StringRes;
@@ -18,7 +19,7 @@ class ServerVerifier {
     private ServerVerifier() {
     }
 
-    static boolean isValid(MainViewModel mainViewModel, InputStream inputStream, OutputStream outputStream, ErrorCallback errorCallback) throws IOException {
+    static boolean isValid(SharedPreferences preferences, MainViewModel mainViewModel, InputStream inputStream, OutputStream outputStream, ErrorCallback errorCallback) throws IOException {
         mainViewModel.socketOutput = outputStream;
         mainViewModel.socketOutput.write(Header);
 
@@ -43,6 +44,7 @@ class ServerVerifier {
             errorCallback.OnErrorConnecting(R.string.PleaseUpdateThisApp);
             return false;
         }
+        preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowHelpOnCreate, false).apply();
         return true;
     }
 

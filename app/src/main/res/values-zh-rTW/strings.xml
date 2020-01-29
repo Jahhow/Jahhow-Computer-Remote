@@ -32,7 +32,9 @@
     <string name="the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app">這個電腦程式會顯示 IP 數字。\n請在此裝置上輸入這些 IP</string>
     <string name="ok">了解</string>
 
-    <!--Connection Conditions-->
+    <!--TcpIp Guide-->
+    <string name="Connect_Via_Internet">透過網路連線</string>
+    <string name="please_run_the_receiver_program_on_your_pc">請在電腦上執行接收器程式</string>
     <string name="connection_guide">連線指南</string>
     <string name="if_your_pc_could_connect_to_wifi">若您的電腦可以連線至 WiFi</string>
     <string name="you_could_use_wifi_hotspot_on_this_device_____">請開啟此裝置的 WiFi 熱點，\n並將電腦透過 WiFi 連線至此裝置。</string>
