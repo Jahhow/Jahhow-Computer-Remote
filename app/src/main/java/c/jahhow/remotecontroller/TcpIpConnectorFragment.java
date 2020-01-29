@@ -136,7 +136,6 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         //Log.i(getClass().getSimpleName(), "onDestroy()");
         super.onDestroy();
         if (remoteControllerApp != null) {
-            remoteControllerApp.fetchFullAccessSkuListener = null;
             if (!mainActivity.isChangingConfigurations())
                 SavePreferences();
         }
