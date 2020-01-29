@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">Remote Controller</string>
-    <string name="arrows">Arrows</string>
+    <string name="app_name">Computer Remote</string>
+    <string name="arrow_keys">Arrow Keys</string>
     <string name="swipe">Swipe</string>
     <string name="connect">CONNECT</string>
-    <string name="motion_mouse">Motion Mouse</string>
+    <string name="air_mouse">Air Mouse</string>
     <string name="touchPad">TouchPad</string>
     <string name="input_text">Input Text</string>
     <string name="ConnectionError">Connection Error</string>

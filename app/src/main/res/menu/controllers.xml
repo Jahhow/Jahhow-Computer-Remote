@@ -3,7 +3,7 @@
     <item
         android:id="@+id/navButtonUseButtonController"
         android:icon="@drawable/ic_arrow_buttons_24dp"
-        android:title="@string/arrows" />
+        android:title="@string/arrow_keys" />
     <item
         android:id="@+id/navButtonUseSwiper"
         android:icon="@drawable/ic_slides_24dp"
@@ -11,7 +11,7 @@
     <item
         android:id="@+id/navButtonUseMotionMouse"
         android:icon="@drawable/ic_screen_rotation_black_24dp"
-        android:title="@string/motion_mouse" />
+        android:title="@string/air_mouse" />
     <item
         android:id="@+id/navButtonUseTouchPad"
         android:icon="@drawable/ic_pointer_24dp"
