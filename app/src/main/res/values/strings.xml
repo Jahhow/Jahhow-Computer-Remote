@@ -61,4 +61,13 @@
     <string name="bluetooth_device_nearby">Device Nearby</string>
     <string name="scan">Scan</string>
     <string name="connecting">Connecting</string>
+
+    <!--Bluetooth Error-->
+    <string name="remove_the_bluetooth_bond">
+        Please insure the receiver program is running on your PC,\n
+        and the bluetooth there is enabled.\n
+        If the error always occur just after accepting the pairing request on both devices,
+        please insure the bluetooth bond is not created on the computer
+        then try again.
+    </string>
 </resources>

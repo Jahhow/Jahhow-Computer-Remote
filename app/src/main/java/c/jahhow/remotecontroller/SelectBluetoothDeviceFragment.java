@@ -191,7 +191,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             bluetoothAdapter.cancelDiscovery();
             timeout = false;
 
-            new Thread(new Runnable() {
+            /*new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -206,7 +206,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                         }
                     }
                 }
-            }).start();
+            }).start();*/
 
             try {
                 mmSocket.connect();
