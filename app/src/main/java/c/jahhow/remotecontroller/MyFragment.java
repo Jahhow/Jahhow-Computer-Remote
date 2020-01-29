@@ -23,7 +23,7 @@ public class MyFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
     }
 
-    boolean isRestoringState() {
-        return called_onCreateView || has_savedInstanceState;
+    boolean isNotRestoringState() {
+        return !called_onCreateView && !has_savedInstanceState;
     }
 }

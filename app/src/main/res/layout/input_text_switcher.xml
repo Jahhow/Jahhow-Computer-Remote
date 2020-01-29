@@ -4,9 +4,7 @@
     android:layout_height="match_parent"
     android:animateLayoutChanges="true">
 
-    <include
-        android:id="@+id/inputTextLayout"
-        layout="@layout/input_text" />
+    <include layout="@layout/input_text" />
 
     <include
         android:id="@+id/helpInputTextLayout"

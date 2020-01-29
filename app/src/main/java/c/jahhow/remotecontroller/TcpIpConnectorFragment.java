@@ -4,7 +4,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,8 +27,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier.ErrorCallback {
-
-    private RemoteControllerApp remoteControllerApp;
     private TextInputEditText tiEditTextIp, tiEditTextPort;
     private Button buttonConnect;
     private ImageView buttonHelp;
@@ -56,7 +53,6 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
         preferences = mainActivity.preferences;
-        remoteControllerApp = (RemoteControllerApp) mainActivity.getApplication();
         mainViewModel = mainActivity.mainViewModel;
 
         tiEditTextIp = layout.findViewById(R.id.editTextIp);
@@ -97,7 +93,7 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
 
         }
 
-        if (!isRestoringState()) {
+        if (isNotRestoringState()) {
             if (preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, true)) {
                 ShowGuideTcpIp();
             }
@@ -113,6 +109,27 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                 .commit();
     }
 
+    @Override
+    public void onDestroyView() {
+        //Log.e(getClass().getSimpleName(), "onDestroyView()");
+        super.onDestroyView();
+        if (!mainActivity.isChangingConfigurations())
+            SavePreferences();
+    }
+
+    /*@Override
+    public void onDestroy() {
+        //Log.i(getClass().getSimpleName(), "onDestroy()");
+        super.onDestroy();
+    }*/
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        //Log.i(getClass().getSimpleName(), "onSaveInstanceState()");
+        super.onSaveInstanceState(outState);
+        SavePreferences();
+    }
+
     private void SavePreferences() {
         if (buttonHelp != null) {
             int _helpButtonVisibility = setButtonsStateOnCreateView ? helpButtonVisibility : buttonHelp.getVisibility();
@@ -124,30 +141,6 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                     .apply();
         }
     }
-
-	/*@Override
-	public void onDestroyView() {
-		Log.e(getClass().getSimpleName(), "onDestroyView()");
-		super.onDestroyView();
-	}*/
-
-    @Override
-    public void onDestroy() {
-        //Log.i(getClass().getSimpleName(), "onDestroy()");
-        super.onDestroy();
-        if (remoteControllerApp != null) {
-            if (!mainActivity.isChangingConfigurations())
-                SavePreferences();
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        //Log.i(getClass().getSimpleName(), "onSaveInstanceState()");
-        super.onSaveInstanceState(outState);
-        SavePreferences();
-    }
-
 
     // Run it on Ui Thread
     private void AnimateShowHelpButton() {
@@ -189,7 +182,7 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                 if (ServerVerifier.isValid(preferences, mainViewModel, mmSocket.getInputStream(),
                         mmSocket.getOutputStream(), TcpIpConnectorFragment.this))
                     mainActivity.runOnUiThread(runnableOpenControllerFragment);
-                preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, false);
+                preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, false).apply();
             } catch (SocketTimeoutException e) {
                 OnErrorConnecting(R.string.TimeoutCheckIPportOrUpdate, Toast.LENGTH_LONG);
             } catch (Exception e) {

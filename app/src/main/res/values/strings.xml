@@ -23,8 +23,6 @@
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">Currently works with Windows only.</string>
-    <string name="Build_a_Connection_to_Your_PC">Before Connecting to Your PC</string>
-    <string name="read_connection_guide">Read Connection Guide</string>
     <string name="please_run_the_receiver_program_on_your_pc_nthe_download_link_is_in_the_website_below">Please run the Receiver Program on Your PC.\nThe download link is in this website:</string>
     <string name="you_could_make_a_search_on_your_pc_to_reach_the_website">You could make a web search on your PC\nto reach the website.</string>
     <string name="the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app">The receiver program will show the IP numbers.\nPlease type the IP into this app.</string>

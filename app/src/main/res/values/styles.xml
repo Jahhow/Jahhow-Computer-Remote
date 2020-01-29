@@ -78,13 +78,6 @@
         <item name="android:textColor">@color/titleTextColor</item>
     </style>
 
-    <style name="AppTheme.ImageViewButton">
-        <item name="android:background">?selectableItemBackground</item>
-        <item name="android:clickable">true</item>
-        <item name="android:focusable">true</item>
-        <item name="tint">@color/titleTextColor</item>
-    </style>
-
     <style name="AppTheme.KeyboardShortcutButton.Narrow" parent="AppTheme.KeyboardShortcutButton">
         <!--<item name="android:textAppearance">@null</item>-->
         <!--<item name="android:textColor">?android:textColorSecondary</item>-->

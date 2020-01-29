@@ -15,21 +15,18 @@
         android:minHeight="?actionBarSize">
 
         <Button
-            android:id="@+id/buttonEsc"
             style="@style/AppTheme.KeyboardShortcutButton"
             android:onClick="SendClick_Esc"
             android:text="ESC"
             tools:ignore="HardcodedText" />
 
         <Button
-            android:id="@+id/buttonShiftF5"
             style="@style/AppTheme.KeyboardShortcutButton"
             android:onClick="SendClick_ShiftF5"
             android:text="Shift + F5"
             tools:ignore="HardcodedText" />
 
         <Button
-            android:id="@+id/buttonF5"
             style="@style/AppTheme.KeyboardShortcutButton"
             android:onClick="SendClick_F5"
             android:text="F5"

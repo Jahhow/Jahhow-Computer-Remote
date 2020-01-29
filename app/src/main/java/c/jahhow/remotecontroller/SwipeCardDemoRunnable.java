@@ -2,9 +2,9 @@ package c.jahhow.remotecontroller;
 
 public class SwipeCardDemoRunnable implements Runnable {
 
-    public final MotionMouseLayout motionMouseLayout;
+    final MotionMouseLayout motionMouseLayout;
 
-    public SwipeCardDemoRunnable(MotionMouseLayout motionMouseLayout) {
+    SwipeCardDemoRunnable(MotionMouseLayout motionMouseLayout) {
         this.motionMouseLayout = motionMouseLayout;
     }
 
@@ -14,7 +14,7 @@ public class SwipeCardDemoRunnable implements Runnable {
         O o = new O(5);
         try {
             Thread.sleep(1000);
-        } catch (InterruptedException unused) {
+        } catch (InterruptedException ignored) {
         }
         while (true) {
             MotionMouseLayout motionMouseLayout = this.motionMouseLayout;
@@ -24,7 +24,7 @@ public class SwipeCardDemoRunnable implements Runnable {
             motionMouseLayout.post(new H(this, f, o));
             try {
                 Thread.sleep(1250);
-            } catch (InterruptedException unused2) {
+            } catch (InterruptedException ignored) {
             }
             MotionMouseLayout motionMouseLayout2 = this.motionMouseLayout;
             if (!motionMouseLayout2.attachedToWindow) {

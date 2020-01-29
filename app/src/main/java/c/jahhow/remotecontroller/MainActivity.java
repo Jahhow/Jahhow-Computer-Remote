@@ -45,7 +45,8 @@ public class MainActivity extends AppCompatActivity {
             KeyPrefer_ShowHelpButton = "7",
             KeyPrefer_ShowHelpOnCreate = "8",
             KeyPrefer_ShowHelpInputText = "9",
-            KeyPrefer_ShowTcpIpGuide = "a";
+            KeyPrefer_ShowTcpIpGuide = "a",
+            KeyPrefer_Connector = "b";
 
     Toast toast;
     Vibrator vibrator;

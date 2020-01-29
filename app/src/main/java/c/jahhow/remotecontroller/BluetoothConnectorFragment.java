@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +52,7 @@ public class BluetoothConnectorFragment extends Fragment {
                 } else {
                     TurnOnBluetooth();
                 }
-                Log.i(getClass().getSimpleName(), "INIT");
+                //Log.i(getClass().getSimpleName(), "INIT");
             }
             //Log.i(getClass().getSimpleName(), String.format("getArguments() %c= null", getArguments() == null ? '=' : '!'));
             //Log.i(getClass().getSimpleName(), String.format("savedInstanceState %c= null", savedInstanceState == null ? '=' : '!'));
