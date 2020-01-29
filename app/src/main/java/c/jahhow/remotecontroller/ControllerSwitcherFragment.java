@@ -48,15 +48,26 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
     }
 
     @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (showingFragmentID == 0) {
+            if (!BuildConfig.DEBUG && remoteControllerApp.fullAccessState != PurchaseState.PURCHASED)
+                showingFragmentID = R.id.purchaseFragment;
+            else
+                showingFragmentID = navigationView.getSelectedItemId();
+        }
+    }
+
+    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         SavePreference();
     }
 
     private void ShowFragment(Fragment fragment) {
-        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction()
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.replace(R.id.ControllerFragmentContainer, fragment).commitAllowingStateLoss();
+        getChildFragmentManager().beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.ControllerFragmentContainer, fragment).commitAllowingStateLoss();
     }
 
     void OnPurchaseStateChanged() {
@@ -82,6 +93,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
             id = R.id.purchaseFragment;
         }
         if (id != showingFragmentID) {
+            //Log.i(getClass().getSimpleName(), "Manually Adding Fragment");
             showingFragmentID = id;
             switch (id) {
                 case R.id.navButtonUseButtonController:

@@ -42,7 +42,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     private BluetoothConnectorFragment bluetoothConnectorFragment;
 
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    private BluetoothDiscoveryBroadcastReceiver bluetoothDiscoveryBroadcastReceiver = new BluetoothDiscoveryBroadcastReceiver();
+    private BluetoothBroadcastReceiver bluetoothBroadcastReceiver = new BluetoothBroadcastReceiver();
     private ProgressBar progressBar;
     private Button scanButton;
 
@@ -53,6 +53,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mainActivity = (MainActivity) getActivity();
+        assert mainActivity != null;
         mainViewModel = mainActivity.mainViewModel;
         bluetoothConnectorFragment = (BluetoothConnectorFragment) getParentFragment();
 
@@ -71,8 +72,10 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 if (view == null) {
                     view = (LinearLayout) inflater.inflate(R.layout.nearby_bluetooth_device, parent, false);
                 }
-                ((TextView) view.getChildAt(0)).setText(getItem(position).getName());
-                ((TextView) view.getChildAt(1)).setText(getItem(position).getAddress());
+                BluetoothDevice item = getItem(position);
+                assert item != null;
+                ((TextView) view.getChildAt(0)).setText(item.getName());
+                ((TextView) view.getChildAt(1)).setText(item.getAddress());
                 return view;
             }
         };
@@ -82,7 +85,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        mainActivity.registerReceiver(bluetoothDiscoveryBroadcastReceiver, intentFilter);
+        mainActivity.registerReceiver(bluetoothBroadcastReceiver, intentFilter);
 
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,8 +102,10 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                     if (view == null) {
                         view = (LinearLayout) inflater.inflate(R.layout.nearby_bluetooth_device, parent, false);
                     }
-                    ((TextView) view.getChildAt(0)).setText(getItem(position).getName());
-                    ((TextView) view.getChildAt(1)).setText(getItem(position).getAddress());
+                    BluetoothDevice item = getItem(position);
+                    assert item != null;
+                    ((TextView) view.getChildAt(0)).setText(item.getName());
+                    ((TextView) view.getChildAt(1)).setText(item.getAddress());
                     return view;
                 }
             };
@@ -124,7 +129,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mainActivity.unregisterReceiver(bluetoothDiscoveryBroadcastReceiver);
+        mainActivity.unregisterReceiver(bluetoothBroadcastReceiver);
     }
 
     private void startBluetoothDiscovery() {
@@ -137,6 +142,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        mainViewModel.bondingFailed = false;
         bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment(getText(R.string.connecting)));
         BluetoothDevice bluetoothDevice = (BluetoothDevice) parent.getItemAtPosition(position);
         mainViewModel.socketHandlerThread = new HandlerThread("");
@@ -145,25 +151,29 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         mainViewModel.socketHandler.post(new BluetoothConnectRunnable(bluetoothDevice));
     }
 
-    class BluetoothDiscoveryBroadcastReceiver extends BroadcastReceiver {
+    class BluetoothBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            switch (intent.getAction()) {
-                case BluetoothDevice.ACTION_FOUND:
-                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    mainViewModel.nearbyBTArrayAdapter.add(device);
-                    break;
-                case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
-                    //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_STARTED");
-                    mainViewModel.nearbyBTArrayAdapter.clear();
-                    scanButton.setVisibility(View.GONE);
-                    progressBar.setVisibility(View.VISIBLE);
-                    break;
-                case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
-                    //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_FINISHED");
-                    scanButton.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-                    break;
+            String action = intent.getAction();
+            if (action != null) {
+                switch (action) {
+                    case BluetoothDevice.ACTION_FOUND: {
+                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        mainViewModel.nearbyBTArrayAdapter.add(device);
+                        break;
+                    }
+                    case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
+                        //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_STARTED");
+                        mainViewModel.nearbyBTArrayAdapter.clear();
+                        scanButton.setVisibility(View.GONE);
+                        progressBar.setVisibility(View.VISIBLE);
+                        break;
+                    case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
+                        //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_FINISHED");
+                        scanButton.setVisibility(View.VISIBLE);
+                        progressBar.setVisibility(View.GONE);
+                        break;
+                }
             }
         }
     }
@@ -245,8 +255,13 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             @Override
             public void run() {
                 Toast.makeText(mainViewModel.mainActivity, showToast, duration).show();
-                if (mainViewModel.bluetoothConnectorFragment != null)
-                    mainViewModel.bluetoothConnectorFragment.replaceChildFragment(new SelectBluetoothDeviceFragment());
+                if (mainViewModel.bluetoothConnectorFragment != null) {
+                    if (mainViewModel.bondingFailed) {
+                        mainViewModel.bondingFailed = false;
+                    } else {
+                        mainViewModel.bluetoothConnectorFragment.replaceChildFragment(new SelectBluetoothDeviceFragment());
+                    }
+                }
                 mainViewModel.mainActivity.CloseConnection();
             }
         });
