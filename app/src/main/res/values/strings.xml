@@ -64,5 +64,5 @@
 
     <!--Bluetooth Error-->
     <string name="bluetooth_bond_error">Please try to remove the bluetooth bond on the computer, then try again.</string>
-    <!--<string name="bluetooth_common_error_help">Please insure the receiver program is running on your PC,\nand the bluetooth there is enabled.</string>-->
+    <string name="bluetooth_common_error_help_text">Please insure the receiver program is running on your PC,\nand the bluetooth there is enabled.</string>
 </resources>

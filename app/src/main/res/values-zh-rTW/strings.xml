@@ -64,5 +64,5 @@
 
     <!--Bluetooth Error-->
     <string name="bluetooth_bond_error">請嘗試在電腦上解除其與此裝置的藍芽配對，然後再試一次。</string>
-    <!--<string name="bluetooth_common_error_help">請在電腦上執行接收器程式、\n並將電腦上的藍芽開啟。</string>-->
+    <string name="bluetooth_common_error_help_text">請確認您已在電腦上執行接收器程式\n並已將電腦上的藍芽開啟</string>
 </resources>
