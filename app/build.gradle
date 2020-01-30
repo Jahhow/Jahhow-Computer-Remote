@@ -6,8 +6,8 @@ android {
         applicationId "c.jahhow.remotecontroller"
         minSdkVersion 14
         targetSdkVersion 29
-        versionCode 24
-        versionName "24"
+        versionCode 25
+        versionName "25"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         signingConfig signingConfigs.release

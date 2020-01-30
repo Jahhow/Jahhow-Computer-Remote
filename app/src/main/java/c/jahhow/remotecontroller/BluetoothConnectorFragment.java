@@ -93,7 +93,8 @@ public class BluetoothConnectorFragment extends Fragment {
             Context context = getContext();
             assert context != null;
             context.unregisterReceiver(myBroadcastReceiver);
-            if (!mainViewModel.bluetoothOriginalState_isEnabled && mainViewModel.bluetoothSocket != null
+            if (!mainViewModel.bluetoothOriginalState_isEnabled
+                    && mainViewModel.bluetoothSocket == null
                     && !activity.isChangingConfigurations()) {
                 bluetoothAdapter.disable();
             }
