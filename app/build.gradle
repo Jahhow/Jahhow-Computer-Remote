@@ -10,7 +10,7 @@ android {
         versionName "25"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
-        signingConfig signingConfigs.release
+        signingConfig signingConfigs.debug
     }
     buildTypes {
         release {
