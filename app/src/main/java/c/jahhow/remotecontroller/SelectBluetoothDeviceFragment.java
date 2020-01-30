@@ -33,7 +33,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.UUID;
 
 public class SelectBluetoothDeviceFragment extends Fragment implements AdapterView.OnItemClickListener, ServerVerifier.ErrorCallback {
@@ -63,11 +62,11 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         progressBar = layout.findViewById(R.id.progressBarBTScanning);
         scanButton = layout.findViewById(R.id.btScanButton);
 
-        ArrayList<BluetoothDevice> bondedDevices = new ArrayList<>();
-        bondedDevices.add(new BluetoothDevice("Jahhow's Laptop", "0E:36:93:68:F3:A5"));
-        bondedDevices.add(new BluetoothDevice("Car Play", "74:E3:46:A0:55:D7"));
-        bondedDevices.add(new BluetoothDevice("Headphone", "1C:E2:72:4D:B2:5B"));
-        ArrayAdapter<BluetoothDevice> arrayAdapter = new ArrayAdapter<BluetoothDevice>(mainActivity, R.layout.nearby_bluetooth_device, bondedDevices) {
+        ArrayList<DemoBluetoothDevice> bondedDevices = new ArrayList<>();
+        bondedDevices.add(new DemoBluetoothDevice("Jahhow's Laptop", "0E:36:93:68:F3:A5"));
+        bondedDevices.add(new DemoBluetoothDevice("Car Play", "74:E3:46:A0:55:D7"));
+        bondedDevices.add(new DemoBluetoothDevice("Headphone", "1C:E2:72:4D:B2:5B"));
+        ArrayAdapter<DemoBluetoothDevice> arrayAdapter = new ArrayAdapter<DemoBluetoothDevice>(mainActivity, R.layout.nearby_bluetooth_device, bondedDevices) {
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -75,7 +74,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 if (view == null) {
                     view = (LinearLayout) inflater.inflate(R.layout.nearby_bluetooth_device, parent, false);
                 }
-                BluetoothDevice item = getItem(position);
+                DemoBluetoothDevice item = getItem(position);
                 assert item != null;
                 ((TextView) view.getChildAt(0)).setText(item.getName());
                 ((TextView) view.getChildAt(1)).setText(item.getAddress());
@@ -85,7 +84,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         pairedBTListView.setAdapter(arrayAdapter);
         pairedBTListView.setOnItemClickListener(this);
 
-        IntentFilter intentFilter = new IntentFilter(android.bluetooth.BluetoothDevice.ACTION_FOUND);
+        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         mainActivity.registerReceiver(bluetoothBroadcastReceiver, intentFilter);
@@ -97,7 +96,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             }
         });
         if (mainViewModel.nearbyBTArrayAdapter == null) {
-            mainViewModel.nearbyBTArrayAdapter = new ArrayAdapter<BluetoothDevice>(mainActivity, R.layout.nearby_bluetooth_device) {
+            mainViewModel.nearbyBTArrayAdapter = new ArrayAdapter<DemoBluetoothDevice>(mainActivity, R.layout.nearby_bluetooth_device) {
                 @NonNull
                 @Override
                 public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -105,7 +104,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                     if (view == null) {
                         view = (LinearLayout) inflater.inflate(R.layout.nearby_bluetooth_device, parent, false);
                     }
-                    BluetoothDevice item = getItem(position);
+                    DemoBluetoothDevice item = getItem(position);
                     assert item != null;
                     ((TextView) view.getChildAt(0)).setText(item.getName());
                     ((TextView) view.getChildAt(1)).setText(item.getAddress());
@@ -143,40 +142,39 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         }
     }
 
+    private BluetoothDevice jahhowLaptop;
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        mainViewModel.bondingFailed = false;
-        bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment(getText(R.string.connecting)));
-        android.bluetooth.BluetoothDevice bluetoothDevice = (android.bluetooth.BluetoothDevice) parent.getItemAtPosition(position);
-        mainViewModel.socketHandlerThread = new HandlerThread("");
-        mainViewModel.socketHandlerThread.start();
-        mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
-        mainViewModel.socketHandler.post(new BluetoothConnectRunnable(bluetoothDevice));
+        if (jahhowLaptop != null) {
+            mainViewModel.bondingFailed = false;
+            bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment(getText(R.string.connecting)));
+            mainViewModel.socketHandlerThread = new HandlerThread("");
+            mainViewModel.socketHandlerThread.start();
+            mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
+            mainViewModel.socketHandler.post(new BluetoothConnectRunnable(jahhowLaptop));
+        }
     }
 
     class BluetoothBroadcastReceiver extends BroadcastReceiver {
-        int index = 0;
-        ArrayList<BluetoothDevice> nearbyDevices = new ArrayList<>();
-
-        BluetoothBroadcastReceiver() {
-            nearbyDevices.add(new BluetoothDevice("Jahhow's Laptop", "0E:36:93:68:F3:A5"));
-        }
-
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action != null) {
                 switch (action) {
+                    case BluetoothDevice.ACTION_FOUND: {
+                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        if (device.getAddress().equals("40:74:E0:BE:0B:58")) {
+                            jahhowLaptop = device;
+                            mainViewModel.nearbyBTArrayAdapter.add(new DemoBluetoothDevice("Jahhow's Laptop", "0E:36:93:68:F3:A5"));
+                        }
+                        break;
+                    }
                     case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
-                        index = 0;
                         //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_STARTED");
                         mainViewModel.nearbyBTArrayAdapter.clear();
                         scanButton.setVisibility(View.GONE);
                         progressBar.setVisibility(View.VISIBLE);
-
-                        for (int i = 0; i < nearbyDevices.size(); ++i) {
-                            mainViewModel.nearbyBTArrayAdapter.add(nearbyDevices.get(i));
-                        }
                         break;
                     case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
                         //Log.i(getClass().getSimpleName(), "ACTION_DISCOVERY_FINISHED");
@@ -191,7 +189,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     private class BluetoothConnectRunnable implements Runnable {
         private final BluetoothSocket mmSocket;
 
-        BluetoothConnectRunnable(android.bluetooth.BluetoothDevice device) {
+        BluetoothConnectRunnable(BluetoothDevice device) {
             // Use a temporary object that is later assigned to mmSocket
             // because mmSocket is final.
             BluetoothSocket tmp = null;
@@ -282,11 +280,11 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
     }
 
-    static class BluetoothDevice {
+    static class DemoBluetoothDevice {
         String name;
         String address;
 
-        BluetoothDevice(String name, String address) {
+        DemoBluetoothDevice(String name, String address) {
             this.name = name;
             this.address = address;
         }
