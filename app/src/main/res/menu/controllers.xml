@@ -9,7 +9,7 @@
         android:icon="@drawable/ic_slides_24dp"
         android:title="@string/swipe" />
     <item
-        android:id="@+id/navButtonUseMotionMouse"
+        android:id="@+id/navButtonUseAirMouse"
         android:icon="@drawable/ic_screen_rotation_black_24dp"
         android:title="@string/air_mouse" />
     <item

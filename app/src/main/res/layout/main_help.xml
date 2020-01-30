@@ -18,7 +18,7 @@
         <TextView
             style="@style/AppTheme.Help_Text.Title"
             android:layout_marginTop="28sp"
-            android:text="@string/please_run_the_receiver_program_on_your_pc_nthe_download_link_is_in_the_website_below" />
+            android:text="@string/please_run_the_receiver_program_on_your_pc_the_download_link_is_in_the_website_below" />
 
         <FrameLayout
             android:layout_width="match_parent"

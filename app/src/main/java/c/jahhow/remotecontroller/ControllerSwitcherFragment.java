@@ -33,10 +33,10 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
 
         remoteControllerApp.SyncPurchase();
         if (savedInstanceState == null) {
-            int preferControllerID = mainActivity.preferences.getInt(MainActivity.KeyPrefer_Controller, R.id.navButtonUseSwiper);
+            int preferControllerID = mainActivity.preferences.getInt(MainActivity.KeyPrefer_Controller, R.id.navButtonUseAirMouse);
             if (preferControllerID != R.id.navButtonUseButtonController &&
                     preferControllerID != R.id.navButtonUseSwiper &&
-                    preferControllerID != R.id.navButtonUseMotionMouse &&
+                    preferControllerID != R.id.navButtonUseAirMouse &&
                     preferControllerID != R.id.navButtonUseTouchPad &&
                     preferControllerID != R.id.navButtonSendText) {
                 mainActivity.preferences.edit().remove(MainActivity.KeyPrefer_Controller).apply();
@@ -102,8 +102,8 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
                 case R.id.navButtonUseSwiper:
                     ShowFragment(new SwipeControllerFragment());
                     break;
-                case R.id.navButtonUseMotionMouse:
-                    ShowFragment(new MotionMouseFragment());
+                case R.id.navButtonUseAirMouse:
+                    ShowFragment(new AirMouseFragment());
                     break;
                 case R.id.navButtonUseTouchPad:
                     ShowFragment(new TouchPadFragment());

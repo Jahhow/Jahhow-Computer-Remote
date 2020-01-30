@@ -19,9 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-public class MotionMouseFragment extends Fragment implements SensorEventListener {
+public class AirMouseFragment extends Fragment implements SensorEventListener {
     MainActivity mainActivity;
-    private MotionMouseCardView cardView;
+    private AirMouseCardView cardView;
 
     private SensorManager sensorManager;
     private Sensor rotationVectorSensor = null;
@@ -37,8 +37,8 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        MotionMouseLayout motionMouseLayout = new MotionMouseLayout(mainActivity, this);
-        this.cardView = motionMouseLayout.mouseCardView;
+        AirMouseLayout airMouseLayout = new AirMouseLayout(mainActivity, this);
+        this.cardView = airMouseLayout.mouseCardView;
         if (sensorManager == null) {
             sensorManager = (SensorManager) mainActivity.getSystemService(Context.SENSOR_SERVICE);
             if (sensorManager != null) {
@@ -46,9 +46,9 @@ public class MotionMouseFragment extends Fragment implements SensorEventListener
             }
         }
         if (rotationVectorSensor == null) {
-            Toast.makeText(getContext(), mainActivity.getString(R.string.This_device_doesnt_supportMotionMouse), Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), getString(R.string.This_device_does_not_supportAirMouse), Toast.LENGTH_LONG).show();
         }
-        return motionMouseLayout;
+        return airMouseLayout;
     }
 
     @Override

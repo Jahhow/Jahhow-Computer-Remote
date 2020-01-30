@@ -10,7 +10,7 @@ import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
 @SuppressLint("ViewConstructor")
-public class MotionMouseLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener {
+public class AirMouseLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener {
     public double scrollBuffer;
     public static final float expSmoothTimeConstant = .2582437027204f;
     public float scale = 3.0f;
@@ -24,8 +24,8 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
     public boolean L;
     public float M;
     public MainActivity f1701a;
-    public MotionMouseFragment f1702b;
-    public MotionMouseCardView mouseCardView;
+    public AirMouseFragment f1702b;
+    public AirMouseCardView mouseCardView;
     public ValueAnimator f1704d = new CompatTimeAnimator();
     public Interpolator decelerateInterpolator = new DecelerateInterpolator(2.0f);
     public Interpolator accelerateDecelerateInterpolator = new AccelerateDecelerateInterpolator();
@@ -50,21 +50,21 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
     public boolean y;
     public int maxPointerCount;
 
-    public MotionMouseLayout(MainActivity mainActivity, MotionMouseFragment motionMouseFragment) {
+    public AirMouseLayout(MainActivity mainActivity, AirMouseFragment airMouseFragment) {
         super(mainActivity);
         float refreshRate = mainActivity.getWindowManager().getDefaultDisplay().getRefreshRate();
         float refreshRateAware_NewValueWeight = (float) (1 - Math.exp(-1 / refreshRate / expSmoothTimeConstant));
         smootherY = new ExponentialSmoothing(refreshRateAware_NewValueWeight);
         smootherX = new ExponentialSmoothing(refreshRateAware_NewValueWeight);
 
-        this.mouseCardView = (MotionMouseCardView) mainActivity.getLayoutInflater().inflate(R.layout.motion_mouse_card_view, this, false);
+        this.mouseCardView = (AirMouseCardView) mainActivity.getLayoutInflater().inflate(R.layout.air_mouse_card_view, this, false);
         this.mouseCardView.Init(this.accelerateDecelerateInterpolator);
         this.mouseCardView.animate();
         addView(this.mouseCardView);
         setKeepScreenOn(true);
         this.f1704d.addUpdateListener(this);
         this.f1701a = mainActivity;
-        this.f1702b = motionMouseFragment;
+        this.f1702b = airMouseFragment;
     }
 
     public void SwitchOrigin(float x, float y, float newX, float newY) {
@@ -127,7 +127,7 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
 
     @SuppressLint({"ClickableViewAccessibility"})
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        MotionMouseCardView motionMouseCardView;
+        AirMouseCardView airMouseCardView;
         int actionIndex;
         int actionMasked = motionEvent.getActionMasked();
         boolean z2 = false;
@@ -218,14 +218,14 @@ public class MotionMouseLayout extends FrameLayout implements ValueAnimator.Anim
                                     if (z2) {
                                         this.f1701a.SendMouseRightUp();
                                         this.f1701a.SendMouseLeftDown();
-                                        motionMouseCardView = this.mouseCardView;
+                                        airMouseCardView = this.mouseCardView;
                                     } else {
                                         this.f1701a.SendMouseLeftUp();
                                         this.f1701a.SendMouseRightDown();
-                                        motionMouseCardView = this.mouseCardView;
+                                        airMouseCardView = this.mouseCardView;
                                         i3 = 1;
                                     }
-                                    motionMouseCardView.Indicate(i3);
+                                    airMouseCardView.Indicate(i3);
                                     this.M = -this.M;
                                     this.L = z2;
                                 }

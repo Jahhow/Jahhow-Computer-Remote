@@ -8,7 +8,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Interpolator;
 
-public class MotionMouseCardView extends CardView {
+public class AirMouseCardView extends CardView {
     public Interpolator j;
     public int k = -1;
     public View l = null;
@@ -21,15 +21,15 @@ public class MotionMouseCardView extends CardView {
     public long s = 100;
     public boolean t = false;
 
-    public MotionMouseCardView(@NonNull Context context) {
+    public AirMouseCardView(@NonNull Context context) {
         super(context);
     }
 
-    public MotionMouseCardView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public AirMouseCardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public MotionMouseCardView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public AirMouseCardView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 

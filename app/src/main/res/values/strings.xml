@@ -23,7 +23,7 @@
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">Currently works with Windows only.</string>
-    <string name="please_run_the_receiver_program_on_your_pc_nthe_download_link_is_in_the_website_below">Please run the Receiver Program on Your PC.\nThe download link is in this website:</string>
+    <string name="please_run_the_receiver_program_on_your_pc_the_download_link_is_in_the_website_below">Please run the Receiver Program on Your PC.\nThe download link is in this website:</string>
     <string name="you_could_make_a_search_on_your_pc_to_reach_the_website">You could make a web search on your PC\nto reach the website.</string>
     <string name="the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app">The receiver program will show the IP numbers.\nPlease type the IP into this app.</string>
     <string name="ok">OK</string>
@@ -45,7 +45,7 @@
     <string name="cut">Cut</string>
     <string name="Copy">Copy</string>
     <string name="Paste">Paste</string>
-    <string name="This_device_doesnt_supportMotionMouse">This device doesn\'t support Motion Mouse</string>
+    <string name="This_device_does_not_supportAirMouse">This device doesn\'t support Air Mouse</string>
     <string name="complete_text_on_this_device_then_press_send_button">Please complete text on this device\nthen press Send button</string>
 
     <!--Connector Switcher-->
@@ -61,6 +61,7 @@
     <string name="bluetooth_device_nearby">Device Nearby</string>
     <string name="scan">Scan</string>
     <string name="connecting">Connecting</string>
+    <string name="please_select_a_pc_to_control">Please select the PC you wish to control</string>
 
     <!--Bluetooth Error-->
     <string name="bluetooth_bond_error">Please try to remove the bluetooth bond on the computer, then try again.</string>

@@ -2,17 +2,16 @@ package c.jahhow.remotecontroller;
 
 class K implements Runnable {
 
-    /* renamed from: a  reason: collision with root package name */
-    public final /* synthetic */ MotionMouseLayout f1699a;
+    private final AirMouseLayout airMouseLayout;
 
-    public K(MotionMouseLayout motionMouseLayout) {
-        this.f1699a = motionMouseLayout;
+    K(AirMouseLayout airMouseLayout) {
+        this.airMouseLayout = airMouseLayout;
     }
 
     public void run() {
-        MotionMouseLayout motionMouseLayout = this.f1699a;
-        if (motionMouseLayout.y && (!motionMouseLayout.aFocusingPointerActuallyMoved)) {
-            motionMouseLayout.mouseCardView.Indicate(0);
+        AirMouseLayout airMouseLayout = this.airMouseLayout;
+        if (airMouseLayout.y && (!airMouseLayout.aFocusingPointerActuallyMoved)) {
+            airMouseLayout.mouseCardView.Indicate(0);
         }
     }
 }
