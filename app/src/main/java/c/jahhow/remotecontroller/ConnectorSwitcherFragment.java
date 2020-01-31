@@ -33,7 +33,7 @@ public class ConnectorSwitcherFragment extends MyFragment implements BottomNavig
         View layout = inflater.inflate(R.layout.connector_switcher, container, false);
         navBar = layout.findViewById(R.id.navBarConnectors);
         navBar.setOnNavigationItemSelectedListener(this);
-        if (isNotRestoringState()) {
+        if (hasNoChildFragment()) {
             boolean preferredConnector = preferences.getBoolean(MainActivity.KeyPrefer_Connector, PreferBluetooth);
             navBar.setSelectedItemId(preferredConnector == PreferBluetooth ?
                     R.id.navButtonBluetooth : R.id.navButtonInternet);

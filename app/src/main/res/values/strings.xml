@@ -64,6 +64,6 @@
     <string name="please_select_a_pc_to_control">Please select the PC you wish to control</string>
 
     <!--Bluetooth Error-->
-    <string name="bluetooth_bond_error">Please try to remove the bluetooth bond on the computer, then try again.</string>
-    <string name="bluetooth_common_error_help_text">Please insure the receiver program is running on your PC,\nand the bluetooth there is enabled.</string>
+    <string name="bluetooth_bond_error">Please try to remove the Bluetooth bond on the computer, then try again.</string>
+    <string name="bluetooth_common_error_help_text">Please insure the receiver program is running on your PC,\nand the Bluetooth there is enabled.</string>
 </resources>

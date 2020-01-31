@@ -23,6 +23,6 @@ public class MainViewModel extends ViewModel {
     ArrayAdapter<BluetoothDevice> nearbyBTArrayAdapter = null;
     boolean hasSet_bluetoothOriginalState = false;
     boolean bluetoothOriginalState_isEnabled;
-    boolean bluetoothConnectorFragment_changingConfigurations = false;
+    boolean bluetoothConnectorFragment_showSelectBluetoothDeviceFragment = false;
     boolean bondingFailed = false;
 }

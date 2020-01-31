@@ -46,12 +46,20 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     private ProgressBar progressBar;
     private Button scanButton;
 
+    private IntentFilter intentFilter = new IntentFilter();
     private static final short PERMISSION_REQUEST_CODE = 8513;
     private static final UUID BT_SERVICE_UUID = UUID.fromString("C937E0B7-8C64-C221-4A25-F40120B3064E");
+
+    public SelectBluetoothDeviceFragment() {
+        intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+        intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+    }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        //Log.i(getClass().getSimpleName(), "onCreateView()");
         mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
         mainViewModel = mainActivity.mainViewModel;
@@ -82,11 +90,6 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         pairedBTListView.setAdapter(arrayAdapter);
         pairedBTListView.setOnItemClickListener(this);
 
-        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        mainActivity.registerReceiver(bluetoothBroadcastReceiver, intentFilter);
-
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,12 +112,34 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                     return view;
                 }
             };
-            startBluetoothDiscovery();
         }
         nearbyBTListView.setAdapter(mainViewModel.nearbyBTArrayAdapter);
         nearbyBTListView.setOnItemClickListener(this);
 
+        if (bluetoothAdapter.isDiscovering()) {
+            scanButton.setVisibility(View.GONE);
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        mainActivity.registerReceiver(bluetoothBroadcastReceiver, intentFilter);
         return layout;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //Log.i(getClass().getSimpleName(), "onStart()");
+        if (mainViewModel.nearbyBTArrayAdapter.isEmpty())
+            startBluetoothDiscovery();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (!mainActivity.isChangingConfigurations()) {
+            //Log.i(getClass().getSimpleName(), "bluetoothAdapter.cancelDiscovery()");
+            bluetoothAdapter.cancelDiscovery();
+        }
+        mainActivity.unregisterReceiver(bluetoothBroadcastReceiver);
     }
 
     @Override
@@ -126,14 +151,9 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         }
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        mainActivity.unregisterReceiver(bluetoothBroadcastReceiver);
-    }
-
     private void startBluetoothDiscovery() {
         if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            //Log.i(getClass().getSimpleName(), "bluetoothAdapter.startDiscovery()");
             bluetoothAdapter.startDiscovery();
         } else {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
@@ -194,34 +214,15 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             mmSocket = tmp;
         }
 
-        boolean timeout;
-
         public void run() {
             // Cancel discovery because it otherwise slows down the connection.
             bluetoothAdapter.cancelDiscovery();
-            timeout = false;
-
-            /*new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException ignored) {
-                    }
-                    if (!mmSocket.isConnected()) {
-                        try {
-                            timeout = true;
-                            mmSocket.close();
-                        } catch (IOException ignored) {
-                        }
-                    }
-                }
-            }).start();*/
 
             try {
                 mmSocket.connect();
                 mainViewModel.bluetoothSocket = mmSocket;
                 if (ServerVerifier.isValid(mainActivity.preferences, mainViewModel, mmSocket.getInputStream(), mmSocket.getOutputStream(), SelectBluetoothDeviceFragment.this)) {
+                    mainViewModel.bluetoothConnectorFragment_showSelectBluetoothDeviceFragment = true;
                     mainViewModel.mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -233,16 +234,12 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 }
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and return.
-                if (timeout) {
-                    OnErrorConnecting(R.string.bluetooth_timeout);
-                } else {
-                    try {
-                        mmSocket.close();
-                    } catch (IOException ignored) {
-                    }
-                    OnErrorConnecting(R.string.ConnectionError);
-                    //Log.e(getClass().getSimpleName(), "IOException: " + connectException);
+                try {
+                    mmSocket.close();
+                } catch (IOException ignored) {
                 }
+                OnErrorConnecting(R.string.ConnectionError);
+                //Log.e(getClass().getSimpleName(), "IOException: " + connectException);
             } catch (Exception e) {
                 OnErrorConnecting(R.string.ConnectionError);
                 //Log.e(getClass().getSimpleName(), "final catch " + e);

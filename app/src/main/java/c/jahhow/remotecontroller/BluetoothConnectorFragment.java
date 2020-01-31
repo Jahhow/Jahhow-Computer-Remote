@@ -17,13 +17,10 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-public class BluetoothConnectorFragment extends Fragment {
+public class BluetoothConnectorFragment extends MyFragment {
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private MyBroadcastReceiver myBroadcastReceiver;
     private MainViewModel mainViewModel;
-
-    public BluetoothConnectorFragment() {
-    }
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -53,19 +50,17 @@ public class BluetoothConnectorFragment extends Fragment {
             Context context = getContext();
             assert context != null;
             context.registerReceiver(myBroadcastReceiver, intentFilter);
-            if (mainViewModel.bluetoothConnectorFragment_changingConfigurations) {
-                mainViewModel.bluetoothConnectorFragment_changingConfigurations = false;
-            } else {
+
+            //Log.i(getClass().getSimpleName(), String.format("Child fragment %c= null", innerFragment == null ? '=' : '!'));
+            if (mainViewModel.bluetoothConnectorFragment_showSelectBluetoothDeviceFragment || hasNoChildFragment()) {
+                mainViewModel.bluetoothConnectorFragment_showSelectBluetoothDeviceFragment = false;
+                //Log.i(getClass().getSimpleName(), "INIT");
                 if (bluetoothAdapter.isEnabled()) {
                     replaceChildFragment(new SelectBluetoothDeviceFragment());
                 } else {
                     TurnOnBluetooth();
                 }
-                //Log.i(getClass().getSimpleName(), "INIT");
             }
-            //Log.i(getClass().getSimpleName(), String.format("getArguments() %c= null", getArguments() == null ? '=' : '!'));
-            //Log.i(getClass().getSimpleName(), String.format("savedInstanceState %c= null", savedInstanceState == null ? '=' : '!'));
-            //setArguments(null);
             layout = inflater.inflate(R.layout.bluetooth_connector, container, false);
         }
         return layout;
@@ -77,19 +72,12 @@ public class BluetoothConnectorFragment extends Fragment {
         mainViewModel.bluetoothConnectorFragment = null;
     }
 
-    /*@Override
-    public void onPause() {
-        super.onPause();
-        //setArguments(getActivity().isChangingConfigurations() ? new Bundle() : null);
-    }*/
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (bluetoothAdapter != null) {
             FragmentActivity activity = getActivity();
             assert activity != null;
-            mainViewModel.bluetoothConnectorFragment_changingConfigurations = activity.isChangingConfigurations();
             Context context = getContext();
             assert context != null;
             context.unregisterReceiver(myBroadcastReceiver);
@@ -100,12 +88,6 @@ public class BluetoothConnectorFragment extends Fragment {
             }
         }
     }
-
-    /*@Override
-    public void onDestroy() {
-        Log.i(getClass().getSimpleName(), "onDestroy()");
-        super.onDestroy();
-    }*/
 
     void TurnOnBluetooth() {
         if (bluetoothAdapter.enable()) {
