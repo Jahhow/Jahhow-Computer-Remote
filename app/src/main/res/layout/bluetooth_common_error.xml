@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            style="@style/AppTheme.Help_Text"
+            android:text="@string/currently_works_with_windows_only" />
+
+        <TextView
+            style="@style/AppTheme.Help_Text.Title"
+            android:layout_marginTop="28sp"
+            android:text="@string/bluetooth_common_error_help_text" />
+
+        <TextView
+            style="@style/AppTheme.Help_Text"
+            android:layout_marginTop="@dimen/lineSpacingExtra_helpTitle2"
+            android:text="@string/the_supported_receiver_version_is_v2" />
+
+        <TextView
+            style="@style/AppTheme.Help_Text.Title"
+            android:layout_marginTop="30sp"
+            android:text="@string/the_receiver_download_link_is_in_this_website" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4sp"
+            android:layout_marginBottom="4sp"
+            android:background="#0000">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="?selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="OpenJahhowAppWebsite"
+                android:padding="12dp"
+                android:text="@string/jahhow_s_app"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <TextView
+            style="@style/AppTheme.Help_Text"
+            android:text="@string/you_could_make_a_search_on_your_pc_to_reach_the_website" />
+
+        <Button
+            android:id="@+id/buttonOk"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28sp"
+            android:text="@string/ok" />
+    </LinearLayout>
+</ScrollView>

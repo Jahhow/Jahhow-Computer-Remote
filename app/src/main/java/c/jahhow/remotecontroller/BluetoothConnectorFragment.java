@@ -135,7 +135,7 @@ public class BluetoothConnectorFragment extends MyFragment {
                         int preBondState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, 0);
                         if (preBondState == BluetoothDevice.BOND_BONDING && bondState == BluetoothDevice.BOND_NONE) {
                             mainViewModel.bondingFailed = true;
-                            replaceChildFragment(new BluetoothErrorFragment());
+                            replaceChildFragment(new BluetoothBondErrorFragment());
                         }
                         //Log.i(getClass().getSimpleName(), String.format("ACTION_BOND_STATE_CHANGED : %s %d => %d", device.getName(), preBondState, bondState));
                         break;

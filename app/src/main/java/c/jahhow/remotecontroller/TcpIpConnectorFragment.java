@@ -184,7 +184,7 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                     mainActivity.runOnUiThread(runnableOpenControllerFragment);
                 preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, false).apply();
             } catch (SocketTimeoutException e) {
-                OnErrorConnecting(R.string.TimeoutCheckIPportOrUpdate, Toast.LENGTH_LONG);
+                OnErrorConnecting(R.string.TimeoutCheckIpPortOrUpdate, Toast.LENGTH_LONG);
             } catch (Exception e) {
                 OnErrorConnecting(R.string.ConnectionError);
                 //Log.e("MainActivity", R.string.ConnectionError + e.toString());

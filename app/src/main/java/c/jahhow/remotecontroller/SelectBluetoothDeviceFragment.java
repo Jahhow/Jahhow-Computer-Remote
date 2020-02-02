@@ -257,7 +257,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                         mainViewModel.bondingFailed = false;
                     } else {
                         mainViewModel.bluetoothConnectorFragment.replaceChildFragment(
-                                new BluetoothErrorFragment(R.string.bluetooth_common_error_help_text));
+                                new BluetoothCommonErrorFragment());
                     }
                 }
                 mainViewModel.mainActivity.CloseConnection();
