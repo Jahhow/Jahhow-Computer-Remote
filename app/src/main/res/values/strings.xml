@@ -23,14 +23,13 @@
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">Currently works with Windows only.</string>
-    <string name="please_run_the_receiver_program_on_your_pc_the_download_link_is_in_the_website_below">Please run the Receiver Program on Your PC.\nThe download link is in this website:</string>
+    <string name="please_run_the_receiver_program_on_your_pc_the_download_link_is_in_the_website_below">Please run the Receiver Program on Your PC\nThe download link is in this website:</string>
     <string name="you_could_make_a_search_on_your_pc_to_reach_the_website">You could make a web search on your PC\nto reach the website.</string>
     <string name="the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app">The receiver program will show the IP numbers.\nPlease type the IP into this app.</string>
     <string name="ok">OK</string>
     <string name="jahhow_s_app" translatable="false">Jahhow\'s App</string>
 
     <!--TcpIp Guide-->
-    <string name="please_run_the_receiver_program_on_your_pc">Please run the Receiver Program on Your PC</string>
     <string name="Connect_Via_Internet">Connect Via Internet</string>
     <string name="connection_guide">Connection Guide</string>
     <string name="if_your_pc_could_connect_to_wifi">If Your PC Could Connect to WiFi</string>

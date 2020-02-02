@@ -17,15 +17,39 @@
             android:textSize="20sp" />
 
         <TextView
-            style="@style/AppTheme.Help_Text"
-            android:layout_marginTop="14sp"
-            android:layout_marginBottom="2sp"
-            android:text="@string/please_run_the_receiver_program_on_your_pc" />
+            style="@style/AppTheme.Help_Text.Title"
+            android:layout_marginTop="28sp"
+            android:text="@string/the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app" />
 
         <TextView
             style="@style/AppTheme.Help_Text.Title"
-            android:layout_marginTop="20sp"
-            android:text="@string/the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app" />
+            android:layout_marginTop="28sp"
+            android:text="@string/the_receiver_download_link_is_in_this_website" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4sp"
+            android:layout_marginBottom="4sp"
+            android:background="#0000">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="?selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="OpenJahhowAppWebsite"
+                android:padding="12dp"
+                android:text="@string/jahhow_s_app"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <TextView
+            style="@style/AppTheme.Help_Text"
+            android:text="@string/you_could_make_a_search_on_your_pc_to_reach_the_website" />
 
         <TextView
             style="@style/AppTheme.Help_Text.Title"

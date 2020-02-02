@@ -90,7 +90,6 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         } else {
             //Log.i(getClass().getSimpleName(), "preferences.getBoolean(KeyPrefer_ShowHelpButton, true) == " + preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true));
             buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true) ? View.VISIBLE : View.GONE);
-
         }
 
         if (isNotRestoringState()) {
