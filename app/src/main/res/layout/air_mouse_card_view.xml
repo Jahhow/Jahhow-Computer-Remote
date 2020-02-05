@@ -55,9 +55,9 @@
             android:layout_marginLeft="20dp"
             android:layout_marginTop="2dp"
             android:layout_marginRight="20dp"
-            android:layout_marginBottom="@dimen/CompatMarginBottom_lineSpacing_PerpendicularWarn"
             android:gravity="center_horizontal"
             android:lineSpacingExtra="9sp"
+            android:paddingBottom="@dimen/CompatPaddingBottom_lineSpacing_PerpendicularWarn"
             android:text="@string/please_avoid_this_device_to_be_perpendicular"
             android:textColor="@color/colorWarning" />
     </LinearLayout>

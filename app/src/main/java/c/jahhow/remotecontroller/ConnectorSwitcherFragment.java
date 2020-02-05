@@ -19,7 +19,7 @@ public class ConnectorSwitcherFragment extends MyFragment implements BottomNavig
             PreferBluetooth = true,
             PreferTcpIp = false;
 
-    SharedPreferences preferences;
+    private SharedPreferences preferences;
     private BottomNavigationView navBar;
 
     @Override

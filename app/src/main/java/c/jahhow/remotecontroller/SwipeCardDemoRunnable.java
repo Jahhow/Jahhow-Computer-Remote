@@ -1,6 +1,6 @@
 package c.jahhow.remotecontroller;
 
-public class SwipeCardDemoRunnable implements Runnable {
+class SwipeCardDemoRunnable implements Runnable {
 
     final AirMouseLayout airMouseLayout;
 

@@ -20,7 +20,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 public class AirMouseFragment extends Fragment implements SensorEventListener {
-    MainActivity mainActivity;
+    private MainActivity mainActivity;
     private AirMouseCardView cardView;
 
     private SensorManager sensorManager;
@@ -75,8 +75,8 @@ public class AirMouseFragment extends Fragment implements SensorEventListener {
     private boolean hasSetOrigin = false;
     private boolean pauseMovingMouse = false;
 
-    private float upperBoundZ = .9375f;
-    private float square_1minusUpperBoundZ = (1 - upperBoundZ) * (1 - upperBoundZ);
+    private final float upperBoundZ = .9375f;
+    private final float square_1minusUpperBoundZ = (1 - upperBoundZ) * (1 - upperBoundZ);
 
     public void a(int pauseMovingMouse) {
         boolean _c2 = pauseMovingMouse != 0;

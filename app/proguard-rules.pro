@@ -21,4 +21,5 @@
 #-renamesourcefileattribute SourceFile
 
 #-keep class com.android.vending.billing.**
-#-printusage usage.txt
+-printusage usage.txt
+-printmapping mapping.txt

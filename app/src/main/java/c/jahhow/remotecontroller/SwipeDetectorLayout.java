@@ -12,10 +12,10 @@ import android.widget.FrameLayout;
 @SuppressLint("ViewConstructor")
 public class SwipeDetectorLayout extends FrameLayout {
 
-    MainActivity mainActivity;
+    private final MainActivity mainActivity;
     //int movingChildIndex = 0;
-    SwipeCardView movingChild;
-    Interpolator interpolator = new DecelerateInterpolator(2);
+    private SwipeCardView movingChild;
+    private final Interpolator interpolator = new DecelerateInterpolator(2);
 
     public SwipeDetectorLayout(MainActivity mainActivity) {
         super(mainActivity);
@@ -29,14 +29,18 @@ public class SwipeDetectorLayout extends FrameLayout {
         this.mainActivity = mainActivity;
     }
 
-    int mActivePointerId;
-    float touchOriginX, touchOriginY, viewOriginX, viewOriginY,
-            diffX, diffY;
-    final float density = getResources().getDisplayMetrics().density;
-    float pxSlop = 4 * density;
+    private int mActivePointerId;
+    private float touchOriginX;
+    private float touchOriginY;
+    private float viewOriginX;
+    private float viewOriginY;
+    private float diffX;
+    private float diffY;
+    private final float density = getResources().getDisplayMetrics().density;
+    private final float pxSlop = 4 * density;
     //float transYAtAppear = 40 * density;
 
-    long duration = 800;
+    private final long duration = 800;
 
     @Override
     public void addView(final View child) {
@@ -54,14 +58,14 @@ public class SwipeDetectorLayout extends FrameLayout {
 
     boolean demoing;
 
-    Runnable readyNextChildRunnable = new Runnable() {
+    private final Runnable readyNextChildRunnable = new Runnable() {
         @Override
         public void run() {
             ReadyNextChild();
         }
     };
 
-    void Demo() {
+    private void Demo() {
         demoing = true;
         final Interpolator demoInterpolator = new AccelerateDecelerateInterpolator();
         new Thread(new Runnable() {
@@ -126,7 +130,7 @@ public class SwipeDetectorLayout extends FrameLayout {
         return true;
     }
 
-    boolean ignoreSameMoves = false;
+    private boolean ignoreSameMoves = false;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -207,9 +211,9 @@ public class SwipeDetectorLayout extends FrameLayout {
         return true;
     }
 
-    int indexLastChild;
+    private final int indexLastChild;
 
-    void ReadyNextChild() {
+    private void ReadyNextChild() {
         //movingChildIndex = (movingChildIndex + 1) % getChildCount();
         movingChild = (SwipeCardView) getChildAt(indexLastChild);
         removeViewAt(indexLastChild);
@@ -218,7 +222,7 @@ public class SwipeDetectorLayout extends FrameLayout {
         AnimateShowView(movingChild);
     }
 
-    void IndicateDirection() {
+    private void IndicateDirection() {
         float absDiffX = Math.abs(diffX), absDiffY = Math.abs(diffY);
         if (absDiffX > pxSlop | absDiffY > pxSlop) {
             if (absDiffY > absDiffX) {
@@ -239,7 +243,7 @@ public class SwipeDetectorLayout extends FrameLayout {
         }
     }
 
-    void AnimateShowView(View view) {
+    private void AnimateShowView(View view) {
         view.animate().cancel();
         view.setAlpha(0);
         view.setScaleX(.8F);
@@ -250,12 +254,12 @@ public class SwipeDetectorLayout extends FrameLayout {
         view.animate().setInterpolator(interpolator).alpha(1).scaleX(1).scaleY(1);
     }
 
-    void ResetMovingChild() {
+    private void ResetMovingChild() {
         movingChild.Reset(true);
         movingChild.animate().setDuration(duration).translationX(0).translationY(0);
     }
 
-    void NewActivePointer(MotionEvent event) {
+    private void NewActivePointer(MotionEvent event) {
         diffX = diffY = 0;
         touchOriginX = event.getX();
         touchOriginY = event.getY();
@@ -264,28 +268,28 @@ public class SwipeDetectorLayout extends FrameLayout {
         mActivePointerId = event.getPointerId(0);
     }
 
-    void ChangeActivePointer(MotionEvent event, int newIndex) {
+    private void ChangeActivePointer(MotionEvent event, int newIndex) {
         int oldPointerIndex = event.findPointerIndex(mActivePointerId);
         MigrateTouchPoint(event.getX(oldPointerIndex), event.getY(oldPointerIndex), event.getX(newIndex), event.getY(newIndex));
         mActivePointerId = event.getPointerId(newIndex);
     }
 
-    void MigrateTouchPoint(float fromX, float fromY, float toX, float toY) {
+    private void MigrateTouchPoint(float fromX, float fromY, float toX, float toY) {
         touchOriginX += toX - fromX;
         touchOriginY += toY - fromY;
     }
 
-    void MoveCurChild(MotionEvent event) {
+    private void MoveCurChild(MotionEvent event) {
         computePointerDiff(event);
         movingChild.setTranslationX(viewOriginX + diffX);
         movingChild.setTranslationY(viewOriginY + diffY);
     }
 
-    void computePointerDiff(MotionEvent event) {
+    private void computePointerDiff(MotionEvent event) {
         computePointerDiff(event, event.findPointerIndex(mActivePointerId));
     }
 
-    void computePointerDiff(MotionEvent event, int index) {
+    private void computePointerDiff(MotionEvent event, int index) {
         diffX = event.getX(index) - touchOriginX;
         diffY = event.getY(index) - touchOriginY;
     }

@@ -2,8 +2,8 @@ package c.jahhow.remotecontroller;
 
 class ExponentialSmoothing {
     private float value = 0;
-    private float newValueWeight;
-    private float oldValueWeight;
+    private final float newValueWeight;
+    private final float oldValueWeight;
 
     ExponentialSmoothing(float newValueWeight) {
         this.newValueWeight = newValueWeight;

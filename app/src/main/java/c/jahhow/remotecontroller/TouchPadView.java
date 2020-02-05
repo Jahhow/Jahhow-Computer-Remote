@@ -16,8 +16,8 @@ import java.util.ArrayList;
 
 public class TouchPadView extends FrameLayout {
 
-    MainActivity mainActivity;
-    boolean vibrateOnDownOnly;
+    private MainActivity mainActivity;
+    private boolean vibrateOnDownOnly;
 
     public TouchPadView(@NonNull Context context) {
         super(context);
@@ -49,23 +49,25 @@ public class TouchPadView extends FrameLayout {
     }
 
 
-    final float density = getResources().getDisplayMetrics().density;
-    float originXdp, originYdp;
-    float origin2PointerAverageYdp;
-    int maxPointerCount, lastMaxPointerCount;
-    boolean hasMoveEventExceedSlop = false;
-    boolean downIsInDoubleClickInterval = false;
-    boolean upIsFirstOfIntensiveClicks;// of intensive clicks
-    long upTime = 0;
-    int intensiveClickIntervalMs = 300;
+    private final float density = getResources().getDisplayMetrics().density;
+    private float originXdp;
+    private float originYdp;
+    private float origin2PointerAverageYdp;
+    private int maxPointerCount;
+    private int lastMaxPointerCount;
+    private boolean hasMoveEventExceedSlop = false;
+    private boolean downIsInDoubleClickInterval = false;
+    private boolean upIsFirstOfIntensiveClicks;// of intensive clicks
+    private long upTime = 0;
+    private final int intensiveClickIntervalMs = 300;
 
-    int lastAction;
-    final Object lock = new Object();
-    boolean semaphore = false;
-    final Object vibrateLock = new Object();
-    boolean vibrateMutex;
+    private int lastAction;
+    private final Object lock = new Object();
+    private boolean semaphore = false;
+    private final Object vibrateLock = new Object();
+    private boolean vibrateMutex;
 
-    DownEventList downEventList = new DownEventList(/*pxSlop*/);
+    private final DownEventList downEventList = new DownEventList(/*pxSlop*/);
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -288,8 +290,9 @@ public class TouchPadView extends FrameLayout {
 
     static class DownEventList extends ArrayList<DownEventList.DownEvent> {
         static class DownEvent {
-            float X, Y;
-            int ID;
+            final float X;
+            final float Y;
+            final int ID;
 
             DownEvent(float x, float y, int id) {
                 X = x;

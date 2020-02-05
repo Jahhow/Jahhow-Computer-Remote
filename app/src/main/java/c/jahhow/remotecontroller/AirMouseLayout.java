@@ -11,44 +11,44 @@ import android.widget.FrameLayout;
 
 @SuppressLint("ViewConstructor")
 public class AirMouseLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener {
-    public double scrollBuffer;
-    public static final float expSmoothTimeConstant = .2582437027204f;
-    public float scale = 3.0f;
-    public float animationDiffX = 0.0f;
-    public float animationDiffY = 0.0f;
-    public ExponentialSmoothing smootherY;
-    public ExponentialSmoothing smootherX;
+    private double scrollBuffer;
+    private static final float expSmoothTimeConstant = .2582437027204f;
+    private final float scale = 3.0f;
+    private float animationDiffX = 0.0f;
+    private float animationDiffY = 0.0f;
+    private final ExponentialSmoothing smootherY;
+    private final ExponentialSmoothing smootherX;
     public int I = 0;
-    public Runnable J = new K(this);
-    public Runnable K = new L(this);
-    public boolean L;
-    public float M;
-    public MainActivity f1701a;
-    public AirMouseFragment f1702b;
-    public AirMouseCardView mouseCardView;
-    public ValueAnimator f1704d = new CompatTimeAnimator();
-    public Interpolator decelerateInterpolator = new DecelerateInterpolator(2.0f);
-    public Interpolator accelerateDecelerateInterpolator = new AccelerateDecelerateInterpolator();
-    public int focusingPointerID;
-    public float focusingPointerOriginX;
-    public float focusingPointerOriginY;
-    public float diffX;
-    public float diffY;
-    public float startFocusingX;
-    public float startFocusingY;
-    public float n;
-    public float focusingPointerLastY;
+    private final Runnable J = new K(this);
+    private final Runnable K = new L(this);
+    private boolean L;
+    private float M;
+    private final MainActivity f1701a;
+    private final AirMouseFragment f1702b;
+    public final AirMouseCardView mouseCardView;
+    private final ValueAnimator f1704d = new CompatTimeAnimator();
+    private final Interpolator decelerateInterpolator = new DecelerateInterpolator(2.0f);
+    private final Interpolator accelerateDecelerateInterpolator = new AccelerateDecelerateInterpolator();
+    private int focusingPointerID;
+    private float focusingPointerOriginX;
+    private float focusingPointerOriginY;
+    private float diffX;
+    private float diffY;
+    private float startFocusingX;
+    private float startFocusingY;
+    private float n;
+    private float focusingPointerLastY;
     public final float density = getResources().getDisplayMetrics().density;
-    public float q = (this.density * 4.0f);
-    public long r = 800;
+    private final float q = (this.density * 4.0f);
+    private final long r = 800;
     public boolean attachedToWindow;
-    public int t = 300;
-    public int u = 300;
-    public boolean preventJump = false;
+    private final int t = 300;
+    private final int u = 300;
+    private boolean preventJump = false;
     public boolean aFocusingPointerActuallyMoved;
-    public boolean scroll;
+    private boolean scroll;
     public boolean y;
-    public int maxPointerCount;
+    private int maxPointerCount;
 
     public AirMouseLayout(MainActivity mainActivity, AirMouseFragment airMouseFragment) {
         super(mainActivity);
@@ -67,17 +67,17 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
         this.f1702b = airMouseFragment;
     }
 
-    public void SwitchOrigin(float x, float y, float newX, float newY) {
+    private void SwitchOrigin(float x, float y, float newX, float newY) {
         focusingPointerOriginX += (newX - x);
         focusingPointerOriginY += (newY - y);
     }
 
-    public void a(int i2) {
+    private void a(int i2) {
         this.mouseCardView.Indicate(i2);
         this.mouseCardView.animate().setInterpolator(this.decelerateInterpolator).setDuration(this.r).translationX(0.0f).translationY(0.0f);
     }
 
-    public void changeFocusingPointer(MotionEvent motionEvent, int newPointerIndex) {
+    private void changeFocusingPointer(MotionEvent motionEvent, int newPointerIndex) {
         this.preventJump = true;
         this.startFocusingX = motionEvent.getX(newPointerIndex);
         this.startFocusingY = motionEvent.getY(newPointerIndex);
@@ -90,7 +90,7 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
         this.focusingPointerID = motionEvent.getPointerId(newPointerIndex);
     }
 
-    public void b(MotionEvent motionEvent, int focusingPointerIndex) {
+    private void b(MotionEvent motionEvent, int focusingPointerIndex) {
         this.diffX = motionEvent.getX(focusingPointerIndex) - this.focusingPointerOriginX;
         this.diffY = motionEvent.getY(focusingPointerIndex) - this.focusingPointerOriginY;
     }

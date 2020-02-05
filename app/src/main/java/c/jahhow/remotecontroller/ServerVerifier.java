@@ -20,8 +20,8 @@ class ServerVerifier {
     }
 
     static boolean isValid(SharedPreferences preferences, MainViewModel mainViewModel, InputStream inputStream, OutputStream outputStream, ErrorCallback errorCallback) throws IOException {
-        mainViewModel.socketOutput = outputStream;
-        mainViewModel.socketOutput.write(Header);
+        mainViewModel.outputStream = outputStream;
+        mainViewModel.outputStream.write(Header);
 
         byte[] buf = new byte[ServerHeader.length];
         if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {

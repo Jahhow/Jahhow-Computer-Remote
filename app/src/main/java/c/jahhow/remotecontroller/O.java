@@ -2,13 +2,13 @@ package c.jahhow.remotecontroller;
 
 import android.view.animation.Interpolator;
 
-public class O implements Interpolator {
+class O implements Interpolator {
 
     /* renamed from: b  reason: collision with root package name */
-    private static double f1710b = Math.exp(-6.0d);
+    private static final double f1710b = Math.exp(-6.0d);
 
     /* renamed from: c  reason: collision with root package name */
-    private int f1711c;
+    private final int f1711c;
 
     O(int i) {
         this.f1711c = i;
@@ -20,7 +20,6 @@ public class O implements Interpolator {
         float f1709a = -6.0f;
         double exp = Math.exp((double) (f1709a * f)) * Math.sin(d2 * 3.141592653589793d);
         double d3 = (double) f;
-        double d4 = f1710b;
-        return (float) (exp - (d3 * d4));
+        return (float) (exp - (d3 * f1710b));
     }
 }

@@ -28,26 +28,30 @@ import java.util.List;
 import static com.android.billingclient.api.Purchase.PurchaseState.UNSPECIFIED_STATE;
 
 public class RemoteControllerApp extends Application implements SkuDetailsResponseListener, PurchasesUpdatedListener {
-    ControllerSwitcherFragment controllerSwitcherFragment = null;
+    private static final String
+            ManagePlaySubsUrl = "https://play.google.com/store/account/subscriptions?package=c.jahhow.remotecontroller&sku=subscription.full_access";
+    private static final String Sku_Subscription_FullAccess = "subscription.full_access";
 
+    private final List<String> skuList = new ArrayList<>(1);
     BillingClient billingClient = null;
-    SkuDetails skuDetailsFullAccess = null;
-    int fullAccessState = UNSPECIFIED_STATE;
+    SkuDetails skuDetails = null;
+    int purchaseState = UNSPECIFIED_STATE;
+    boolean purchaseSkipped = false;
 
-    static final String
-            ManagePlaySubsUrl = "https://play.google.com/store/account/subscriptions?package=c.jahhow.remotecontroller&sku=subscription.full_access",
-            Sku_Subscription_FullAccess = "subscription.full_access";
-
-    List<String> skuList = new ArrayList<>(1);
+    ControllerSwitcherFragment controllerSwitcherFragment = null;
+    private FetchSkuListener fetchSkuListener = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
         skuList.add(Sku_Subscription_FullAccess);
-        StartBillingClient();
+        if (billingClient == null) {
+            billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener(this).build();
+            billingClient.startConnection(billingClientStateListener);
+        }
     }
 
-    BillingClientStateListener billingClientStateListener = new BillingClientStateListener() {
+    private final BillingClientStateListener billingClientStateListener = new BillingClientStateListener() {
         @Override
         public void onBillingSetupFinished(BillingResult billingResult) {
             if (billingResult.getResponseCode() == BillingResponseCode.OK) {
@@ -62,12 +66,12 @@ public class RemoteControllerApp extends Application implements SkuDetailsRespon
 
     @Override
     public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
-        fullAccessState = UNSPECIFIED_STATE;
+        purchaseState = UNSPECIFIED_STATE;
         if (billingResult.getResponseCode() == BillingResponseCode.OK) {
             if (purchases != null && purchases.size() == 1) {
                 Purchase purchase = purchases.get(0);
                 if (purchase.getSku().equals(Sku_Subscription_FullAccess)) {
-                    fullAccessState = purchase.getPurchaseState();
+                    purchaseState = purchase.getPurchaseState();
                     if (purchase.getPurchaseState() == PurchaseState.PURCHASED) {
                         if (!purchase.isAcknowledged()) {
                             AcknowledgePurchaseParams acknowledgePurchaseParams =
@@ -90,11 +94,9 @@ public class RemoteControllerApp extends Application implements SkuDetailsRespon
             controllerSwitcherFragment.OnPurchaseStateChanged();
     }
 
-    interface FetchFullAccessSkuListener {
+    interface FetchSkuListener {
         void onSkuDetailsResponse();
     }
-
-    FetchFullAccessSkuListener fetchFullAccessSkuListener = null;
 
     @Override
     public void onSkuDetailsResponse(BillingResult billingResult, List<SkuDetails> skuDetailsList) {
@@ -102,7 +104,7 @@ public class RemoteControllerApp extends Application implements SkuDetailsRespon
             if (skuDetailsList.size() == 1) {
                 SkuDetails skuDetails = skuDetailsList.get(0);
                 if (Sku_Subscription_FullAccess.equals(skuDetails.getSku())) {
-                    skuDetailsFullAccess = skuDetails;
+                    this.skuDetails = skuDetails;
                 }
             }
         }/* else {
@@ -111,25 +113,25 @@ public class RemoteControllerApp extends Application implements SkuDetailsRespon
 					+ billingResult.getResponseCode() + " : " + billingResult.getDebugMessage());
 		}*/
 
-        if (fetchFullAccessSkuListener != null) {
-            fetchFullAccessSkuListener.onSkuDetailsResponse();
+        if (fetchSkuListener != null) {
+            fetchSkuListener.onSkuDetailsResponse();
         }
     }
 
     void SyncPurchase() {
-        fullAccessState = UNSPECIFIED_STATE;
+        purchaseState = UNSPECIFIED_STATE;
         Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(SkuType.SUBS);
         if (purchasesResult.getResponseCode() == BillingResponseCode.OK) {
             List<Purchase> purchases = purchasesResult.getPurchasesList();
             if (purchases.size() == 0) {
-                // Fetch skuDetailsFullAccess
-                if (skuDetailsFullAccess == null)
+                // Fetch skuDetails
+                if (skuDetails == null)
                     billingClient.querySkuDetailsAsync(
                             SkuDetailsParams.newBuilder().setType(SkuType.SUBS).setSkusList(skuList).build(), this);
             } else {
                 Purchase purchase = purchases.get(0);
                 if (purchase.getSku().equals(Sku_Subscription_FullAccess)) {
-                    fullAccessState = purchase.getPurchaseState();
+                    purchaseState = purchase.getPurchaseState();
                 }
             }
         }
@@ -139,15 +141,12 @@ public class RemoteControllerApp extends Application implements SkuDetailsRespon
         activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(ManagePlaySubsUrl)));
     }
 
-    void StartBillingClient() {
-        Reset();
-        if (billingClient == null) {
-            billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener(this).build();
-            billingClient.startConnection(billingClientStateListener);
-        }
+    public void setFetchSkuListener(FetchSkuListener fetchSkuListener) {
+        this.fetchSkuListener = fetchSkuListener;
     }
 
-    void Reset() {
-        controllerSwitcherFragment = null;
+    public void removeFetchSkuListener(FetchSkuListener fetchSkuListener) {
+        if (this.fetchSkuListener == fetchSkuListener)
+            this.fetchSkuListener = null;
     }
 }

@@ -8,9 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class SwipeControllerFragment extends Fragment {
+class SwipeControllerFragment extends Fragment {
 	private SwipeDetectorLayout swipeDetectorLayout;
-	MainActivity mainActivity;
+	private MainActivity mainActivity;
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

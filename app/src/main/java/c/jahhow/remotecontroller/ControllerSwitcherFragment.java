@@ -14,8 +14,8 @@ import androidx.fragment.app.FragmentTransaction;
 import com.android.billingclient.api.Purchase.PurchaseState;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
-    MainActivity mainActivity;
+class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
+    private MainActivity mainActivity;
     private BottomNavigationView navigationView;
     private RemoteControllerApp remoteControllerApp;
 
@@ -31,7 +31,6 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
         navigationView.setOnNavigationItemSelectedListener(this);
         remoteControllerApp.controllerSwitcherFragment = this;
 
-        remoteControllerApp.SyncPurchase();
         if (savedInstanceState == null) {
             int preferControllerID = mainActivity.preferences.getInt(MainActivity.KeyPrefer_Controller, R.id.navButtonUseAirMouse);
             if (preferControllerID != R.id.navButtonUseButtonController &&
@@ -51,7 +50,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
         if (showingFragmentID == 0) {
-            if (!BuildConfig.DEBUG && remoteControllerApp.fullAccessState != PurchaseState.PURCHASED)
+            if (shouldShowPurchaseFragment())
                 showingFragmentID = R.id.purchaseFragment;
             else
                 showingFragmentID = navigationView.getSelectedItemId();
@@ -89,7 +88,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
     }
 
     private void showFragmentById(int id) {
-        if (!BuildConfig.DEBUG && remoteControllerApp.fullAccessState != PurchaseState.PURCHASED) {
+        if (shouldShowPurchaseFragment()) {
             id = R.id.purchaseFragment;
         }
         if (id != showingFragmentID) {
@@ -124,5 +123,9 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         showFragmentById(item.getItemId());
         return true;
+    }
+
+    private boolean shouldShowPurchaseFragment() {
+        return !BuildConfig.DEBUG && !remoteControllerApp.purchaseSkipped && remoteControllerApp.purchaseState != PurchaseState.PURCHASED;
     }
 }

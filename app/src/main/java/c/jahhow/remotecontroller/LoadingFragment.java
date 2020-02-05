@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class LoadingFragment extends Fragment {
+class LoadingFragment extends Fragment {
     private static final String ARG_LOADING_TEXT = "0";
     private CharSequence loadingText = null;
 

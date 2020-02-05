@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -24,7 +22,7 @@
 
         <TextView
             style="@style/AppTheme.Help_Text"
-            android:layout_marginTop="@dimen/lineSpacingExtra_helpTitle2"
+            android:layout_marginTop="@dimen/lineSpacingExtra_helpText"
             android:text="@string/the_supported_receiver_version_is_v2" />
 
         <TextView

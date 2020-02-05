@@ -37,16 +37,16 @@ import java.util.Set;
 import java.util.UUID;
 
 public class SelectBluetoothDeviceFragment extends Fragment implements AdapterView.OnItemClickListener, ServerVerifier.ErrorCallback {
-    MainActivity mainActivity;
+    private MainActivity mainActivity;
     private MainViewModel mainViewModel;
     private BluetoothConnectorFragment bluetoothConnectorFragment;
 
-    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    private BluetoothBroadcastReceiver bluetoothBroadcastReceiver = new BluetoothBroadcastReceiver();
+    private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    private final BluetoothBroadcastReceiver bluetoothBroadcastReceiver = new BluetoothBroadcastReceiver();
     private ProgressBar progressBar;
     private Button scanButton;
 
-    private IntentFilter intentFilter = new IntentFilter();
+    private final IntentFilter intentFilter = new IntentFilter();
     private static final short PERMISSION_REQUEST_CODE = 8513;
     private static final UUID BT_SERVICE_UUID = UUID.fromString("C937E0B7-8C64-C221-4A25-F40120B3064E");
 
@@ -220,7 +220,6 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
 
             try {
                 mmSocket.connect();
-                mainViewModel.bluetoothSocket = mmSocket;
                 if (ServerVerifier.isValid(mainActivity.preferences, mainViewModel, mmSocket.getInputStream(), mmSocket.getOutputStream(), SelectBluetoothDeviceFragment.this)) {
                     mainViewModel.bluetoothConnectorFragment_showSelectBluetoothDeviceFragment = true;
                     mainViewModel.mainActivity.runOnUiThread(new Runnable() {

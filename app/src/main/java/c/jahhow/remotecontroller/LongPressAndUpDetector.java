@@ -3,20 +3,20 @@ package c.jahhow.remotecontroller;
 import android.view.MotionEvent;
 import android.view.View;
 
-public abstract class LongPressAndUpDetector implements View.OnTouchListener, View.OnLongClickListener {
+abstract class LongPressAndUpDetector implements View.OnTouchListener, View.OnLongClickListener {
 
 	abstract void onLongClickDown(View v);
 
 	abstract void onLongClickUp(View v);
 
-	MainActivity mainActivity;
-	long vibrateMs;
+	final MainActivity mainActivity;
+	private final long vibrateMs;
 
 	LongPressAndUpDetector(View v, MainActivity mainActivity) {
 		this(v, 30, mainActivity);
 	}
 
-	LongPressAndUpDetector(View v, long vibrateMs, MainActivity mainActivity) {
+	private LongPressAndUpDetector(View v, long vibrateMs, MainActivity mainActivity) {
 		v.setOnTouchListener(this);
 		v.setOnLongClickListener(this);
 		this.mainActivity = mainActivity;

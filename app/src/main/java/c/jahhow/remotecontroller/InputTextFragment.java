@@ -18,12 +18,12 @@ import c.jahhow.remotecontroller.msg.ButtonAction;
 import c.jahhow.remotecontroller.msg.InputTextMode;
 import c.jahhow.remotecontroller.msg.SCS1;
 
-public class InputTextFragment extends Fragment {
+class InputTextFragment extends Fragment {
     private static final String
             BundleKey_InputType = "BKIT",
             BundleKey_ShowingHelp = "BKSH";
 
-    MainActivity mainActivity;
+    private MainActivity mainActivity;
     private TextInputEditText editText;
     private ImageView buttonToggleInputPassword;
     private View helpLayout;

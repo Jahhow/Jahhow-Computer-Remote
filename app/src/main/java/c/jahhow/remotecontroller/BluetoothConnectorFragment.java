@@ -17,8 +17,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-public class BluetoothConnectorFragment extends MyFragment {
-    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+class BluetoothConnectorFragment extends MyFragment {
+    private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private MyBroadcastReceiver myBroadcastReceiver;
     private MainViewModel mainViewModel;
 
@@ -82,7 +82,7 @@ public class BluetoothConnectorFragment extends MyFragment {
             assert context != null;
             context.unregisterReceiver(myBroadcastReceiver);
             if (!mainViewModel.bluetoothOriginalState_isEnabled
-                    && mainViewModel.bluetoothSocket == null
+                    && mainViewModel.outputStream == null
                     && !activity.isChangingConfigurations()) {
                 bluetoothAdapter.disable();
             }

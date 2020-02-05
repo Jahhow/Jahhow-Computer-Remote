@@ -15,13 +15,14 @@
     <string name="PleaseUpdateTheComputerSideReceiverProgram">請更新電腦端接收器程式</string>
     <string name="FailedToReachGooglePlay">無法連線到 Google Play</string>
     <string name="subscription">訂閱</string>
-    <string name="start">開始</string>
-    <string name="start_full_access">開始完整存取</string>
-    <string name="Check_Connection">請檢查連線</string>
+    <string name="subscribe">訂閱</string>
+    <string name="support_development">支援軟體開發</string>
+    <string name="No_Connection">沒有網路連線</string>
     <string name="retry">重試</string>
     <string name="Annual_Subscription">一年訂閱</string>
     <string name="This_device_does_not_supportAirMouse">此裝置不支援體感滑鼠</string>
     <string name="please_avoid_this_device_to_be_perpendicular">請避免此裝置垂直於地面</string>
+    <string name="skip">略過</string>
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">目前僅支援 Windows</string>
@@ -38,7 +39,7 @@
     <string name="if_you_have_a_wifi_router">若您有自己的 WiFi 路由器</string>
     <string name="connect_your_pc_to_the_router_either_through_a_cable_or_wifi_then_connect_this_device_to_the_wifi">請將電腦透過 網路線或 WiFi 連線至路由器，\n並將此裝置連線至路由器的 WiFi。</string>
     <string name="other_conditions">其他狀況</string>
-    <string name="success_rate_is_low_njust_connect_your_pc_and_this_device_to_the_internet_then_go_to_the_next_step">成功率不大。\n請直接將電腦及此裝置都連線至網際網路，\n然後繼續下個步驟。</string>
+    <string name="success_rate_is_low_just_connect_your_pc_and_this_device_to_the_internet_then_go_to_the_next_step">成功率不大。\n請直接將電腦及此裝置都連線至網際網路，\n然後繼續下個步驟。</string>
 
     <!--Input Text-->
     <string name="Select_All">全選</string>
@@ -55,7 +56,6 @@
     <string name="turn_on">開啟</string>
 
     <!--Bluetooth Connector-->
-    <string name="bluetooth_timeout">逾時</string>
     <string name="pairedBluetoothDevice">已儲存</string>
     <string name="bluetooth_device_nearby">鄰近的裝置</string>
     <string name="scan">掃描</string>

@@ -25,7 +25,6 @@
             tools:ignore="ContentDescription" />
 
         <TextView
-            android:id="@+id/btErrorText"
             style="@style/AppTheme.Help_Text.Title"
             android:text="@string/bluetooth_bond_error"
             android:textAllCaps="false"

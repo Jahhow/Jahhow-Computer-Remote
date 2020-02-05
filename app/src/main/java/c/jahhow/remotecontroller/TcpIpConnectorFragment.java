@@ -32,7 +32,7 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
     private ImageView buttonHelp;
     private LinearLayout connectButtonsParentLayout;
 
-    MainActivity mainActivity;
+    private MainActivity mainActivity;
     private SharedPreferences preferences;
     private MainViewModel mainViewModel;
     private ControllerSwitcherFragment controllersFragment;
@@ -165,7 +165,7 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
     }
 
-    private Runnable connectRunnable = new Runnable() {
+    private final Runnable connectRunnable = new Runnable() {
         @Override
         public void run() {
             try {
@@ -174,7 +174,6 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                         Integer.parseInt(tiEditTextPort.getText().toString())
                 );
                 Socket mmSocket = new Socket();
-                mainViewModel.socket = mmSocket;
                 mmSocket.setTcpNoDelay(true);
                 mmSocket.connect(inetaddr, 1500);
                 mmSocket.setSoTimeout(1500);
@@ -193,7 +192,7 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
     };
 
     // On Ui Thread
-    private Runnable runnableOpenControllerFragment = new Runnable() {
+    private final Runnable runnableOpenControllerFragment = new Runnable() {
         @Override
         public void run() {
             /*mainActivity.getSupportFragmentManager().saveFragmentInstanceState(

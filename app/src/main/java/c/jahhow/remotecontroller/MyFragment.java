@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class MyFragment extends Fragment {
+class MyFragment extends Fragment {
     private boolean called_onCreateView = false;
     private boolean has_savedInstanceState;
 

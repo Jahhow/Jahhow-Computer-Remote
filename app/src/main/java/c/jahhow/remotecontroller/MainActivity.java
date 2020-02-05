@@ -30,7 +30,7 @@ import c.jahhow.remotecontroller.msg.Msg;
 import c.jahhow.remotecontroller.msg.SCS1;
 
 public class MainActivity extends AppCompatActivity {
-    RemoteControllerApp remoteControllerApp;
+    private RemoteControllerApp remoteControllerApp;
     MainViewModel mainViewModel;
 
     SharedPreferences preferences;
@@ -48,29 +48,31 @@ public class MainActivity extends AppCompatActivity {
             KeyPrefer_ShowTcpIpGuide = "a",
             KeyPrefer_Connector = "b";
 
-    Toast toast;
+    private Toast toast;
     Vibrator vibrator;
 
+    private final RemoteControllerApp.FetchSkuListener fetchSkuListener = new RemoteControllerApp.FetchSkuListener() {
+        @Override
+        public void onSkuDetailsResponse() {
+            if (remoteControllerApp.skuDetails == null) {
+                Toast.makeText(getApplicationContext(), R.string.FailedToReachGooglePlay, Toast.LENGTH_SHORT).show();
+            } else {
+                remoteControllerApp.billingClient.launchBillingFlow(MainActivity.this, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetails).build());
+            }
+        }
+    };
+
     public void OnClick_ManagePlaySubs(MenuItem v) {
-        if (remoteControllerApp.fullAccessState == PurchaseState.UNSPECIFIED_STATE) {
+        if (remoteControllerApp.purchaseState == PurchaseState.UNSPECIFIED_STATE) {
             // launchBillingFlow
-            if (remoteControllerApp.skuDetailsFullAccess == null) {
-                remoteControllerApp.fetchFullAccessSkuListener = new RemoteControllerApp.FetchFullAccessSkuListener() {
-                    @Override
-                    public void onSkuDetailsResponse() {
-                        if (remoteControllerApp.skuDetailsFullAccess == null) {
-                            Toast.makeText(getApplicationContext(), R.string.FailedToReachGooglePlay, Toast.LENGTH_SHORT).show();
-                        } else {
-                            remoteControllerApp.billingClient.launchBillingFlow(MainActivity.this, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetailsFullAccess).build());
-                        }
-                    }
-                };
+            if (remoteControllerApp.skuDetails == null) {
+                remoteControllerApp.setFetchSkuListener(fetchSkuListener);
                 remoteControllerApp.SyncPurchase();
-                if (remoteControllerApp.fullAccessState != PurchaseState.UNSPECIFIED_STATE) {
+                if (remoteControllerApp.purchaseState != PurchaseState.UNSPECIFIED_STATE) {
                     remoteControllerApp.OpenPlayStoreManageSubscription(this);
                 }
             } else {
-                remoteControllerApp.billingClient.launchBillingFlow(this, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetailsFullAccess).build());
+                remoteControllerApp.billingClient.launchBillingFlow(this, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetails).build());
             }
         } else {
             remoteControllerApp.OpenPlayStoreManageSubscription(this);
@@ -101,23 +103,23 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .add(android.R.id.content, new ConnectorSwitcherFragment()).commit();
             if (/*BuildConfig.DEBUG ||*/ preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
-                ShowHelpFragment(null);
+                ShowHelpFragment();
         }
     }
 
     @Override
     protected void onDestroy() {
-        remoteControllerApp.fetchFullAccessSkuListener = null;
+        remoteControllerApp.removeFetchSkuListener(fetchSkuListener);
         super.onDestroy();
     }
 
-    static final String JahhowAppWebsite = "http://jahhowapp.blogspot.com/2019/07/computer-remote-controller.html";
+    private static final String JahhowAppWebsite = "http://jahhowapp.blogspot.com/2019/07/computer-remote-controller.html";
 
     public void OpenJahhowAppWebsite(View ignored) {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(JahhowAppWebsite)));
     }
 
-    public void ShowHelpFragment(View v) {
+    private void ShowHelpFragment() {
         getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .addToBackStack(null)
                 .replace(android.R.id.content, new MainHelpFragment()).commit();
@@ -193,8 +195,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    mainViewModel.socketOutput.write(bytes);
-                    //mainViewModel.socketOutput.flush();
+                    mainViewModel.outputStream.write(bytes);
+                    //mainViewModel.outputStream.flush();
                 } catch (IOException e) {
                     OnSendCommandError(R.string.Disconnected);
                 }
@@ -208,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    mainViewModel.socketOutput.write(bytes);
+                    mainViewModel.outputStream.write(bytes);
                 } catch (IOException e) {
                     OnSendCommandError(R.string.Disconnected);
                 }
@@ -216,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    static final String SendTextEncode = "UTF-16LE";
+    private static final String SendTextEncode = "UTF-16LE";
 
     // mode = InputTextMode.{SendInput, Paste}
     public void SendInputText(final String text, byte mode, boolean Hold) {
@@ -239,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     try {
-                        mainViewModel.socketOutput.write(packet);
+                        mainViewModel.outputStream.write(packet);
                     } catch (IOException e) {
                         OnSendCommandError(R.string.Disconnected);
                     }
@@ -275,13 +277,13 @@ public class MainActivity extends AppCompatActivity {
         SendMsg(Msg.MouseRightClick);
     }
 
-    public void SendMsg(final byte msg) {
+    private void SendMsg(final byte msg) {
         if (mainViewModel.socketHandler != null)
             mainViewModel.socketHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        mainViewModel.socketOutput.write(msg);
+                        mainViewModel.outputStream.write(msg);
                     } catch (IOException e) {
                         OnSendCommandError(R.string.Disconnected);
                     }
@@ -302,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    mainViewModel.socketOutput.write(bytes);
+                    mainViewModel.outputStream.write(bytes);
                 } catch (IOException e) {
                     OnSendCommandError(R.string.Disconnected);
                 }
@@ -328,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    mainViewModel.socketOutput.write(packet);
+                    mainViewModel.outputStream.write(packet);
                 } catch (IOException e) {
                     OnSendCommandError(R.string.Disconnected);
                 }
@@ -336,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    void ShowToast(@StringRes int resId) {
+    private void ShowToast(@StringRes int resId) {
         ShowToast(resId, Toast.LENGTH_SHORT);
     }
 
@@ -344,13 +346,13 @@ public class MainActivity extends AppCompatActivity {
         ShowToast(getString(resId), duration);
     }
 
-    void ShowToast(String text, int duration) {
+    private void ShowToast(String text, int duration) {
         toast.setText(text);
         toast.setDuration(duration);
         toast.show();
     }
 
-    void OnSendCommandError(@StringRes final int showToast, final int toastDuration) {
+    private void OnSendCommandError(@StringRes final int showToast, final int toastDuration) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -365,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    void OnSendCommandError(@StringRes int showToast) {
+    private void OnSendCommandError(@StringRes int showToast) {
         OnSendCommandError(showToast, Toast.LENGTH_SHORT);
     }
 
@@ -375,19 +377,17 @@ public class MainActivity extends AppCompatActivity {
             mainViewModel.socketHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (mainViewModel.socketOutput != null)
+                    if (mainViewModel.outputStream != null)
                         try {
-                            mainViewModel.socketOutput.close();
+                            mainViewModel.outputStream.close();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     mainViewModel.socketHandlerThread.quit();
 
-                    mainViewModel.bluetoothSocket = null;
                     mainViewModel.socketHandlerThread = null;
                     mainViewModel.socketHandler = null;
-                    mainViewModel.socketOutput = null;
-                    mainViewModel.socket = null;
+                    mainViewModel.outputStream = null;
                 }
             });
         }

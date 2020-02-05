@@ -17,10 +17,11 @@ import android.widget.Toast;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase.PurchaseState;
 
-public class PurchaseFragment extends Fragment {
+class PurchaseFragment extends Fragment {
     private AppCompatActivity activity;
     private ControllerSwitcherFragment controllerSwitcherFragment;
     private RemoteControllerApp remoteControllerApp;
+    private RemoteControllerApp.FetchSkuListener fetchSkuListener;
     private Button purchaseButton;
     private TextView subtitle;
 
@@ -28,22 +29,23 @@ public class PurchaseFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         controllerSwitcherFragment = (ControllerSwitcherFragment) getParentFragment();
+
         View view = inflater.inflate(R.layout.purchase, container, false);
         activity = (AppCompatActivity) getActivity();
         assert activity != null;
         remoteControllerApp = (RemoteControllerApp) activity.getApplication();
         subtitle = view.findViewById(R.id.purchaseDescription);
         purchaseButton = view.findViewById(R.id.purchaseButton);
-        if (remoteControllerApp.skuDetailsFullAccess != null) {
-            SetUiForNotPurchased();
+        if (remoteControllerApp.skuDetails != null) {
+            SetUiForPurchase();
         } else {
-            remoteControllerApp.fetchFullAccessSkuListener = new RemoteControllerApp.FetchFullAccessSkuListener() {
+            fetchSkuListener = new RemoteControllerApp.FetchSkuListener() {
                 @Override
                 public void onSkuDetailsResponse() {
                     // This is called only when SyncPurchase = UNSPECIFIED_STATE
 
-                    if (remoteControllerApp.skuDetailsFullAccess != null) {
-                        SetUiForNotPurchased();
+                    if (remoteControllerApp.skuDetails != null) {
+                        SetUiForPurchase();
                     } else {
                         Toast.makeText(getContext(), R.string.FailedToReachGooglePlay, Toast.LENGTH_SHORT).show();
                     }
@@ -52,10 +54,11 @@ public class PurchaseFragment extends Fragment {
             purchaseButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    remoteControllerApp.setFetchSkuListener(fetchSkuListener);
                     remoteControllerApp.SyncPurchase();
-                    switch (remoteControllerApp.fullAccessState) {
+                    switch (remoteControllerApp.purchaseState) {
                         case PurchaseState.PENDING:
-                            SetUiForNotPurchased();
+                            SetUiForPurchase();
                             remoteControllerApp.OpenPlayStoreManageSubscription(activity);
                             break;
                         case PurchaseState.PURCHASED:
@@ -65,26 +68,33 @@ public class PurchaseFragment extends Fragment {
                 }
             });
         }
+        view.findViewById(R.id.skip).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                remoteControllerApp.purchaseSkipped = true;
+                controllerSwitcherFragment.OnPurchaseStateChanged();
+            }
+        });
         return view;
     }
 
-    private void SetUiForNotPurchased() {
+    @Override
+    public void onDestroyView() {
+        remoteControllerApp.removeFetchSkuListener(fetchSkuListener);
+        super.onDestroyView();
+    }
+
+    private void SetUiForPurchase() {
         subtitle.setText(R.string.Annual_Subscription);
-        purchaseButton.setText(R.string.start);
+        purchaseButton.setText(R.string.subscribe);
         purchaseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (remoteControllerApp.fullAccessState == PurchaseState.PENDING)
+                if (remoteControllerApp.purchaseState == PurchaseState.PENDING)
                     remoteControllerApp.OpenPlayStoreManageSubscription(activity);
                 else
-                    remoteControllerApp.billingClient.launchBillingFlow(activity, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetailsFullAccess).build());
+                    remoteControllerApp.billingClient.launchBillingFlow(activity, BillingFlowParams.newBuilder().setSkuDetails(remoteControllerApp.skuDetails).build());
             }
         });
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        remoteControllerApp.fetchFullAccessSkuListener = null;
     }
 }

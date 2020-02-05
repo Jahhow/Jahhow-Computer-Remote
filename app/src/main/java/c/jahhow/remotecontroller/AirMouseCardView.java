@@ -9,17 +9,17 @@ import android.view.View;
 import android.view.animation.Interpolator;
 
 public class AirMouseCardView extends CardView {
-    public Interpolator j;
-    public int k = -1;
+    private Interpolator j;
+    private int k = -1;
     public View l = null;
-    public View m;
-    public View n;
+    private View m;
+    private View n;
     public View o;
-    public View p;
-    public View q;
-    public long r = 700;
-    public long s = 100;
-    public boolean t = false;
+    private View p;
+    private View q;
+    private final long r = 700;
+    private final long s = 100;
+    private boolean t = false;
 
     public AirMouseCardView(@NonNull Context context) {
         super(context);
@@ -67,12 +67,12 @@ public class AirMouseCardView extends CardView {
     }
 
     public void Init(Interpolator interpolator) {
-        MyCardView.SetupCardView(this);
+        MyCardViewSetup.Setup(this);
         this.j = interpolator;
         c();
     }
 
-    public void c() {
+    private void c() {
         this.m = findViewById(R.id.pause);
         this.n = findViewById(R.id.mouseRight);
         this.o = findViewById(R.id.mouseLeft);

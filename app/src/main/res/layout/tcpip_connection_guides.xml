@@ -86,7 +86,7 @@
         <TextView
             style="@style/AppTheme.Help_Text"
             android:layout_marginTop="14sp"
-            android:text="@string/success_rate_is_low_njust_connect_your_pc_and_this_device_to_the_internet_then_go_to_the_next_step" />
+            android:text="@string/success_rate_is_low_just_connect_your_pc_and_this_device_to_the_internet_then_go_to_the_next_step" />
 
         <Button
             android:id="@+id/buttonOk"
