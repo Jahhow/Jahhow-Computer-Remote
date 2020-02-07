@@ -3,15 +3,28 @@ package c.jahhow.remotecontroller;
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattServer;
+import android.bluetooth.BluetoothGattServerCallback;
+import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.AdvertiseCallback;
+import android.bluetooth.le.AdvertiseData;
+import android.bluetooth.le.AdvertiseSettings;
+import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.ParcelUuid;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +39,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -49,6 +63,13 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     private final IntentFilter intentFilter = new IntentFilter();
     private static final short PERMISSION_REQUEST_CODE = 8513;
     private static final UUID BT_SERVICE_UUID = UUID.fromString("C937E0B7-8C64-C221-4A25-F40120B3064E");
+
+    private static final UUID
+            GATT_SERVICE_HUMAN_INTERFACE_DEVICE = UUID.fromString("00001812-0000-1000-8000-00805F9B34FB"),
+            GATT_SERVICE_GENERIC_ATTRIBUTE = UUID.fromString("00001801-0000-1000-8000-00805F9B34FB"),
+            GATT_SERVICE_BATTERY_SERVICE = UUID.fromString("0000180F-0000-1000-8000-00805F9B34FB"),
+            GATT_SERVICE_DEVICE_INFORMATION = UUID.fromString("0000180A-0000-1000-8000-00805F9B34FB"),
+            GATT_SERVICE_SCAN_PARAMETERS = UUID.fromString("00001813-0000-1000-8000-00805F9B34FB");
 
     public SelectBluetoothDeviceFragment() {
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
@@ -80,10 +101,10 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 if (view == null) {
                     view = (LinearLayout) inflater.inflate(R.layout.nearby_bluetooth_device, parent, false);
                 }
-                BluetoothDevice item = getItem(position);
-                assert item != null;
-                ((TextView) view.getChildAt(0)).setText(item.getName());
-                ((TextView) view.getChildAt(1)).setText(item.getAddress());
+                BluetoothDevice bluetoothDevice = getItem(position);
+                assert bluetoothDevice != null;
+                ((TextView) view.getChildAt(0)).setText(bluetoothDevice.getName());
+                ((TextView) view.getChildAt(1)).setText(bluetoothDevice.getAddress());
                 return view;
             }
         };
@@ -149,6 +170,54 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 startBluetoothDiscovery();
             }
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    void gattServer() {
+        AdvertiseSettings advertiseSettings = new AdvertiseSettings.Builder()
+                .setConnectable(true)
+                .build();
+
+        AdvertiseData advertiseData = new AdvertiseData.Builder()
+                .setIncludeDeviceName(true)
+                .setIncludeTxPowerLevel(true)
+                .build();
+
+        AdvertiseData scanResponseData = new AdvertiseData.Builder()
+                .addServiceUuid(new ParcelUuid(GATT_SERVICE_HUMAN_INTERFACE_DEVICE))
+                .setIncludeDeviceName(true)
+                .setIncludeTxPowerLevel(true)
+                .build();
+
+        AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
+            @Override
+            public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+                Log.d(SelectBluetoothDeviceFragment.class.getSimpleName(), "BLE advertisement added successfully");
+            }
+
+            @Override
+            public void onStartFailure(int errorCode) {
+                Log.e(SelectBluetoothDeviceFragment.class.getSimpleName(), "Failed to add BLE advertisement, reason: " + errorCode);
+            }
+        };
+
+        BluetoothLeAdvertiser bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
+        bluetoothLeAdvertiser.startAdvertising(advertiseSettings, advertiseData, scanResponseData, advertiseCallback);
+
+        BluetoothGattServerCallback serverCallback = new BluetoothGattServerCallback() {
+        };
+
+        BluetoothManager bluetoothManager = (BluetoothManager) getContext().getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothGattServer bluetoothGattServer = bluetoothManager.openGattServer(getContext(), serverCallback);
+
+        BluetoothGattService HidService = new BluetoothGattService(GATT_SERVICE_HUMAN_INTERFACE_DEVICE , BluetoothGattService.SERVICE_TYPE_PRIMARY);
+        //BluetoothGattCharacteristic characteristic = new BluetoothGattCharacteristic(your_characteristic_uuid, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ);
+        //HidService.addCharacteristic(characteristic);
+
+        BluetoothGattService batteryService = new BluetoothGattService(GATT_SERVICE_BATTERY_SERVICE , BluetoothGattService.SERVICE_TYPE_PRIMARY);
+
+        bluetoothGattServer.addService(HidService);
+        bluetoothGattServer.addService(batteryService);
     }
 
     private void startBluetoothDiscovery() {

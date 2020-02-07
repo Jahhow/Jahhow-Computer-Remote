@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -35,11 +36,12 @@ public class BluetoothConnectorFragment extends MyFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout;
+        @LayoutRes int layoutRes;
         if (bluetoothAdapter == null) {
-            layout = inflater.inflate(R.layout.no_bluetooth, container, false);
+            layoutRes = R.layout.no_bluetooth;
             myBroadcastReceiver = null;
         } else {
+            layoutRes = R.layout.bluetooth_connector;
             if (!mainViewModel.hasSet_bluetoothOriginalState) {
                 mainViewModel.hasSet_bluetoothOriginalState = true;
                 mainViewModel.bluetoothOriginalState_isEnabled = bluetoothAdapter.isEnabled();
@@ -61,9 +63,8 @@ public class BluetoothConnectorFragment extends MyFragment {
                     TurnOnBluetooth();
                 }
             }
-            layout = inflater.inflate(R.layout.bluetooth_connector, container, false);
         }
-        return layout;
+        return inflater.inflate(layoutRes, container, false);
     }
 
     @Override
