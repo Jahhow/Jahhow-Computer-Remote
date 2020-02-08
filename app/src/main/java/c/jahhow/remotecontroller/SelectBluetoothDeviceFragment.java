@@ -64,13 +64,6 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     private static final short PERMISSION_REQUEST_CODE = 8513;
     private static final UUID BT_SERVICE_UUID = UUID.fromString("C937E0B7-8C64-C221-4A25-F40120B3064E");
 
-    private static final UUID
-            GATT_SERVICE_HUMAN_INTERFACE_DEVICE = UUID.fromString("00001812-0000-1000-8000-00805F9B34FB"),
-            GATT_SERVICE_GENERIC_ATTRIBUTE = UUID.fromString("00001801-0000-1000-8000-00805F9B34FB"),
-            GATT_SERVICE_BATTERY_SERVICE = UUID.fromString("0000180F-0000-1000-8000-00805F9B34FB"),
-            GATT_SERVICE_DEVICE_INFORMATION = UUID.fromString("0000180A-0000-1000-8000-00805F9B34FB"),
-            GATT_SERVICE_SCAN_PARAMETERS = UUID.fromString("00001813-0000-1000-8000-00805F9B34FB");
-
     public SelectBluetoothDeviceFragment() {
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
@@ -170,54 +163,6 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 startBluetoothDiscovery();
             }
         }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    void gattServer() {
-        AdvertiseSettings advertiseSettings = new AdvertiseSettings.Builder()
-                .setConnectable(true)
-                .build();
-
-        AdvertiseData advertiseData = new AdvertiseData.Builder()
-                .setIncludeDeviceName(true)
-                .setIncludeTxPowerLevel(true)
-                .build();
-
-        AdvertiseData scanResponseData = new AdvertiseData.Builder()
-                .addServiceUuid(new ParcelUuid(GATT_SERVICE_HUMAN_INTERFACE_DEVICE))
-                .setIncludeDeviceName(true)
-                .setIncludeTxPowerLevel(true)
-                .build();
-
-        AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
-            @Override
-            public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-                Log.d(SelectBluetoothDeviceFragment.class.getSimpleName(), "BLE advertisement added successfully");
-            }
-
-            @Override
-            public void onStartFailure(int errorCode) {
-                Log.e(SelectBluetoothDeviceFragment.class.getSimpleName(), "Failed to add BLE advertisement, reason: " + errorCode);
-            }
-        };
-
-        BluetoothLeAdvertiser bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
-        bluetoothLeAdvertiser.startAdvertising(advertiseSettings, advertiseData, scanResponseData, advertiseCallback);
-
-        BluetoothGattServerCallback serverCallback = new BluetoothGattServerCallback() {
-        };
-
-        BluetoothManager bluetoothManager = (BluetoothManager) getContext().getSystemService(Context.BLUETOOTH_SERVICE);
-        BluetoothGattServer bluetoothGattServer = bluetoothManager.openGattServer(getContext(), serverCallback);
-
-        BluetoothGattService HidService = new BluetoothGattService(GATT_SERVICE_HUMAN_INTERFACE_DEVICE , BluetoothGattService.SERVICE_TYPE_PRIMARY);
-        //BluetoothGattCharacteristic characteristic = new BluetoothGattCharacteristic(your_characteristic_uuid, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ);
-        //HidService.addCharacteristic(characteristic);
-
-        BluetoothGattService batteryService = new BluetoothGattService(GATT_SERVICE_BATTERY_SERVICE , BluetoothGattService.SERVICE_TYPE_PRIMARY);
-
-        bluetoothGattServer.addService(HidService);
-        bluetoothGattServer.addService(batteryService);
     }
 
     private void startBluetoothDiscovery() {
