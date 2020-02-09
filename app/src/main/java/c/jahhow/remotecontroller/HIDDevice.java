@@ -2,12 +2,14 @@ package c.jahhow.remotecontroller;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
@@ -21,7 +23,9 @@ import androidx.annotation.RequiresApi;
 
 import java.util.UUID;
 
-class HIDProfile {
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+class HIDDevice {
+    private static final String TAG = HIDDevice.class.getSimpleName();
     private static final UUID
             GATT_SERVICE_UUID_HUMAN_INTERFACE_DEVICE = getBluetoothUUID((short) 0x1812),
             GATT_SERVICE_UUID_GENERIC_ATTRIBUTE = getBluetoothUUID((short) 0x1801),
@@ -35,11 +39,32 @@ class HIDProfile {
             GATT_CHARACTERISTIC_UUID_BOOT_MOUSE_INPUT_REPORT = getBluetoothUUID((short) 0x2A33),
             GATT_CHARACTERISTIC_UUID_HID_INFORMATION = getBluetoothUUID((short) 0x2A4A),
             GATT_CHARACTERISTIC_UUID_HID_CONTROL_POINT = getBluetoothUUID((short) 0x2A4C),
+            GATT_CHARACTERISTIC_UUID_PNP_ID = getBluetoothUUID((short) 0x2A50),
             GATT_DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION = getBluetoothUUID((short) 0x2902),
             GATT_DESCRIPTOR_UUID_REPORT_REFERENCE = getBluetoothUUID((short) 0x2908);
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    void gattServer(Context context) {
+    private Context context;
+    private BluetoothLeAdvertiser bluetoothLeAdvertiser;
+    private BluetoothGattServer server;
+    private AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
+        @Override
+        public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+            Log.i(HIDDevice.class.getSimpleName(), "LE Advertise Started.");
+        }
+
+        @Override
+        public void onStartFailure(int errorCode) {
+            Log.w(HIDDevice.class.getSimpleName(), "LE Advertise Failed: " + errorCode);
+        }
+    };
+
+    HIDDevice(Context context) {
+        this.context = context;
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
+    }
+
+    private void startAdvertising() {
         AdvertiseSettings advertiseSettings = new AdvertiseSettings.Builder()
                 .setConnectable(true)
                 .build();
@@ -55,26 +80,23 @@ class HIDProfile {
                 .setIncludeTxPowerLevel(true)
                 .build();
 
-        AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
-            @Override
-            public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-                Log.d(SelectBluetoothDeviceFragment.class.getSimpleName(), "BLE advertisement added successfully");
-            }
-
-            @Override
-            public void onStartFailure(int errorCode) {
-                Log.e(SelectBluetoothDeviceFragment.class.getSimpleName(), "Failed to add BLE advertisement, reason: " + errorCode);
-            }
-        };
-
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        BluetoothLeAdvertiser bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
         bluetoothLeAdvertiser.startAdvertising(advertiseSettings, advertiseData, scanResponseData, advertiseCallback);
+    }
 
+    private void stopAdvertising() {
+        bluetoothLeAdvertiser.stopAdvertising(advertiseCallback);
+    }
+
+    void openServer() {
         BluetoothGattServerCallback serverCallback = new BluetoothGattServerCallback() {
             @Override
             public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
                 super.onConnectionStateChange(device, status, newState);
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    Log.i(TAG, "BluetoothDevice CONNECTED: " + device);
+                } else {
+                    Log.i(TAG, "BluetoothDevice DISCONNECTED: " + device);
+                }
             }
 
             @Override
@@ -85,6 +107,14 @@ class HIDProfile {
             @Override
             public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
+                UUID uuid = characteristic.getUuid();
+                if (uuid.equals(GATT_CHARACTERISTIC_UUID_REPORT)) {
+
+                } else if (uuid.equals(GATT_CHARACTERISTIC_UUID_REPORT_MAP)) {
+
+                } else {
+                    server.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null);
+                }
             }
 
             @Override
@@ -129,7 +159,7 @@ class HIDProfile {
         };
 
         BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-        BluetoothGattServer bluetoothGattServer = bluetoothManager.openGattServer(context, serverCallback);
+        server = bluetoothManager.openGattServer(context, serverCallback);
 
         BluetoothGattService HidService = new BluetoothGattService(GATT_SERVICE_UUID_HUMAN_INTERFACE_DEVICE, BluetoothGattService.SERVICE_TYPE_PRIMARY);
 
@@ -142,7 +172,7 @@ class HIDProfile {
         inputReport.addDescriptor(clientConfig);
         inputReport.addDescriptor(reportReference);
 
-        BluetoothGattCharacteristic reportMap = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_REPORT_MAP,
+        BluetoothGattCharacteristic report_map = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_REPORT_MAP,
                 BluetoothGattCharacteristic.PROPERTY_READ,
                 BluetoothGattCharacteristic.PERMISSION_READ);
 
@@ -173,22 +203,38 @@ class HIDProfile {
                 BluetoothGattCharacteristic.PERMISSION_WRITE);
 
         HidService.addCharacteristic(inputReport);
-        HidService.addCharacteristic(reportMap);
+        HidService.addCharacteristic(report_map);
         HidService.addCharacteristic(boot_keyboard_input_report);
         HidService.addCharacteristic(boot_keyboard_output_report);
         HidService.addCharacteristic(boot_mouse_input_report);
         HidService.addCharacteristic(hid_information);
         HidService.addCharacteristic(hid_control_point);
 
-        BluetoothGattService batteryService = new BluetoothGattService(GATT_SERVICE_UUID_BATTERY_SERVICE, BluetoothGattService.SERVICE_TYPE_PRIMARY);
 
-        bluetoothGattServer.addService(HidService);
-        bluetoothGattServer.addService(batteryService);
+        BluetoothGattService device_information = new BluetoothGattService(GATT_SERVICE_UUID_DEVICE_INFORMATION, BluetoothGattService.SERVICE_TYPE_PRIMARY);
+        BluetoothGattCharacteristic pnp_id = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_PNP_ID,
+                BluetoothGattCharacteristic.PROPERTY_READ,
+                BluetoothGattCharacteristic.PERMISSION_READ);
+        device_information.addCharacteristic(pnp_id);
+
+
+        server.addService(HidService);
+        server.addService(device_information);
+        startAdvertising();
+    }
+
+    void closeServer() {
+        stopAdvertising();
+        server.close();
     }
 
     private static UUID getBluetoothUUID(short assignedNumber) {
         long mostSigBits = 0x0000000000001000L | (((long) assignedNumber) & 0xFFFFL) << 32;
         long leastSigBits = 0x800000805F9B34FBL;
         return new UUID(mostSigBits, leastSigBits);
+    }
+
+    private static short getAssignedNumber(UUID uuid) {
+        return (short) (uuid.getMostSignificantBits() >> 32);
     }
 }
