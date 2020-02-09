@@ -17,7 +17,7 @@ import android.widget.Toast;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase.PurchaseState;
 
-class PurchaseFragment extends Fragment {
+public class PurchaseFragment extends Fragment {
     private AppCompatActivity activity;
     private ControllerSwitcherFragment controllerSwitcherFragment;
     private RemoteControllerApp remoteControllerApp;

@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-class SwipeControllerFragment extends Fragment {
+public class SwipeControllerFragment extends Fragment {
 	private SwipeDetectorLayout swipeDetectorLayout;
 	private MainActivity mainActivity;
 
@@ -20,8 +20,8 @@ class SwipeControllerFragment extends Fragment {
 	}
 
 	@Override
-	public void onDestroy() {
-		super.onDestroy();
+	public void onDestroyView() {
+		super.onDestroyView();
 		SharedPreferences preferences = mainActivity.preferences;
 		if(!swipeDetectorLayout.demoing&& !preferences.contains(MainActivity.KeyPrefer_Swiped))
 			preferences.edit().putBoolean(MainActivity.KeyPrefer_Swiped, true).apply();

@@ -14,7 +14,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.android.billingclient.api.Purchase.PurchaseState;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
     private MainActivity mainActivity;
     private BottomNavigationView navigationView;
     private RemoteControllerApp remoteControllerApp;

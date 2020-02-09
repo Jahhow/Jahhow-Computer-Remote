@@ -7,11 +7,12 @@ import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 
-class TurnOnBluetoothFragment extends Fragment {
+public class TurnOnBluetoothFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final BluetoothConnectorFragment bluetoothConnectorFragment = (BluetoothConnectorFragment) getParentFragment();
+        assert bluetoothConnectorFragment != null;
         View layout = inflater.inflate(R.layout.enable_bluetooth, container, false);
         View btTurnOnBluetooth = layout.findViewById(R.id.buttonTurnOnBluetooth);
         btTurnOnBluetooth.setOnClickListener(new View.OnClickListener() {

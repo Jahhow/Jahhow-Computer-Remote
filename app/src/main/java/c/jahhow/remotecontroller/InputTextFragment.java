@@ -2,6 +2,7 @@ package c.jahhow.remotecontroller;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +19,14 @@ import c.jahhow.remotecontroller.msg.ButtonAction;
 import c.jahhow.remotecontroller.msg.InputTextMode;
 import c.jahhow.remotecontroller.msg.SCS1;
 
-class InputTextFragment extends Fragment {
+public class InputTextFragment extends Fragment {
     private static final String
             BundleKey_InputType = "BKIT",
             BundleKey_ShowingHelp = "BKSH";
 
     private MainActivity mainActivity;
     private TextInputEditText editText;
+    private Editable text;
     private ImageView buttonToggleInputPassword;
     private View helpLayout;
     private boolean showHelp;
@@ -36,6 +38,8 @@ class InputTextFragment extends Fragment {
 
         View layout = inflater.inflate(R.layout.input_text_switcher, container, false);
         editText = layout.findViewById(R.id.SendTextEditText);
+        text = editText.getText();
+        assert text != null;
 
         View backspace = layout.findViewById(R.id.inputTextButtonBackspace);
         backspace.setOnClickListener(new View.OnClickListener() {
@@ -82,7 +86,7 @@ class InputTextFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showHelp = false;
-                mainActivity.SendInputText(editText.getText().toString(), InputTextMode.SendInput, false);
+                mainActivity.SendInputText(text.toString(), InputTextMode.SendInput, false);
             }
         });
 
@@ -91,14 +95,14 @@ class InputTextFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showHelp = false;
-                mainActivity.SendInputText(editText.getText().toString(), InputTextMode.Paste, false);
+                mainActivity.SendInputText(text.toString(), InputTextMode.Paste, false);
             }
         });
         new LongPressAndUpDetector(buttonPasteText, mainActivity) {
             @Override
             void onLongClickDown(View v) {
                 showHelp = false;
-                mainActivity.SendInputText(editText.getText().toString(), InputTextMode.Paste, true);
+                mainActivity.SendInputText(text.toString(), InputTextMode.Paste, true);
             }
 
             @Override
@@ -197,7 +201,7 @@ class InputTextFragment extends Fragment {
         super.onSaveInstanceState(outState);
         if (!mainActivity.isChangingConfigurations()) {
             mainActivity.preferences.edit()
-                    .putString(MainActivity.KeyPrefer_InputText, editText.getText().toString())
+                    .putString(MainActivity.KeyPrefer_InputText, text.toString())
                     .putBoolean(MainActivity.KeyPrefer_ShowHelpInputText, showHelp).apply();
         }
         outState.putInt(BundleKey_InputType, editText.getInputType());
@@ -206,12 +210,12 @@ class InputTextFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroyView() {
         //Log.i("InputTextFragment", "onDestroy()");
-        super.onDestroy();
+        super.onDestroyView();
         if (!mainActivity.isChangingConfigurations()) {
             mainActivity.preferences.edit()
-                    .putString(MainActivity.KeyPrefer_InputText, editText.getText().toString())
+                    .putString(MainActivity.KeyPrefer_InputText, text.toString())
                     .putBoolean(MainActivity.KeyPrefer_ShowHelpInputText, showHelp).apply();
         }
     }

@@ -17,7 +17,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-class BluetoothConnectorFragment extends MyFragment {
+public class BluetoothConnectorFragment extends MyFragment {
     private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private MyBroadcastReceiver myBroadcastReceiver;
     private MainViewModel mainViewModel;
@@ -100,7 +100,7 @@ class BluetoothConnectorFragment extends MyFragment {
     void replaceChildFragment(Fragment newFragment) {
         getChildFragmentManager().beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .replace(R.id.bluetoothConnectorInnerFragmentContainer, newFragment).commit();
+                .replace(R.id.bluetoothConnectorInnerFragmentContainer, newFragment).commitAllowingStateLoss();
     }
 
     private void onBluetoothStateON() {

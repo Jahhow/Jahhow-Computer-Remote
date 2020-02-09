@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import c.jahhow.remotecontroller.msg.ButtonAction;
 import c.jahhow.remotecontroller.msg.SCS1;
 
-class ArrowButtonFragment extends Fragment {
+public class ArrowButtonFragment extends Fragment {
 	private MainActivity mainActivity;
 
 	@Override
