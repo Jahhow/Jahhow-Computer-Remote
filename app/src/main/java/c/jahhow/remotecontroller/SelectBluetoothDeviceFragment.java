@@ -130,22 +130,22 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     public void onStart() {
         super.onStart();
         //Log.i(getClass().getSimpleName(), "onStart()");
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+        /*if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             hidDevice = new HIDDevice(mainActivity);
             hidDevice.openServer();
-        }
+        }*/
         if (mainViewModel.nearbyBTArrayAdapter.isEmpty())
             startBluetoothDiscovery();
     }
 
-    @SuppressLint("NewApi")
+    /*@SuppressLint("NewApi")
     @Override
     public void onStop() {
         super.onStop();
         if (hidDevice != null) {
             hidDevice.closeServer();
         }
-    }
+    }*/
 
     @Override
     public void onDestroyView() {

@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +23,20 @@ import androidx.transition.TransitionSet;
 
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier.ErrorCallback {
+    private static final String TAG = TcpIpConnectorFragment.class.getSimpleName();
+
     private TextInputEditText tiEditTextIp, tiEditTextPort;
     private Button buttonConnect;
     private ImageView buttonHelp;
@@ -97,6 +107,8 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                 ShowGuideTcpIp();
             }
         }
+        if (thread == null)
+            udpBroadcastThread();
         return layout;
     }
 
@@ -108,12 +120,58 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                 .commit();
     }
 
+    private boolean continueThread = true;
+    Thread thread = null;
+    DatagramSocket socket = null;
+
+    void udpBroadcastThread() {
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    InetAddress broadcastIP = InetAddress.getByName("192.168.0.255");
+                    socket = new DatagramSocket(1597, broadcastIP);// must specify a port
+                } catch (SocketException e) {
+                    e.printStackTrace();
+                    return;
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                while (continueThread) {
+                    DatagramPacket packet = new DatagramPacket(new byte[100], 100);
+                    try {
+                        Log.i(TAG, "socket.receive(packet);");
+                        socket.receive(packet);
+                    } catch (IOException e) {
+                        break;
+                    }
+                    String senderIP = packet.getAddress().getHostAddress();
+                    String message = new String(packet.getData()).trim();
+                    int port = packet.getPort();
+
+                    Log.i(TAG, "Got UDB broadcast from " + senderIP + ", message: " + message
+                            + ", port: " + port);
+                }
+                socket.close();
+                Log.i(TAG, "Thread EXIT");
+            }
+        });
+        thread.start();
+    }
+
     @Override
     public void onDestroyView() {
         //Log.e(getClass().getSimpleName(), "onDestroyView()");
         super.onDestroyView();
         if (!mainActivity.isChangingConfigurations())
             SavePreferences();
+        continueThread = false;
+        thread = null;
+        if (socket != null) {
+            socket.close();// use this to stop the thread
+            socket = null;
+        }
     }
 
     /*@Override
