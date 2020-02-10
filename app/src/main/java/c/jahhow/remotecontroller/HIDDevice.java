@@ -21,6 +21,7 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -48,11 +49,13 @@ class HIDDevice {
             GATT_DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION = getBluetoothUUID((short) 0x2902),
             GATT_DESCRIPTOR_UUID_REPORT_REFERENCE = getBluetoothUUID((short) 0x2908);
 
+    private static final int manufacturerId = 0xF3C6;
     private static final byte[] reportDescriptor =
             new byte[]{
                     (byte) 0x05, (byte) 0x01,             // USAGE_PAGE (Generic Desktop)
                     (byte) 0x09, (byte) 0x02,             // USAGE (Mouse)
                     (byte) 0xa1, (byte) 0x01,             // COLLECTION (Application)
+                    (byte) 0x85, (byte) 0x01,             //   REPORT_ID (01)
                     (byte) 0x09, (byte) 0x01,             //   USAGE (Pointer)
                     (byte) 0xa1, (byte) 0x00,             //   COLLECTION (Physical)
                     (byte) 0x05, (byte) 0x09,             //     USAGE_PAGE (Button)
@@ -78,27 +81,39 @@ class HIDDevice {
                     (byte) 0xc0                           // END_COLLECTION
             },
             pnp_id = new byte[]{
-                    (byte) 1,    // Vendor ID Source: Bluetooth SIG assigned
-                    (byte) 0x3a, // Vendor ID LSO
-                    (byte) 0xf3, // Vendor ID MSO
-                    (byte) 0,    // Product ID LSO
-                    (byte) 0,    // Product ID MSO
-                    (byte) 0,    // Product Version LSO
-                    (byte) 0     // Product Version MSO
+                    (byte) 1,                   // Vendor ID Source: Bluetooth SIG assigned
+                    (byte) manufacturerId,      // Vendor ID LSO
+                    (byte) manufacturerId >> 8, // Vendor ID MSO
+                    (byte) 28,                  // Product ID LSO
+                    (byte) 28,                  // Product ID MSO
+                    (byte) 28,                  // Product Version LSO
+                    (byte) 28                   // Product Version MSO
             },
             hid_information = new byte[]{
-                    0x11,// bcdHID
-                    0x01,// bcdHID v1.11
+                    0x11,// bcdHID vx.11
+                    0x01,// bcdHID v1.xx
                     0,   // bCountryCode: not localized
                     0b10 // Flags
             },
-            client_characteristic_configuration = new byte[]{
-                    0b01,// Indications disabled | Notifications enabled
+            client_characteristic_configuration_input_report = new byte[]{
+                    0b00,// Indications | Notifications
                     0
             },
-            protocol_mode = new byte[]{
-                    1 // Report Protocol Mode
-            };
+            client_characteristic_configuration_boot_keyboard_input_report = new byte[]{
+                    0b00,// Indications | Notifications
+                    0
+            },
+            client_characteristic_configuration_boot_mouse_input_report = new byte[]{
+                    0b00,// Indications | Notifications
+                    0
+            },
+            protocol_mode = new byte[]{1},
+            report_reference_mouseInput = new byte[]{
+                    1, // Report ID
+                    1  // Report Type: Input Report
+            },
+            mouse_input_report = new byte[]{0, 50, 50},// do not pretend Report ID
+            boot_mouse_input_report = new byte[]{0, 50, 50};
 
     private Context context;
     private BluetoothManager bluetoothManager;
@@ -116,9 +131,10 @@ class HIDDevice {
         }
     };
     private BluetoothDevice device;
-    private BluetoothGattCharacteristic inputReport;
-    private BluetoothGattService[] bluetoothGattServices;
+    private BluetoothGattCharacteristic mouseInputReport;
+    private BluetoothGattService[] services;
     private int indexServiceToAdd = 1;
+    private boolean mouse_input_report_notification = false;
 
     HIDDevice(Context context) {
         this.context = context;
@@ -126,15 +142,16 @@ class HIDDevice {
         assert bluetoothManager != null;
         BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
         bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
+        notifyInputReportThread();
     }
 
     private void startAdvertising() {
         AdvertiseSettings advertiseSettings = new AdvertiseSettings.Builder().build();
 
         AdvertiseData advertiseData = new AdvertiseData.Builder()
-                .addManufacturerData(224, new byte[]{})
+                .addManufacturerData(manufacturerId, new byte[]{})
                 .addServiceUuid(new ParcelUuid(GATT_SERVICE_UUID_HUMAN_INTERFACE_DEVICE))
-                //.setIncludeDeviceName(true)
+                .setIncludeDeviceName(true)
                 .setIncludeTxPowerLevel(true)
                 .build();
 
@@ -154,10 +171,10 @@ class HIDDevice {
                     Log.i(TAG, "BluetoothDevice CONNECTED: " + device);
                     if (HIDDevice.this.device == null) {
                         HIDDevice.this.device = device;
-                        notifyInputReport();
+                        //notifyInputReportThread();
                     }
                 } else {
-                    if (HIDDevice.this.device == device) {
+                    if (device.equals(HIDDevice.this.device)) {
                         HIDDevice.this.device = null;
                     }
                     Log.i(TAG, "BluetoothDevice DISCONNECTED: " + device);
@@ -168,8 +185,8 @@ class HIDDevice {
             public void onServiceAdded(int status, BluetoothGattService service) {
                 super.onServiceAdded(status, service);
                 //Log.i(TAG, "onServiceAdded");
-                if (indexServiceToAdd < bluetoothGattServices.length) {
-                    server.addService(bluetoothGattServices[indexServiceToAdd]);
+                if (indexServiceToAdd < services.length) {
+                    server.addService(services[indexServiceToAdd]);
                     ++indexServiceToAdd;
                 }
             }
@@ -178,29 +195,34 @@ class HIDDevice {
             public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
                 UUID uuid = characteristic.getUuid();
-                int status = BluetoothGatt.GATT_FAILURE;
+                int status;
 
                 if (uuid.equals(GATT_CHARACTERISTIC_UUID_PNP_ID)
                         || uuid.equals(GATT_CHARACTERISTIC_UUID_REPORT)
                         || uuid.equals(GATT_CHARACTERISTIC_UUID_HID_INFORMATION)
                         || uuid.equals(GATT_CHARACTERISTIC_UUID_REPORT_MAP)
-                        || uuid.equals(GATT_CHARACTERISTIC_UUID_PROTOCOL_MODE)) {
-                    if (BuildConfig.DEBUG) {
-                        String characteristicStr;
+                        || uuid.equals(GATT_CHARACTERISTIC_UUID_PROTOCOL_MODE)
+                        || uuid.equals(GATT_CHARACTERISTIC_UUID_BOOT_MOUSE_INPUT_REPORT)
+                        || uuid.equals(GATT_CHARACTERISTIC_UUID_BATTERY_LEVEL)) {
+                    /*if (BuildConfig.DEBUG) {
+                        String str;
                         if (uuid.equals(GATT_CHARACTERISTIC_UUID_REPORT)) {
-                            characteristicStr = "REPORT";
+                            str = "REPORT";
                         } else if (uuid.equals(GATT_CHARACTERISTIC_UUID_REPORT_MAP)) {
-                            characteristicStr = "REPORT_MAP";
+                            str = "REPORT_MAP";
+                        } else if (uuid.equals(GATT_CHARACTERISTIC_UUID_BATTERY_LEVEL)) {
+                            str = "BATTERY_LEVEL";
                         } else {
-                            characteristicStr = "";
+                            str = "Other";
                         }
-                        Log.i(TAG, "onCharacteristicReadRequest OK " + characteristicStr);
-                    }
-                    //Log.i(TAG, "onCharacteristicReadRequest OK");
+                        Log.i(TAG, "onCharacteristicReadRequest OK: " + str + ", offset: " + offset);
+                    }*/
                     status = BluetoothGatt.GATT_SUCCESS;
                 } else {
                     Log.w(TAG, "onCharacteristicReadRequest unimplemented " + uuid);
+                    status = BluetoothGatt.GATT_FAILURE;
                 }
+                //Log.i(TAG, "sendResponse " + Arrays.toString(characteristic.getValue()));
                 server.sendResponse(device, requestId, status, 0, characteristic.getValue());
             }
 
@@ -214,13 +236,30 @@ class HIDDevice {
             public void onDescriptorReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattDescriptor descriptor) {
                 super.onDescriptorReadRequest(device, requestId, offset, descriptor);
                 UUID uuid = descriptor.getUuid();
-                int status = BluetoothGatt.GATT_FAILURE;
+                int status;
 
-                if (uuid.equals(GATT_DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION)) {
+                if (uuid.equals(GATT_DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION)
+                        || uuid.equals(GATT_DESCRIPTOR_UUID_REPORT_REFERENCE)) {
+                    if (BuildConfig.DEBUG) {
+                        if (uuid.equals(GATT_DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION)) {
+                            BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
+                            UUID characteristicUuid = characteristic.getUuid();
+                            String str;
+                            if (characteristicUuid.equals(GATT_CHARACTERISTIC_UUID_BOOT_MOUSE_INPUT_REPORT)) {
+                                str = "BOOT_MOUSE";
+                            } else if (characteristicUuid.equals(GATT_CHARACTERISTIC_UUID_REPORT)) {
+                                str = "REPORT";
+                            } else {
+                                str = "other";
+                            }
+                            Log.i(TAG, "onDescriptorReadRequest parent characteristic: " + str);
+                        }
+                    }
                     //Log.i(TAG, "onDescriptorReadRequest OK");
                     status = BluetoothGatt.GATT_SUCCESS;
                 } else {
                     Log.w(TAG, "onDescriptorReadRequest unimplemented " + uuid);
+                    status = BluetoothGatt.GATT_FAILURE;
                 }
                 server.sendResponse(device, requestId, status, 0, descriptor.getValue());
             }
@@ -228,7 +267,45 @@ class HIDDevice {
             @Override
             public void onDescriptorWriteRequest(BluetoothDevice device, int requestId, BluetoothGattDescriptor descriptor, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
                 super.onDescriptorWriteRequest(device, requestId, descriptor, preparedWrite, responseNeeded, offset, value);
-                Log.i(TAG, "onDescriptorWriteRequest");
+                Log.i(TAG, "preparedWrite: " + preparedWrite + ", responseNeeded: " + responseNeeded + ", offset: " + offset + ", value: " + Arrays.toString(value));
+                UUID uuid = descriptor.getUuid();
+                int status;
+
+                if (uuid.equals(GATT_DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION)) {
+                    if (BuildConfig.DEBUG) {
+                        String des, parent;
+                        if (uuid.equals(GATT_DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION)) {
+                            des = "CONFIG";
+                        } else if (uuid.equals(GATT_DESCRIPTOR_UUID_REPORT_REFERENCE)) {
+                            des = "REPORT_REFERENCE";
+                        } else {
+                            des = "OTHER";
+                        }
+
+                        BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
+                        UUID characteristicUuid = characteristic.getUuid();
+                        if (characteristicUuid.equals(GATT_CHARACTERISTIC_UUID_BOOT_MOUSE_INPUT_REPORT)) {
+                            parent = "BOOT_MOUSE";
+                        } else if (characteristicUuid.equals(GATT_CHARACTERISTIC_UUID_REPORT)) {
+                            parent = "REPORT";
+                        } else {
+                            parent = "OTHER";
+                        }
+                        Log.i(TAG, "onDescriptorWriteRequest " + des + ", parent characteristic: " + parent);
+                    }
+
+                    byte v0 = value[0];
+                    mouse_input_report_notification = (v0 & 1) == 1;
+                    descriptor.setValue(value);
+                    Log.i(TAG, "mouse_input_report_notification: " + mouse_input_report_notification);
+
+                    status = BluetoothGatt.GATT_SUCCESS;
+                } else {
+                    Log.w(TAG, "onDescriptorWriteRequest unimplemented " + uuid);
+                    status = BluetoothGatt.GATT_FAILURE;
+                }
+                if (responseNeeded)
+                    server.sendResponse(device, requestId, status, 0, null);
             }
 
             @Override
@@ -240,7 +317,7 @@ class HIDDevice {
             @Override
             public void onNotificationSent(BluetoothDevice device, int status) {
                 super.onNotificationSent(device, status);
-                //Log.i(TAG, "onNotificationSent");
+                Log.i(TAG, "onNotificationSent " + (status == BluetoothGatt.GATT_SUCCESS ? "OK" : "Fail"));
             }
 
             /*@Override
@@ -251,7 +328,7 @@ class HIDDevice {
 
             @Override
             public void onPhyUpdate(BluetoothDevice device, int txPhy, int rxPhy, int status) {
-                super.onPhyUpdate(device, txPhy, rxPhy, status);
+                super.onPhyUpdate(device, txPhy, rxPhy, stonNotificationSentatus);
                 Log.i(TAG, "onPhyUpdate");
             }
 
@@ -278,17 +355,18 @@ class HIDDevice {
 
         BluetoothGattService human_interface_device = new BluetoothGattService(GATT_SERVICE_UUID_HUMAN_INTERFACE_DEVICE, BluetoothGattService.SERVICE_TYPE_PRIMARY);
         {
-            inputReport = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_REPORT,
+            mouseInputReport = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_REPORT,
                     BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                     BluetoothGattCharacteristic.PERMISSION_READ);
             {
                 BluetoothGattDescriptor clientConfig = new BluetoothGattDescriptor(GATT_DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION,
                         BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE);
-                clientConfig.setValue(client_characteristic_configuration);
-                inputReport.addDescriptor(clientConfig);
-                //BluetoothGattDescriptor reportReference = new BluetoothGattDescriptor(GATT_DESCRIPTOR_UUID_REPORT_REFERENCE, BluetoothGattDescriptor.PERMISSION_READ);
-                //inputReport.addDescriptor(reportReference);
-                inputReport.setValue(new byte[]{0, 127, 127});
+                clientConfig.setValue(client_characteristic_configuration_input_report);
+                BluetoothGattDescriptor reportReference = new BluetoothGattDescriptor(GATT_DESCRIPTOR_UUID_REPORT_REFERENCE, BluetoothGattDescriptor.PERMISSION_READ);
+                reportReference.setValue(HIDDevice.report_reference_mouseInput);
+                mouseInputReport.addDescriptor(clientConfig);
+                mouseInputReport.addDescriptor(reportReference);
+                mouseInputReport.setValue(mouse_input_report);
             }
 
             BluetoothGattCharacteristic report_map = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_REPORT_MAP,
@@ -296,7 +374,7 @@ class HIDDevice {
                     BluetoothGattCharacteristic.PERMISSION_READ);
             report_map.setValue(reportDescriptor);
 
-            /*BluetoothGattCharacteristic boot_keyboard_input_report = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_BOOT_KEYBOARD_INPUT_REPORT,
+            BluetoothGattCharacteristic boot_keyboard_input_report = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_BOOT_KEYBOARD_INPUT_REPORT,
                     BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                     BluetoothGattCharacteristic.PERMISSION_READ);
             {
@@ -315,11 +393,10 @@ class HIDDevice {
             {
                 BluetoothGattDescriptor clientConfig_boot_mouse_input_report = new BluetoothGattDescriptor(GATT_DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION,
                         BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE);
+                clientConfig_boot_mouse_input_report.setValue(client_characteristic_configuration_boot_mouse_input_report);
                 boot_mouse_input_report.addDescriptor(clientConfig_boot_mouse_input_report);
+                boot_mouse_input_report.setValue(HIDDevice.boot_mouse_input_report);
             }
-            human_interface_device.addCharacteristic(boot_keyboard_input_report);
-            human_interface_device.addCharacteristic(boot_keyboard_output_report);
-            human_interface_device.addCharacteristic(boot_mouse_input_report);*/
 
             BluetoothGattCharacteristic hid_information = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_HID_INFORMATION,
                     BluetoothGattCharacteristic.PROPERTY_READ,
@@ -334,10 +411,13 @@ class HIDDevice {
                     BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
                     BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PERMISSION_WRITE);
             protocol_mode.setValue(HIDDevice.protocol_mode);
-            human_interface_device.addCharacteristic(protocol_mode);
 
-            human_interface_device.addCharacteristic(inputReport);
+            human_interface_device.addCharacteristic(protocol_mode);
+            human_interface_device.addCharacteristic(mouseInputReport);
             human_interface_device.addCharacteristic(report_map);
+            //human_interface_device.addCharacteristic(boot_keyboard_input_report);
+            //human_interface_device.addCharacteristic(boot_keyboard_output_report);
+            human_interface_device.addCharacteristic(boot_mouse_input_report);
             human_interface_device.addCharacteristic(hid_information);
             human_interface_device.addCharacteristic(hid_control_point);
         }
@@ -347,6 +427,7 @@ class HIDDevice {
             BluetoothGattCharacteristic battery_level = new BluetoothGattCharacteristic(GATT_CHARACTERISTIC_UUID_BATTERY_LEVEL,
                     BluetoothGattCharacteristic.PROPERTY_READ,
                     BluetoothGattCharacteristic.PERMISSION_READ);
+            battery_level.setValue(new byte[]{100});
             battery_service.addCharacteristic(battery_level);
         }*/
 
@@ -359,25 +440,44 @@ class HIDDevice {
             device_information.addCharacteristic(pnp_id);
         }
 
+        /*BluetoothGattService generic_attribute = new BluetoothGattService(GATT_SERVICE_UUID_GENERIC_ATTRIBUTE, BluetoothGattService.SERVICE_TYPE_PRIMARY);
+        {
+        }*/
 
-        bluetoothGattServices = new BluetoothGattService[]{
+        services = new BluetoothGattService[]{
                 //generic_access, // Fail. onServiceAdded() won't call
                 human_interface_device,
                 //battery_service,
                 device_information
         };
-        server.addService(bluetoothGattServices[0]);
+        server.addService(services[0]);
         startAdvertising();
     }
+
+    private boolean continueLoopThread = true;
 
     void closeServer() {
         stopAdvertising();
         server.close();
+        continueLoopThread = false;
     }
 
-    void notifyInputReport() {
-        server.notifyCharacteristicChanged(device, inputReport, false);
-        server.notifyCharacteristicChanged(device, inputReport, false);
+    void notifyInputReportThread() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (continueLoopThread) {
+                    if (device != null)
+                        if (mouse_input_report_notification) {
+                            server.notifyCharacteristicChanged(device, mouseInputReport, false);
+                        }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+        }).start();
     }
 
     private static UUID getBluetoothUUID(short assignedNumber) {
