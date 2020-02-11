@@ -1,6 +1,8 @@
 package c.jahhow.remotecontroller;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -29,10 +31,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier.ErrorCallback {
     private static final String TAG = TcpIpConnectorFragment.class.getSimpleName();
@@ -107,8 +110,10 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                 ShowGuideTcpIp();
             }
         }
-        if (thread == null)
-            udpBroadcastThread();
+        if (thread == null) {
+            continueThread = true;
+            udpBroadcastReceiveThread();
+        }
         return layout;
     }
 
@@ -124,13 +129,25 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
     Thread thread = null;
     DatagramSocket socket = null;
 
-    void udpBroadcastThread() {
+    void udpBroadcastReceiveThread() {
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    InetAddress broadcastIP = InetAddress.getByName("192.168.0.255");
-                    socket = new DatagramSocket(1597, broadcastIP);// must specify a port
+                    WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                    if (wifi == null)
+                        return;
+
+                    int wifiIP = Integer.reverseBytes(wifi.getConnectionInfo().getIpAddress());
+                    if (wifiIP == 0)
+                        return;
+
+                    byte[] broadcastIpBytes = ByteBuffer.allocate(4).putInt(wifiIP | 0xFF).array();
+
+                    InetAddress broadcastIP = InetAddress.getByAddress(broadcastIpBytes);// x.x.255.255 failed
+                    int broadcastPort = 1597;
+                    socket = new DatagramSocket(broadcastPort, broadcastIP);// must specify a port
+                    //Log.i(TAG, "Broadcast address:" + broadcastIP + ":" + broadcastPort);
                 } catch (SocketException e) {
                     e.printStackTrace();
                     return;
@@ -138,22 +155,24 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                     e.printStackTrace();
                     return;
                 }
+                DatagramPacket packet = new DatagramPacket(new byte[ServerVerifier.BROADCAST_DATA_LENGTH], ServerVerifier.BROADCAST_DATA_LENGTH);
                 while (continueThread) {
-                    DatagramPacket packet = new DatagramPacket(new byte[100], 100);
                     try {
                         Log.i(TAG, "socket.receive(packet);");
                         socket.receive(packet);
                     } catch (IOException e) {
-                        break;
+                        return;
                     }
                     String senderIP = packet.getAddress().getHostAddress();
-                    String message = new String(packet.getData()).trim();
-                    int port = packet.getPort();
+                    int port = ServerVerifier.getTcpPort(packet);
+                    if (port > 0)
+                        Log.i(TAG, "Found server at " + senderIP + ":" + port);
+                    else
+                        Log.i(TAG, "getTcpPort error: " + port);
 
-                    Log.i(TAG, "Got UDB broadcast from " + senderIP + ", message: " + message
-                            + ", port: " + port);
+                    String data = new String(packet.getData());
+                    //Log.i(TAG, "Got UDB broadcast from " + senderIP + " \"" + data + "\", {" + Arrays.toString(packet.getData()) + "}");
                 }
-                socket.close();
                 Log.i(TAG, "Thread EXIT");
             }
         });
