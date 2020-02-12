@@ -6,7 +6,6 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +34,6 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier.ErrorCallback {
     private static final String TAG = TcpIpConnectorFragment.class.getSimpleName();
@@ -106,13 +104,12 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         }
 
         if (isNotRestoringState()) {
-            if (preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, true)) {
+            if (BuildConfig.DEBUG || preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, true)) {
                 ShowGuideTcpIp();
             }
         }
-        if (thread == null) {
-            continueThread = true;
-            udpBroadcastReceiveThread();
+        if (mainViewModel.doAutoTcpConnect) {
+            listenForUdpBroadcast();
         }
         return layout;
     }
@@ -125,68 +122,77 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                 .commit();
     }
 
-    private boolean continueThread = true;
-    Thread thread = null;
-    DatagramSocket socket = null;
+    private DatagramSocket socket = null;
 
-    void udpBroadcastReceiveThread() {
-        thread = new Thread(new Runnable() {
+    private void listenForUdpBroadcast() {
+        try {
+            WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wifi == null)
+                return;
+
+            int wifiIP = Integer.reverseBytes(wifi.getConnectionInfo().getIpAddress());
+            if (wifiIP == 0)
+                return;
+
+            byte[] broadcastIpBytes = ByteBuffer.allocate(4).putInt(wifiIP | 0xFF).array();
+
+            InetAddress broadcastIP = InetAddress.getByAddress(broadcastIpBytes);// x.x.255.255 failed
+            int broadcastPort = 1597;
+            socket = new DatagramSocket(broadcastPort, broadcastIP);// must specify a port
+            //Log.i(TAG, "Broadcast address:" + broadcastIP + ":" + broadcastPort);
+        } catch (SocketException e) {
+            e.printStackTrace();
+            return;
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return;
+        }
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                    if (wifi == null)
-                        return;
-
-                    int wifiIP = Integer.reverseBytes(wifi.getConnectionInfo().getIpAddress());
-                    if (wifiIP == 0)
-                        return;
-
-                    byte[] broadcastIpBytes = ByteBuffer.allocate(4).putInt(wifiIP | 0xFF).array();
-
-                    InetAddress broadcastIP = InetAddress.getByAddress(broadcastIpBytes);// x.x.255.255 failed
-                    int broadcastPort = 1597;
-                    socket = new DatagramSocket(broadcastPort, broadcastIP);// must specify a port
-                    //Log.i(TAG, "Broadcast address:" + broadcastIP + ":" + broadcastPort);
-                } catch (SocketException e) {
-                    e.printStackTrace();
-                    return;
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                    return;
-                }
                 DatagramPacket packet = new DatagramPacket(new byte[ServerVerifier.BROADCAST_DATA_LENGTH], ServerVerifier.BROADCAST_DATA_LENGTH);
-                while (continueThread) {
+                //Log.i(TAG, "Listening UDB Broadcast");
+                while (true) {
                     try {
-                        Log.i(TAG, "socket.receive(packet);");
                         socket.receive(packet);
                     } catch (IOException e) {
-                        return;
+                        break;
                     }
-                    String senderIP = packet.getAddress().getHostAddress();
-                    int port = ServerVerifier.getTcpPort(packet);
-                    if (port > 0)
-                        Log.i(TAG, "Found server at " + senderIP + ":" + port);
-                    else
-                        Log.i(TAG, "getTcpPort error: " + port);
+                    final int port = ServerVerifier.getTcpPort(packet);
+                    if (port > 0) {
+                        final String senderIP = packet.getAddress().getHostAddress();
+                        //Log.i(TAG, "Found server at " + senderIP + ":" + port);
+                        mainActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tiEditTextIp.setText(senderIP);
+                                tiEditTextPort.setText(String.valueOf(port));
+                                buttonConnect.performClick();
+                                socket.close();
+                                socket = null;// do this on UI thread is safer
+                            }
+                        });
+                        mainViewModel.doAutoTcpConnect = false;
+                        break;
+                    }
+                    //else
+                    //    Log.i(TAG, "getTcpPort error: " + port);
 
-                    String data = new String(packet.getData());
+                    //String data = new String(packet.getData());
                     //Log.i(TAG, "Got UDB broadcast from " + senderIP + " \"" + data + "\", {" + Arrays.toString(packet.getData()) + "}");
                 }
-                Log.i(TAG, "Thread EXIT");
+                //Log.i(TAG, "Stopped Listening UDB Broadcast");
             }
-        });
-        thread.start();
+        }).start();
     }
 
     @Override
     public void onDestroyView() {
-        //Log.e(getClass().getSimpleName(), "onDestroyView()");
+        //Log.i(getClass().getSimpleName(), "onDestroyView()");
         super.onDestroyView();
         if (!mainActivity.isChangingConfigurations())
             SavePreferences();
-        continueThread = false;
-        thread = null;
+
         if (socket != null) {
             socket.close();// use this to stop the thread
             socket = null;
@@ -272,13 +278,7 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
     private final Runnable runnableOpenControllerFragment = new Runnable() {
         @Override
         public void run() {
-            /*mainActivity.getSupportFragmentManager().saveFragmentInstanceState(
-                    mainActivity.getSupportFragmentManager().getFragments().get(0)
-            );*/
-            mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .replace(android.R.id.content, controllersFragment).commitAllowingStateLoss();
-
+            mainActivity.replaceFragment(controllersFragment);
             setButtonsStateOnCreateView = true;
             connectButtonEnabled = true;
             helpButtonVisibility = View.GONE;

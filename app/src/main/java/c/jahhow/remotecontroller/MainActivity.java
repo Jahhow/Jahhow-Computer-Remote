@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -103,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .add(android.R.id.content, new ConnectorSwitcherFragment()).commit();
             if (/*BuildConfig.DEBUG ||*/ preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
-                ShowHelpFragment();
+                replaceFragment(new MainHelpFragment());
         }
     }
 
@@ -119,10 +120,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(JahhowAppWebsite)));
     }
 
-    private void ShowHelpFragment() {
-        getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .addToBackStack(null)
-                .replace(android.R.id.content, new MainHelpFragment()).commit();
+    void replaceFragment(Fragment newFragment) {
+        getSupportFragmentManager().beginTransaction().addToBackStack(null)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(android.R.id.content, newFragment).commitAllowingStateLoss();
     }
 
     public void PopFragmentStack(View v) {

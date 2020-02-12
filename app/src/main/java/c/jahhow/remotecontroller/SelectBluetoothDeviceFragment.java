@@ -240,9 +240,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                     mainViewModel.mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mainViewModel.mainActivity.getSupportFragmentManager().beginTransaction().addToBackStack(null)
-                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                    .replace(android.R.id.content, new ControllerSwitcherFragment()).commitAllowingStateLoss();
+                            mainViewModel.mainActivity.replaceFragment(new ControllerSwitcherFragment());
                         }
                     });
                 }
