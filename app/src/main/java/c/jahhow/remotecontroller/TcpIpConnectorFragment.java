@@ -46,7 +46,6 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
     private MainActivity mainActivity;
     private SharedPreferences preferences;
     private MainViewModel mainViewModel;
-    private ControllerSwitcherFragment controllersFragment;
 
     // set buttons state on next onCreateView()
     private boolean setButtonsStateOnCreateView = false;
@@ -59,12 +58,11 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         //Log.i(getClass().getSimpleName(), "onCreateView()");
 		/*if (layoutIsPossiblyAttachedToWindow)
 			Log.e(getClass().getSimpleName(), "layoutIsPossiblyAttachedToWindow == " + layoutIsPossiblyAttachedToWindow);*/
-
-        controllersFragment = new ControllerSwitcherFragment();
         mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
         preferences = mainActivity.preferences;
         mainViewModel = mainActivity.mainViewModel;
+        mainViewModel.tcpIpConnector.tcpIpConnectorFragment = this;
 
         tiEditTextIp = layout.findViewById(R.id.editTextIp);
         tiEditTextPort = layout.findViewById(R.id.editTextPort);
@@ -76,10 +74,8 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
             @Override
             public void onClick(View v) {
                 v.setEnabled(false);
-                mainViewModel.socketHandlerThread = new HandlerThread("");
-                mainViewModel.socketHandlerThread.start();
-                mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
-                mainViewModel.socketHandler.post(connectRunnable);
+                mainViewModel.tcpIpConnector.connect(tiEditTextIp.getText().toString(),
+                        Integer.parseInt(tiEditTextPort.getText().toString()));
             }
         });
         buttonHelp.setOnClickListener(new View.OnClickListener() {
@@ -108,9 +104,6 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                 ShowGuideTcpIp();
             }
         }
-        if (mainViewModel.doAutoTcpConnect) {
-            listenForUdpBroadcast();
-        }
         return layout;
     }
 
@@ -122,81 +115,13 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
                 .commit();
     }
 
-    private DatagramSocket socket = null;
-
-    private void listenForUdpBroadcast() {
-        try {
-            WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if (wifi == null)
-                return;
-
-            int wifiIP = Integer.reverseBytes(wifi.getConnectionInfo().getIpAddress());
-            if (wifiIP == 0)
-                return;
-
-            byte[] broadcastIpBytes = ByteBuffer.allocate(4).putInt(wifiIP | 0xFF).array();
-
-            InetAddress broadcastIP = InetAddress.getByAddress(broadcastIpBytes);// x.x.255.255 failed
-            int broadcastPort = 1597;
-            socket = new DatagramSocket(broadcastPort, broadcastIP);// must specify a port
-            //Log.i(TAG, "Broadcast address:" + broadcastIP + ":" + broadcastPort);
-        } catch (SocketException e) {
-            e.printStackTrace();
-            return;
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                DatagramPacket packet = new DatagramPacket(new byte[ServerVerifier.BROADCAST_DATA_LENGTH], ServerVerifier.BROADCAST_DATA_LENGTH);
-                //Log.i(TAG, "Listening UDB Broadcast");
-                while (true) {
-                    try {
-                        socket.receive(packet);
-                    } catch (IOException e) {
-                        break;
-                    }
-                    final int port = ServerVerifier.getTcpPort(packet);
-                    if (port > 0) {
-                        final String senderIP = packet.getAddress().getHostAddress();
-                        //Log.i(TAG, "Found server at " + senderIP + ":" + port);
-                        mainActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                tiEditTextIp.setText(senderIP);
-                                tiEditTextPort.setText(String.valueOf(port));
-                                buttonConnect.performClick();
-                                socket.close();
-                                socket = null;// do this on UI thread is safer
-                            }
-                        });
-                        mainViewModel.doAutoTcpConnect = false;
-                        break;
-                    }
-                    //else
-                    //    Log.i(TAG, "getTcpPort error: " + port);
-
-                    //String data = new String(packet.getData());
-                    //Log.i(TAG, "Got UDB broadcast from " + senderIP + " \"" + data + "\", {" + Arrays.toString(packet.getData()) + "}");
-                }
-                //Log.i(TAG, "Stopped Listening UDB Broadcast");
-            }
-        }).start();
-    }
-
     @Override
     public void onDestroyView() {
         //Log.i(getClass().getSimpleName(), "onDestroyView()");
         super.onDestroyView();
         if (!mainActivity.isChangingConfigurations())
             SavePreferences();
-
-        if (socket != null) {
-            socket.close();// use this to stop the thread
-            socket = null;
-        }
+        mainViewModel.tcpIpConnector.tcpIpConnectorFragment = null;
     }
 
     /*@Override
@@ -224,64 +149,26 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         }
     }
 
-    // Run it on Ui Thread
-    private void AnimateShowHelpButton() {
-        TransitionManager.beginDelayedTransition(connectButtonsParentLayout, new AutoTransition().setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500).setOrdering(TransitionSet.ORDERING_TOGETHER));
-        buttonHelp.setVisibility(View.VISIBLE);
+    void onFoundServer(String ip, int port) {
+        tiEditTextIp.setText(ip);
+        tiEditTextPort.setText(String.valueOf(port));
+        buttonConnect.performClick();
+    }
+
+    void onConnected() {
+        setButtonsStateOnCreateView = true;
+        connectButtonEnabled = true;
+        helpButtonVisibility = View.GONE;
     }
 
     public void OnErrorConnecting(@StringRes final int showToast, final int toastDuration) {
-        mainActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AnimateShowHelpButton();
-                if (!isRemoving()) {
-                    buttonConnect.setEnabled(true);
-                    mainActivity.ShowToast(showToast, toastDuration);
-                }
-                mainActivity.CloseConnection();
-            }
-        });
-    }
-
-    public void OnErrorConnecting(@StringRes final int showToast) {
-        OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
-    }
-
-    private final Runnable connectRunnable = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                InetSocketAddress inetaddr = new InetSocketAddress(
-                        tiEditTextIp.getText().toString(),
-                        Integer.parseInt(tiEditTextPort.getText().toString())
-                );
-                Socket mmSocket = new Socket();
-                mmSocket.setTcpNoDelay(true);
-                mmSocket.connect(inetaddr, 1500);
-                mmSocket.setSoTimeout(1500);
-                if (ServerVerifier.isValid(preferences, mainViewModel, mmSocket.getInputStream(),
-                        mmSocket.getOutputStream(), TcpIpConnectorFragment.this))
-                    mainActivity.runOnUiThread(runnableOpenControllerFragment);
-                preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, false).apply();
-            } catch (SocketTimeoutException e) {
-                OnErrorConnecting(R.string.TimeoutCheckIpPortOrUpdate, Toast.LENGTH_LONG);
-            } catch (Exception e) {
-                OnErrorConnecting(R.string.ConnectionError);
-                //Log.e("MainActivity", R.string.ConnectionError + e.toString());
-                e.printStackTrace();
-            }
+        TransitionManager.beginDelayedTransition(connectButtonsParentLayout, new AutoTransition()
+                .setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500)
+                .setOrdering(TransitionSet.ORDERING_TOGETHER));
+        buttonHelp.setVisibility(View.VISIBLE);
+        if (!isRemoving()) {
+            buttonConnect.setEnabled(true);
+            mainActivity.ShowToast(showToast, toastDuration);
         }
-    };
-
-    // On Ui Thread
-    private final Runnable runnableOpenControllerFragment = new Runnable() {
-        @Override
-        public void run() {
-            mainActivity.replaceFragment(controllersFragment);
-            setButtonsStateOnCreateView = true;
-            connectButtonEnabled = true;
-            helpButtonVisibility = View.GONE;
-        }
-    };
+    }
 }

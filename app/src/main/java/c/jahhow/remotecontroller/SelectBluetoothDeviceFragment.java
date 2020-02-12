@@ -250,10 +250,10 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                     mmSocket.close();
                 } catch (IOException ignored) {
                 }
-                OnErrorConnecting(R.string.ConnectionError);
+                OnErrorConnecting(R.string.ConnectionError, Toast.LENGTH_SHORT);
                 //Log.e(getClass().getSimpleName(), "IOException: " + connectException);
             } catch (Exception e) {
-                OnErrorConnecting(R.string.ConnectionError);
+                OnErrorConnecting(R.string.ConnectionError, Toast.LENGTH_SHORT);
                 //Log.e(getClass().getSimpleName(), "final catch " + e);
             }
         }
@@ -275,9 +275,5 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                 mainViewModel.mainActivity.CloseConnection();
             }
         });
-    }
-
-    public void OnErrorConnecting(@StringRes final int showToast) {
-        OnErrorConnecting(showToast, Toast.LENGTH_SHORT);
     }
 }

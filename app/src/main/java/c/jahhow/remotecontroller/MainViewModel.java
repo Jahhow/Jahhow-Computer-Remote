@@ -8,10 +8,13 @@ import android.widget.ArrayAdapter;
 import androidx.lifecycle.ViewModel;
 
 import java.io.OutputStream;
+import java.net.DatagramSocket;
 
 // ViewModel must be public.
 public class MainViewModel extends ViewModel {
     MainActivity mainActivity = null;
+    TcpIpConnector tcpIpConnector = null;
+    DatagramSocket udpSocket = null;
     BluetoothConnectorFragment bluetoothConnectorFragment = null;
     HandlerThread socketHandlerThread = null;
     Handler socketHandler = null;
@@ -21,5 +24,5 @@ public class MainViewModel extends ViewModel {
     boolean bluetoothOriginalState_isEnabled;
     boolean bluetoothConnectorFragment_showSelectBluetoothDeviceFragment = false;
     boolean bondingFailed = false;
-    boolean doAutoTcpConnect=true;
+    boolean doAutoTcpConnect = true;
 }

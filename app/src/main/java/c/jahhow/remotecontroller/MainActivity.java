@@ -2,11 +2,14 @@ package c.jahhow.remotecontroller;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,6 +27,11 @@ import com.android.billingclient.api.Purchase.PurchaseState;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 import c.jahhow.remotecontroller.msg.ButtonAction;
@@ -31,10 +39,8 @@ import c.jahhow.remotecontroller.msg.Msg;
 import c.jahhow.remotecontroller.msg.SCS1;
 
 public class MainActivity extends AppCompatActivity {
-    private RemoteControllerApp remoteControllerApp;
-    MainViewModel mainViewModel;
+    static final String TAG = MainActivity.class.getSimpleName();
 
-    SharedPreferences preferences;
     static final String name_CommonSharedPrefer = "CommonSettings",
             KeyPrefer_IP = "0",
             KeyPrefer_Port = "1",
@@ -49,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
             KeyPrefer_ShowTcpIpGuide = "a",
             KeyPrefer_Connector = "b";
 
+    private RemoteControllerApp remoteControllerApp;
+    MainViewModel mainViewModel;
+    SharedPreferences preferences;
+
+    TcpIpConnectorFragment tcpIpConnectorFragment = null;
     private Toast toast;
     Vibrator vibrator;
 
@@ -93,25 +104,97 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
-        if (vibrator != null && !vibrator.hasVibrator()) vibrator = null;
-        preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
-        remoteControllerApp = (RemoteControllerApp) getApplication();
-        toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         mainViewModel.mainActivity = this;
+        preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
+        remoteControllerApp = (RemoteControllerApp) getApplication();
+        if (mainViewModel.tcpIpConnector == null) {
+            mainViewModel.tcpIpConnector = new TcpIpConnector(mainViewModel, preferences);
+        }
+
+        vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
+        if (vibrator != null && !vibrator.hasVibrator()) vibrator = null;
+        toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(android.R.id.content, new ConnectorSwitcherFragment()).commit();
             if (/*BuildConfig.DEBUG ||*/ preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
                 replaceFragment(new MainHelpFragment());
         }
+        if (mainViewModel.doAutoTcpConnect && mainViewModel.udpSocket == null) {
+            listenForUdpBroadcast();
+        }
     }
 
     @Override
     protected void onDestroy() {
         remoteControllerApp.removeFetchSkuListener(fetchSkuListener);
+        if (mainViewModel.udpSocket != null && !isChangingConfigurations()) {
+            mainViewModel.udpSocket.close();// use this to stop the thread
+            mainViewModel.udpSocket = null;
+        }
         super.onDestroy();
+    }
+
+    private void listenForUdpBroadcast() {
+        try {
+            WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wifi == null)
+                return;
+
+            int wifiIP = Integer.reverseBytes(wifi.getConnectionInfo().getIpAddress());
+            if (wifiIP == 0)
+                return;
+
+            byte[] broadcastIpBytes = ByteBuffer.allocate(4).putInt(wifiIP | 0xFF).array();
+
+            InetAddress broadcastIP = InetAddress.getByAddress(broadcastIpBytes);// x.x.255.255 failed
+            int broadcastPort = 1597;
+            mainViewModel.udpSocket = new DatagramSocket(broadcastPort, broadcastIP);// must specify a port
+            //Log.i(TAG, "Broadcast address:" + broadcastIP + ":" + broadcastPort);
+        } catch (SocketException e) {
+            e.printStackTrace();
+            return;
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DatagramPacket packet = new DatagramPacket(new byte[ServerVerifier.BROADCAST_DATA_LENGTH], ServerVerifier.BROADCAST_DATA_LENGTH);
+                Log.i(TAG, "Listening UDB Broadcast");
+                while (true) {
+                    try {
+                        mainViewModel.udpSocket.receive(packet);
+                    } catch (IOException e) {
+                        break;
+                    }
+                    final int port = ServerVerifier.getTcpPort(packet);
+                    if (port > 0) {
+                        final String senderIP = packet.getAddress().getHostAddress();
+                        Log.i(TAG, "Found server at " + senderIP + ":" + port);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (tcpIpConnectorFragment != null)
+                                    tcpIpConnectorFragment.onFoundServer(senderIP, port);
+                                mainViewModel.udpSocket.close();
+                                mainViewModel.udpSocket = null;// do this on UI thread is safer
+                            }
+                        });
+                        mainViewModel.doAutoTcpConnect = false;
+                        break;
+                    }
+                    //else
+                    //    Log.i(TAG, "getTcpPort error: " + port);
+
+                    //String data = new String(packet.getData());
+                    //Log.i(TAG, "Got UDB broadcast from " + senderIP + " \"" + data + "\", {" + Arrays.toString(packet.getData()) + "}");
+                }
+                Log.i(TAG, "Stopped Listening UDB Broadcast");
+            }
+        }).start();
     }
 
     private static final String JahhowAppWebsite = "http://jahhowapp.blogspot.com/2019/07/computer-remote-controller.html";

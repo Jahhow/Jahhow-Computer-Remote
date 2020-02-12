@@ -26,11 +26,11 @@ class ServerVerifier {
 
         byte[] buf = new byte[ServerHeader.length];
         if (ServerHeader.length != inputStream.read(buf, 0, ServerHeader.length)) {
-            errorCallback.OnErrorConnecting(R.string.ConnectionError);
+            errorCallback.OnErrorConnecting(R.string.ConnectionError, Toast.LENGTH_SHORT);
             return false;
         }
         if (!Arrays.equals(buf, ServerHeader)) {
-            errorCallback.OnErrorConnecting(R.string.ConnectionError);
+            errorCallback.OnErrorConnecting(R.string.ConnectionError, Toast.LENGTH_SHORT);
             return false;
         }
         if (4 != inputStream.read(buf, 0, 4)) {
@@ -42,7 +42,7 @@ class ServerVerifier {
             errorCallback.OnErrorConnecting(R.string.PleaseUpdateTheComputerSideReceiverProgram, Toast.LENGTH_LONG);
             return false;
         } else if (serverVersion > SupportServerVersion) {
-            errorCallback.OnErrorConnecting(R.string.PleaseUpdateThisApp);
+            errorCallback.OnErrorConnecting(R.string.PleaseUpdateThisApp, Toast.LENGTH_SHORT);
             return false;
         }
         preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowHelpOnCreate, false).apply();
@@ -79,7 +79,5 @@ class ServerVerifier {
 
     interface ErrorCallback {
         void OnErrorConnecting(@StringRes final int showToast, final int duration);
-
-        void OnErrorConnecting(@StringRes final int showToast);
     }
 }
