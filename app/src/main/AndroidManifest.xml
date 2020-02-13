@@ -10,9 +10,9 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-    <uses-feature
+    <!--<uses-feature
         android:name="android.hardware.bluetooth_le"
-        android:required="false" />
+        android:required="false" />-->
 
     <application
         android:name=".RemoteControllerApp"
@@ -22,10 +22,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <service
-            android:name=".UDPBroadcastReceiverService"
-            android:enabled="true"
-            android:exported="false"></service>
 
         <activity
             android:name=".MainActivity"
@@ -39,5 +35,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>
