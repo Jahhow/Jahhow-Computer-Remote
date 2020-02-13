@@ -26,7 +26,6 @@ public class InputTextFragment extends Fragment {
 
     private MainActivity mainActivity;
     private TextInputEditText editText;
-    private Editable text;
     private ImageView buttonToggleInputPassword;
     private View helpLayout;
     private boolean showHelp;
@@ -38,8 +37,6 @@ public class InputTextFragment extends Fragment {
 
         View layout = inflater.inflate(R.layout.input_text_switcher, container, false);
         editText = layout.findViewById(R.id.SendTextEditText);
-        text = editText.getText();
-        assert text != null;
 
         View backspace = layout.findViewById(R.id.inputTextButtonBackspace);
         backspace.setOnClickListener(new View.OnClickListener() {
@@ -86,7 +83,7 @@ public class InputTextFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showHelp = false;
-                mainActivity.SendInputText(text.toString(), InputTextMode.SendInput, false);
+                mainActivity.SendInputText(editText.getText().toString(), InputTextMode.SendInput, false);
             }
         });
 
@@ -95,14 +92,14 @@ public class InputTextFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showHelp = false;
-                mainActivity.SendInputText(text.toString(), InputTextMode.Paste, false);
+                mainActivity.SendInputText(editText.getText().toString(), InputTextMode.Paste, false);
             }
         });
         new LongPressAndUpDetector(buttonPasteText, mainActivity) {
             @Override
             void onLongClickDown(View v) {
                 showHelp = false;
-                mainActivity.SendInputText(text.toString(), InputTextMode.Paste, true);
+                mainActivity.SendInputText(editText.getText().toString(), InputTextMode.Paste, true);
             }
 
             @Override
@@ -115,7 +112,7 @@ public class InputTextFragment extends Fragment {
         ctrlV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mainActivity.SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.C);
+                mainActivity.SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.V);
             }
         });
         new LongPressAndUpDetector(ctrlV, mainActivity) {
@@ -201,7 +198,7 @@ public class InputTextFragment extends Fragment {
         super.onSaveInstanceState(outState);
         if (!mainActivity.isChangingConfigurations()) {
             mainActivity.preferences.edit()
-                    .putString(MainActivity.KeyPrefer_InputText, text.toString())
+                    .putString(MainActivity.KeyPrefer_InputText, editText.getText().toString())
                     .putBoolean(MainActivity.KeyPrefer_ShowHelpInputText, showHelp).apply();
         }
         outState.putInt(BundleKey_InputType, editText.getInputType());
@@ -215,7 +212,7 @@ public class InputTextFragment extends Fragment {
         super.onDestroyView();
         if (!mainActivity.isChangingConfigurations()) {
             mainActivity.preferences.edit()
-                    .putString(MainActivity.KeyPrefer_InputText, text.toString())
+                    .putString(MainActivity.KeyPrefer_InputText, editText.getText().toString())
                     .putBoolean(MainActivity.KeyPrefer_ShowHelpInputText, showHelp).apply();
         }
     }

@@ -20,7 +20,7 @@ public class MainHelpFragment extends Fragment {
             public void onClick(View v) {
                 MainActivity mainActivity = (MainActivity) getActivity();
                 assert mainActivity != null;
-                mainActivity.replaceFragment(new ConnectorSwitcherFragment(), false);
+                mainActivity.replaceFragment(new ConnectorSwitcherFragment());
             }
         });
         return view;

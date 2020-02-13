@@ -1,7 +1,6 @@
 package c.jahhow.remotecontroller;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -13,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +29,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -248,7 +245,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                     mainViewModel.mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mainViewModel.mainActivity.replaceFragment(new ControllerSwitcherFragment(), false);
+                            mainViewModel.mainActivity.replaceFragment(new ControllerSwitcherFragment());
                         }
                     });
                 }

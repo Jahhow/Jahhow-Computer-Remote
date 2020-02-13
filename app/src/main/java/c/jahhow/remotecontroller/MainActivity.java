@@ -97,8 +97,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    //static final String FragmentTag_Connector = "0";
-
     @SuppressLint("ShowToast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 startAutoTcpConnect();
             } else
                 fragment = new ConnectorSwitcherFragment();
-            replaceFragment(fragment, false);
+            replaceFragment(fragment);
         }
     }
 
@@ -216,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
         Fragment fragment = getSupportFragmentManager().getFragments().get(0);
         if (fragment != null) {
             if (fragment instanceof ControllerSwitcherFragment) {
-                replaceFragment(new ConnectorSwitcherFragment(), false);
+                replaceFragment(new ConnectorSwitcherFragment());
                 return;
             } else if (fragment instanceof ConnectorSwitcherFragment) {
                 if (fragment.getChildFragmentManager().popBackStackImmediate())
@@ -230,10 +228,8 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(ReceiverProgramWebsite)));
     }
 
-    void replaceFragment(Fragment newFragment, boolean addToBackStack) {
+    void replaceFragment(Fragment newFragment) {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        if (addToBackStack)
-            fragmentTransaction.addToBackStack(null);
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .replace(android.R.id.content, newFragment).commitAllowingStateLoss();
         /*List<Fragment> fragments = getSupportFragmentManager().getFragments();
@@ -309,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
                     mainViewModel.outputStream.write(bytes);
                     //mainViewModel.outputStream.flush();
                 } catch (IOException e) {
-                    OnSendCommandError(R.string.Disconnected);
+                    OnSendCommandError();
                 }
             }
         });
@@ -323,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     mainViewModel.outputStream.write(bytes);
                 } catch (IOException e) {
-                    OnSendCommandError(R.string.Disconnected);
+                    OnSendCommandError();
                 }
             }
         });
@@ -354,12 +350,12 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         mainViewModel.outputStream.write(packet);
                     } catch (IOException e) {
-                        OnSendCommandError(R.string.Disconnected);
+                        OnSendCommandError();
                     }
                 }
             });
         } catch (UnsupportedEncodingException e) {
-            ShowToast(R.string.ProblemSendingText);
+            ShowToast(R.string.ProblemSendingText, Toast.LENGTH_SHORT);
             e.printStackTrace();
         }
     }
@@ -396,7 +392,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         mainViewModel.outputStream.write(msg);
                     } catch (IOException e) {
-                        OnSendCommandError(R.string.Disconnected);
+                        OnSendCommandError();
                     }
                 }
             });
@@ -417,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     mainViewModel.outputStream.write(bytes);
                 } catch (IOException e) {
-                    OnSendCommandError(R.string.Disconnected);
+                    OnSendCommandError();
                 }
             }
         });
@@ -443,14 +439,10 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     mainViewModel.outputStream.write(packet);
                 } catch (IOException e) {
-                    OnSendCommandError(R.string.Disconnected);
+                    OnSendCommandError();
                 }
             }
         });
-    }
-
-    private void ShowToast(@StringRes int resId) {
-        ShowToast(resId, Toast.LENGTH_SHORT);
     }
 
     void ShowToast(@StringRes int resId, int duration) {
@@ -463,26 +455,22 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 
-    private void OnSendCommandError(@StringRes final int showToast, final int toastDuration) {
+    private void OnSendCommandError() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (!getSupportFragmentManager().isStateSaved()) {
-                    replaceFragment(new ConnectorSwitcherFragment(), false);
+                    replaceFragment(new ConnectorSwitcherFragment());
                 }
                 if (!isFinishing()) {
-                    ShowToast(showToast, toastDuration);
+                    ShowToast(R.string.Disconnected, Toast.LENGTH_SHORT);
                 }
                 CloseConnection();
             }
         });
     }
 
-    private void OnSendCommandError(@StringRes int showToast) {
-        OnSendCommandError(showToast, Toast.LENGTH_SHORT);
-    }
-
-    // Please Call it on UI Thread
+    // Call it on UI Thread
     void CloseConnection() {
         if (mainViewModel.socketHandler != null) {
             mainViewModel.socketHandler.post(new Runnable() {
