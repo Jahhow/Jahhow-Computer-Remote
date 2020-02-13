@@ -23,7 +23,7 @@
         <TextView
             style="@style/AppTheme.Help_Text"
             android:layout_marginTop="@dimen/lineSpacingExtra_helpText"
-            android:text="@string/the_supported_receiver_version_is_v2" />
+            android:text="@string/the_supported_receiver_version_is" />
 
         <TextView
             style="@style/AppTheme.Help_Text.Title"

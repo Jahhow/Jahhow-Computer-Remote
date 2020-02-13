@@ -66,5 +66,5 @@
     <string name="bluetooth_bond_error">Please try to remove the Bluetooth bond on the computer, then try again.</string>
     <string name="bluetooth_common_error_help_text">Please insure the receiver program is running on your PC, and the Bluetooth there is enabled.</string>
     <string name="the_receiver_download_link_is_in_this_website">The receiver download link is in this website:</string>
-    <string name="the_supported_receiver_version_is_v2">The supported receiver version is V2</string>
+    <string name="the_supported_receiver_version_is">The supported receiver version is V2.1</string>
 </resources>

@@ -66,5 +66,5 @@
     <string name="bluetooth_bond_error">請嘗試在電腦上解除其與此裝置的藍芽配對，然後再試一次。</string>
     <string name="bluetooth_common_error_help_text">請確認您已在電腦上執行接收器程式\n並已將電腦上的藍芽開啟</string>
     <string name="the_receiver_download_link_is_in_this_website">接收器下載連結在這個網站中：</string>
-    <string name="the_supported_receiver_version_is_v2">支援的接收器版本為 V2</string>
+    <string name="the_supported_receiver_version_is">支援的接收器版本為 V2.1</string>
 </resources>
