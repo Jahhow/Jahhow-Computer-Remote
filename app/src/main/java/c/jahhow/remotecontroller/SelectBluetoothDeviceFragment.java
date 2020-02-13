@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,8 +39,11 @@ import java.util.Set;
 import java.util.UUID;
 
 public class SelectBluetoothDeviceFragment extends Fragment implements AdapterView.OnItemClickListener, ServerVerifier.ErrorCallback {
+    static final String TAG = SelectBluetoothDeviceFragment.class.getSimpleName();
+
     private MainActivity mainActivity;
     private MainViewModel mainViewModel;
+    private RemoteControllerApp remoteControllerApp;
     private BluetoothConnectorFragment bluetoothConnectorFragment;
 
     private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -50,7 +54,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     private final IntentFilter intentFilter = new IntentFilter();
     private static final short PERMISSION_REQUEST_CODE = 8513;
     private static final UUID BT_SERVICE_UUID = new UUID(0xC937E0B78C64C221L, 0x4A25F40120B3064EL);
-    private HIDDevice hidDevice;
+    //private HIDDevice hidDevice;
 
     public SelectBluetoothDeviceFragment() {
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
@@ -65,6 +69,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
         mainViewModel = mainActivity.mainViewModel;
+        remoteControllerApp = mainActivity.remoteControllerApp;
         bluetoothConnectorFragment = (BluetoothConnectorFragment) getParentFragment();
 
         View layout = inflater.inflate(R.layout.select_bluetooth_device, container, false);
@@ -95,7 +100,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startBluetoothDiscovery();
+                startBluetoothDiscovery(true);
             }
         });
         if (mainViewModel.nearbyBTArrayAdapter == null) {
@@ -135,7 +140,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             hidDevice.openServer();
         }*/
         if (mainViewModel.nearbyBTArrayAdapter.isEmpty())
-            startBluetoothDiscovery();
+            startBluetoothDiscovery(false);
     }
 
     /*@SuppressLint("NewApi")
@@ -161,17 +166,20 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startBluetoothDiscovery();
+                startBluetoothDiscovery(false);
             }
         }
     }
 
-    private void startBluetoothDiscovery() {
+    private void startBluetoothDiscovery(boolean force) {
         if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             //Log.i(getClass().getSimpleName(), "bluetoothAdapter.startDiscovery()");
             bluetoothAdapter.startDiscovery();
         } else {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
+            if (force || remoteControllerApp.requestLocationPermission) {
+                remoteControllerApp.requestLocationPermission = false;
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
+            }
         }
     }
 
@@ -240,7 +248,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
                     mainViewModel.mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mainViewModel.mainActivity.replaceFragment(new ControllerSwitcherFragment());
+                            mainViewModel.mainActivity.replaceFragment(new ControllerSwitcherFragment(), false);
                         }
                     });
                 }

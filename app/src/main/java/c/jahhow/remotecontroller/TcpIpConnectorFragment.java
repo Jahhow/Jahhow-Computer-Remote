@@ -1,11 +1,7 @@
 package c.jahhow.remotecontroller;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +9,6 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
@@ -24,21 +19,10 @@ import androidx.transition.TransitionSet;
 
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-
 public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier.ErrorCallback {
     private static final String TAG = TcpIpConnectorFragment.class.getSimpleName();
 
-    private TextInputEditText tiEditTextIp, tiEditTextPort;
+    private TextInputEditText editTextIp, editTextPort;
     private Button buttonConnect;
     private ImageView buttonHelp;
     private LinearLayout connectButtonsParentLayout;
@@ -56,16 +40,14 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.connector, container, false);
         //Log.i(getClass().getSimpleName(), "onCreateView()");
-		/*if (layoutIsPossiblyAttachedToWindow)
-			Log.e(getClass().getSimpleName(), "layoutIsPossiblyAttachedToWindow == " + layoutIsPossiblyAttachedToWindow);*/
         mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
         preferences = mainActivity.preferences;
         mainViewModel = mainActivity.mainViewModel;
         mainViewModel.tcpIpConnector.tcpIpConnectorFragment = this;
 
-        tiEditTextIp = layout.findViewById(R.id.editTextIp);
-        tiEditTextPort = layout.findViewById(R.id.editTextPort);
+        editTextIp = layout.findViewById(R.id.editTextIp);
+        editTextPort = layout.findViewById(R.id.editTextPort);
         buttonConnect = layout.findViewById(R.id.buttonConnect);
         buttonHelp = layout.findViewById(R.id.buttonHelp);
         connectButtonsParentLayout = layout.findViewById(R.id.connectButtonsParentLayout);
@@ -74,8 +56,8 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
             @Override
             public void onClick(View v) {
                 v.setEnabled(false);
-                mainViewModel.tcpIpConnector.connect(tiEditTextIp.getText().toString(),
-                        Integer.parseInt(tiEditTextPort.getText().toString()));
+                mainViewModel.tcpIpConnector.connect(editTextIp.getText().toString(),
+                        Integer.parseInt(editTextPort.getText().toString()));
             }
         });
         buttonHelp.setOnClickListener(new View.OnClickListener() {
@@ -86,8 +68,8 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         });
 
         if (savedInstanceState == null) {
-            tiEditTextIp.setText(preferences.getString(MainActivity.KeyPrefer_IP, "192.168.1.3"));
-            tiEditTextPort.setText(preferences.getString(MainActivity.KeyPrefer_Port, "1597"));
+            editTextIp.setText(preferences.getString(MainActivity.KeyPrefer_IP, "192.168.1.3"));
+            editTextPort.setText(preferences.getString(MainActivity.KeyPrefer_Port, "1597"));
         }
 
         if (setButtonsStateOnCreateView) {
@@ -100,7 +82,7 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         }
 
         if (isNotRestoringState()) {
-            if (BuildConfig.DEBUG || preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, true)) {
+            if (/*BuildConfig.DEBUG || */preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, true)) {
                 ShowGuideTcpIp();
             }
         }
@@ -142,16 +124,16 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
             int _helpButtonVisibility = setButtonsStateOnCreateView ? helpButtonVisibility : buttonHelp.getVisibility();
             //Log.i(getClass().getSimpleName(), "SavePreferences KeyPrefer_ShowHelpButton " + (_helpButtonVisibility == View.VISIBLE));
             preferences.edit()
-                    .putString(MainActivity.KeyPrefer_IP, tiEditTextIp.getText().toString())
-                    .putString(MainActivity.KeyPrefer_Port, tiEditTextPort.getText().toString())
+                    .putString(MainActivity.KeyPrefer_IP, editTextIp.getText().toString())
+                    .putString(MainActivity.KeyPrefer_Port, editTextPort.getText().toString())
                     .putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
                     .apply();
         }
     }
 
     void onFoundServer(String ip, int port) {
-        tiEditTextIp.setText(ip);
-        tiEditTextPort.setText(String.valueOf(port));
+        editTextIp.setText(ip);
+        editTextPort.setText(String.valueOf(port));
         buttonConnect.performClick();
     }
 

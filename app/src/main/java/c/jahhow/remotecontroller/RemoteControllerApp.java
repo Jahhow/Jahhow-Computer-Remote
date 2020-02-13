@@ -40,6 +40,7 @@ public class RemoteControllerApp extends Application implements SkuDetailsRespon
 
     ControllerSwitcherFragment controllerSwitcherFragment = null;
     private FetchSkuListener fetchSkuListener = null;
+    boolean requestLocationPermission = true;
 
     @Override
     public void onCreate() {

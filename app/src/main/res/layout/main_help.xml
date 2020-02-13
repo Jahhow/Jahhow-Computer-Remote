@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -11,8 +12,25 @@
         android:orientation="vertical"
         android:padding="24dp">
 
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-12dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:elevation="14dp"
+            android:focusable="true"
+            android:foreground="?selectableItemBackground"
+            android:maxWidth="282.66666pt"
+            android:onClick="OpenJahhowAppWebsite"
+            android:outlineProvider="bounds"
+            android:src="@drawable/receiver"
+            tools:ignore="ContentDescription"
+            tools:targetApi="m" />
+
         <TextView
             style="@style/AppTheme.Help_Text"
+            android:layout_marginTop="32sp"
             android:text="@string/currently_works_with_windows_only" />
 
         <TextView
@@ -23,8 +41,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4sp"
-            android:layout_marginBottom="4sp"
+            android:layout_marginTop="3sp"
             android:background="#0000">
 
             <TextView
@@ -41,16 +58,13 @@
                 android:textStyle="bold" />
         </FrameLayout>
 
-        <TextView
-            style="@style/AppTheme.Help_Text"
-            android:text="@string/you_could_make_a_search_on_your_pc_to_reach_the_website" />
-
         <Button
+            android:id="@+id/buttonOk"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28sp"
-            android:onClick="PopFragmentStack"
+            android:layout_marginTop="12sp"
+            android:layout_marginBottom="16sp"
             android:text="@string/ok" />
     </LinearLayout>
 </ScrollView>

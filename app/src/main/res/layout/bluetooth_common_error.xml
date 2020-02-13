@@ -53,7 +53,7 @@
 
         <TextView
             style="@style/AppTheme.Help_Text"
-            android:text="@string/you_could_make_a_search_on_your_pc_to_reach_the_website" />
+            android:text="@string/make_a_search_on_your_pc_to_reach_the_website" />
 
         <Button
             android:id="@+id/buttonOk"

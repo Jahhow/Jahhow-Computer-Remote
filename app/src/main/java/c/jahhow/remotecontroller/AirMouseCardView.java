@@ -69,10 +69,10 @@ public class AirMouseCardView extends CardView {
     public void Init(Interpolator interpolator) {
         MyCardViewSetup.Setup(this);
         this.j = interpolator;
-        c();
+        grabViews();
     }
 
-    private void c() {
+    private void grabViews() {
         this.m = findViewById(R.id.pause);
         this.n = findViewById(R.id.mouseRight);
         this.o = findViewById(R.id.mouseLeft);

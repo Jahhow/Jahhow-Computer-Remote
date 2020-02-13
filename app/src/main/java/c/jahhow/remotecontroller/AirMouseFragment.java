@@ -78,7 +78,7 @@ public class AirMouseFragment extends Fragment implements SensorEventListener {
     private final float upperBoundZ = .9375f;
     private final float square_1minusUpperBoundZ = (1 - upperBoundZ) * (1 - upperBoundZ);
 
-    public void a(int pauseMovingMouse) {
+    void pauseMouseMove(int pauseMovingMouse) {
         boolean _c2 = pauseMovingMouse != 0;
         if (this.pauseMovingMouse != _c2) {
             this.pauseMovingMouse = _c2;

@@ -21,8 +21,6 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)

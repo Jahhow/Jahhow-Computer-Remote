@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,6 +39,7 @@ import c.jahhow.remotecontroller.msg.SCS1;
 
 public class MainActivity extends AppCompatActivity {
     static final String TAG = MainActivity.class.getSimpleName();
+    private static final String ReceiverProgramWebsite = "http://jahhowapp.blogspot.com/2019/07/computer-remote-controller.html#receiver-program";
 
     static final String name_CommonSharedPrefer = "CommonSettings",
             KeyPrefer_IP = "0",
@@ -55,11 +55,10 @@ public class MainActivity extends AppCompatActivity {
             KeyPrefer_ShowTcpIpGuide = "a",
             KeyPrefer_Connector = "b";
 
-    private RemoteControllerApp remoteControllerApp;
+    RemoteControllerApp remoteControllerApp;
     MainViewModel mainViewModel;
     SharedPreferences preferences;
 
-    TcpIpConnectorFragment tcpIpConnectorFragment = null;
     private Toast toast;
     Vibrator vibrator;
 
@@ -116,27 +115,35 @@ public class MainActivity extends AppCompatActivity {
         if (vibrator != null && !vibrator.hasVibrator()) vibrator = null;
         toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(android.R.id.content, new ConnectorSwitcherFragment()).commit();
-            if (/*BuildConfig.DEBUG ||*/ preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true))
-                replaceFragment(new MainHelpFragment());
-        }
-        if (mainViewModel.doAutoTcpConnect && mainViewModel.udpSocket == null) {
-            listenForUdpBroadcast();
+            Fragment fragment;
+            if (/*BuildConfig.DEBUG || */preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true)) {
+                fragment = new MainHelpFragment();
+                startAutoTcpConnect();
+            } else
+                fragment = new ConnectorSwitcherFragment();
+            replaceFragment(fragment, false);
         }
     }
 
     @Override
     protected void onDestroy() {
         remoteControllerApp.removeFetchSkuListener(fetchSkuListener);
-        if (mainViewModel.udpSocket != null && !isChangingConfigurations()) {
-            mainViewModel.udpSocket.close();// use this to stop the thread
-            mainViewModel.udpSocket = null;
+        if (!isChangingConfigurations()) {
+            stopAutoTcpConnect();
         }
         super.onDestroy();
     }
 
-    private void listenForUdpBroadcast() {
+    void stopAutoTcpConnect() {
+        if (mainViewModel.udpSocket != null) {
+            mainViewModel.udpSocket.close();
+            mainViewModel.udpSocket = null;
+        }
+    }
+
+    void startAutoTcpConnect() {
+        if (!mainViewModel.doAutoTcpConnect || mainViewModel.udpSocket != null)
+            return;
         try {
             WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wifi == null)
@@ -163,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 DatagramPacket packet = new DatagramPacket(new byte[ServerVerifier.BROADCAST_DATA_LENGTH], ServerVerifier.BROADCAST_DATA_LENGTH);
-                Log.i(TAG, "Listening UDB Broadcast");
+                //Log.i(TAG, "Listening UDB Broadcast");
                 while (true) {
                     try {
                         mainViewModel.udpSocket.receive(packet);
@@ -173,17 +180,24 @@ public class MainActivity extends AppCompatActivity {
                     final int port = ServerVerifier.getTcpPort(packet);
                     if (port > 0) {
                         final String senderIP = packet.getAddress().getHostAddress();
-                        Log.i(TAG, "Found server at " + senderIP + ":" + port);
+                        //Log.i(TAG, "Found server at " + senderIP + ":" + port);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (tcpIpConnectorFragment != null)
-                                    tcpIpConnectorFragment.onFoundServer(senderIP, port);
-                                mainViewModel.udpSocket.close();
-                                mainViewModel.udpSocket = null;// do this on UI thread is safer
+                                if (mainViewModel.tcpIpConnector.tcpIpConnectorFragment != null)
+                                    mainViewModel.tcpIpConnector.tcpIpConnectorFragment.onFoundServer(senderIP, port);
+                                else {
+                                    preferences.edit()
+                                            .putBoolean(KeyPrefer_Connector, ConnectorSwitcherFragment.PreferTcpIp)
+                                            .putBoolean(MainActivity.KeyPrefer_ShowHelpButton, false)
+                                            .putString(KeyPrefer_IP, senderIP)
+                                            .putString(KeyPrefer_Port, String.valueOf(port)).apply();
+                                    mainViewModel.tcpIpConnector.connect(senderIP, port);
+                                }
+                                stopAutoTcpConnect();
+                                mainViewModel.doAutoTcpConnect = false;
                             }
                         });
-                        mainViewModel.doAutoTcpConnect = false;
                         break;
                     }
                     //else
@@ -192,25 +206,31 @@ public class MainActivity extends AppCompatActivity {
                     //String data = new String(packet.getData());
                     //Log.i(TAG, "Got UDB broadcast from " + senderIP + " \"" + data + "\", {" + Arrays.toString(packet.getData()) + "}");
                 }
-                Log.i(TAG, "Stopped Listening UDB Broadcast");
+                //Log.i(TAG, "Stopped Listening UDB Broadcast");
             }
         }).start();
     }
 
-    private static final String JahhowAppWebsite = "http://jahhowapp.blogspot.com/2019/07/computer-remote-controller.html";
+    @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getFragments().get(0) instanceof ControllerSwitcherFragment)
+            replaceFragment(new ConnectorSwitcherFragment(), false);
+        else
+            super.onBackPressed();
+    }
 
     public void OpenJahhowAppWebsite(View ignored) {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(JahhowAppWebsite)));
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(ReceiverProgramWebsite)));
     }
 
-    void replaceFragment(Fragment newFragment) {
-        getSupportFragmentManager().beginTransaction().addToBackStack(null)
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+    void replaceFragment(Fragment newFragment, boolean addToBackStack) {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        if (addToBackStack)
+            fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .replace(android.R.id.content, newFragment).commitAllowingStateLoss();
-    }
-
-    public void PopFragmentStack(View v) {
-        getSupportFragmentManager().popBackStack();
+        /*List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        Log.i(TAG, "fragments.size(): " + fragments.size());*/
     }
 
     void Vibrate(long ms) {
@@ -441,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (!getSupportFragmentManager().isStateSaved()) {
-                    getSupportFragmentManager().popBackStack();
+                    replaceFragment(new ConnectorSwitcherFragment(), false);
                 }
                 if (!isFinishing()) {
                     ShowToast(showToast, toastDuration);

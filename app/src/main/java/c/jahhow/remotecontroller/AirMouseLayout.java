@@ -2,7 +2,6 @@ package c.jahhow.remotecontroller;
 
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
@@ -23,8 +22,8 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
     private final Runnable K = new L(this);
     private boolean L;
     private float M;
-    private final MainActivity f1701a;
-    private final AirMouseFragment f1702b;
+    private final MainActivity mainActivity;
+    private final AirMouseFragment airMouseFragment;
     public final AirMouseCardView mouseCardView;
     private final ValueAnimator f1704d = new CompatTimeAnimator();
     private final Interpolator decelerateInterpolator = new DecelerateInterpolator(2.0f);
@@ -63,8 +62,8 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
         addView(this.mouseCardView);
         setKeepScreenOn(true);
         this.f1704d.addUpdateListener(this);
-        this.f1701a = mainActivity;
-        this.f1702b = airMouseFragment;
+        this.mainActivity = mainActivity;
+        this.airMouseFragment = airMouseFragment;
     }
 
     private void SwitchOrigin(float x, float y, float newX, float newY) {
@@ -117,10 +116,6 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
         super.onDetachedFromWindow();
     }
 
-    public void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-    }
-
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
         return true;
     }
@@ -147,7 +142,7 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
             this.startFocusingY = motionEvent.getY(0);
             this.mouseCardView.animate().cancel();
             this.maxPointerCount = 1;
-            this.f1702b.a(1);
+            this.airMouseFragment.pauseMouseMove(1);
             postDelayed(this.J, (long) this.t);
         } else {
             int i2 = -1;
@@ -155,22 +150,22 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
             if (actionMasked == MotionEvent.ACTION_UP) {
                 if (this.aFocusingPointerActuallyMoved) {
                     if (!this.scroll) {
-                        this.f1701a.Vibrate();
+                        this.mainActivity.Vibrate();
                         if (this.L) {
-                            this.f1701a.SendMouseLeftUp();
+                            this.mainActivity.SendMouseLeftUp();
                         } else {
-                            this.f1701a.SendMouseRightUp();
+                            this.mainActivity.SendMouseRightUp();
                         }
                     }
                     this.f1704d.cancel();
                 } else if (this.maxPointerCount == 1 && motionEvent.getEventTime() - motionEvent.getDownTime() < ((long) this.t)) {
-                    this.f1701a.Vibrate();
-                    this.f1701a.SendMouseLeftClick();
+                    this.mainActivity.Vibrate();
+                    this.mainActivity.SendMouseLeftClick();
                     this.I++;
                     postDelayed(this.K, (long) this.u);
                     i2 = 3;
                 }
-                this.f1702b.a(0);
+                this.airMouseFragment.pauseMouseMove(0);
                 a(i2);
                 this.y = false;
             } else {
@@ -193,7 +188,7 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
                                 scrollBuffer += adjustedDiffYDp;
                                 int round = (int) Math.round(scrollBuffer);
                                 if (round != 0) {
-                                    f1701a.SendMouseWheel(round);
+                                    mainActivity.SendMouseWheel(round);
                                     scrollBuffer = 0;
                                 }
                                 this.focusingPointerLastY = curFocusingY;
@@ -214,14 +209,14 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
                                     z2 = true;
                                 }
                                 if (this.L ^ z2) {
-                                    this.f1701a.Vibrate();
+                                    this.mainActivity.Vibrate();
                                     if (z2) {
-                                        this.f1701a.SendMouseRightUp();
-                                        this.f1701a.SendMouseLeftDown();
+                                        this.mainActivity.SendMouseRightUp();
+                                        this.mainActivity.SendMouseLeftDown();
                                         airMouseCardView = this.mouseCardView;
                                     } else {
-                                        this.f1701a.SendMouseLeftUp();
-                                        this.f1701a.SendMouseRightDown();
+                                        this.mainActivity.SendMouseLeftUp();
+                                        this.mainActivity.SendMouseRightDown();
                                         airMouseCardView = this.mouseCardView;
                                         i3 = 1;
                                     }
@@ -237,7 +232,7 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
                         b(motionEvent, focusingPointerIndex);
                         float absDiffX = Math.abs(this.diffX);
                         float absDiffY = Math.abs(this.diffY);
-                        this.f1701a.Vibrate();
+                        this.mainActivity.Vibrate();
                         this.scroll = absDiffY > absDiffX;
                         if (this.scroll) {
                             this.focusingPointerLastY = curFocusingY;
@@ -246,16 +241,16 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
                         } else {
                             this.n = curFocusingX;
                             this.smootherX.setValue(mouseCardView.getTranslationX());
-                            this.f1702b.a(0);
+                            this.airMouseFragment.pauseMouseMove(0);
                             if (this.diffX < 0.0f) {
                                 z2 = true;
                             }
                             this.L = z2;
                             if (this.L) {
-                                this.f1701a.SendMouseLeftDown();
+                                this.mainActivity.SendMouseLeftDown();
                                 i4 = 3;
                             } else {
-                                this.f1701a.SendMouseRightDown();
+                                this.mainActivity.SendMouseRightDown();
                                 i4 = 1;
                             }
                             SwitchOrigin(this.startFocusingX, this.startFocusingY, curFocusingX, curFocusingY);

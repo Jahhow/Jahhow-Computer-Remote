@@ -15,17 +15,20 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ConnectorSwitcherFragment extends MyFragment implements BottomNavigationView.OnNavigationItemSelectedListener {
-    private static final boolean
+    static final boolean
             PreferBluetooth = true,
             PreferTcpIp = false;
 
+    MainActivity mainActivity;
     private SharedPreferences preferences;
     private BottomNavigationView navBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        preferences = getActivity().getSharedPreferences(MainActivity.name_CommonSharedPrefer, 0);
+        mainActivity = (MainActivity) getActivity();
+        assert mainActivity != null;
+        preferences = mainActivity.getSharedPreferences(MainActivity.name_CommonSharedPrefer, 0);
     }
 
     @Override
@@ -55,6 +58,8 @@ public class ConnectorSwitcherFragment extends MyFragment implements BottomNavig
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (!mainActivity.isChangingConfigurations())
+            mainActivity.stopAutoTcpConnect();
         preferences.edit().putBoolean(MainActivity.KeyPrefer_Connector, showingFragmentID == R.id.navButtonBluetooth ? PreferBluetooth : PreferTcpIp).apply();
     }
 
@@ -76,9 +81,11 @@ public class ConnectorSwitcherFragment extends MyFragment implements BottomNavig
             switch (id) {
                 case R.id.navButtonInternet:
                     fragmentToShow = new TcpIpConnectorFragment();
+                    mainActivity.startAutoTcpConnect();
                     break;
                 case R.id.navButtonBluetooth:
                     fragmentToShow = new BluetoothConnectorFragment();
+                    mainActivity.stopAutoTcpConnect();
                     break;
             }
             //Log.i(this.getClass().getSimpleName(), "Manually Added Fragment");

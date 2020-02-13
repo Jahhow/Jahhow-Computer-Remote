@@ -39,7 +39,7 @@ public class TcpIpConnector implements ServerVerifier.ErrorCallback {
                         mainViewModel.mainActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                mainViewModel.mainActivity.replaceFragment(new ControllerSwitcherFragment());
+                                mainViewModel.mainActivity.replaceFragment(new ControllerSwitcherFragment(), false);
                                 if (tcpIpConnectorFragment != null) {
                                     tcpIpConnectorFragment.onConnected();
                                 }

@@ -2,7 +2,7 @@ package c.jahhow.remotecontroller;
 
 import android.view.animation.Interpolator;
 
-class O implements Interpolator {
+class BounceInterpolator implements Interpolator {
 
     /* renamed from: b  reason: collision with root package name */
     private static final double f1710b = Math.exp(-6.0d);
@@ -10,11 +10,13 @@ class O implements Interpolator {
     /* renamed from: c  reason: collision with root package name */
     private final int f1711c;
 
-    O(int i) {
+    BounceInterpolator(int i) {
         this.f1711c = i;
     }
 
     public float getInterpolation(float f) {
+        if (f == 1)
+            return 0;
         double d2 = (double) (((float) this.f1711c) * f * 2.0f);
         /* renamed from: a  reason: collision with root package name */
         float f1709a = -6.0f;
