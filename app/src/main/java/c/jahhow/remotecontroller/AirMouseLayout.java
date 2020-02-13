@@ -18,8 +18,23 @@ public class AirMouseLayout extends FrameLayout implements ValueAnimator.Animato
     private final ExponentialSmoothing smootherY;
     private final ExponentialSmoothing smootherX;
     public int I = 0;
-    private final Runnable J = new K(this);
-    private final Runnable K = new L(this);
+    private final Runnable J = new Runnable() {
+        @Override
+        public void run() {
+            if (y && (!aFocusingPointerActuallyMoved)) {
+                mouseCardView.Indicate(0);
+            }
+        }
+    };
+    private final Runnable K = new Runnable() {
+        @Override
+        public void run() {
+            --I;
+            if (mouseCardView.l == mouseCardView.o && I == 0) {
+                mouseCardView.Indicate(-1);
+            }
+        }
+    };
     private boolean L;
     private float M;
     private final MainActivity mainActivity;

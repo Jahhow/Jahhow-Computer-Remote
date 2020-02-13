@@ -213,10 +213,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (getSupportFragmentManager().getFragments().get(0) instanceof ControllerSwitcherFragment)
-            replaceFragment(new ConnectorSwitcherFragment(), false);
-        else
-            super.onBackPressed();
+        Fragment fragment = getSupportFragmentManager().getFragments().get(0);
+        if (fragment != null) {
+            if (fragment instanceof ControllerSwitcherFragment) {
+                replaceFragment(new ConnectorSwitcherFragment(), false);
+                return;
+            } else if (fragment instanceof ConnectorSwitcherFragment) {
+                if (fragment.getChildFragmentManager().popBackStackImmediate())
+                    return;
+            }
+        }
+        super.onBackPressed();
     }
 
     public void OpenJahhowAppWebsite(View ignored) {

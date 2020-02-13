@@ -2,7 +2,7 @@ package c.jahhow.remotecontroller;
 
 class SwipeCardDemoRunnable implements Runnable {
 
-    final AirMouseLayout airMouseLayout;
+    private final AirMouseLayout airMouseLayout;
 
     SwipeCardDemoRunnable(AirMouseLayout airMouseLayout) {
         this.airMouseLayout = airMouseLayout;
@@ -10,18 +10,22 @@ class SwipeCardDemoRunnable implements Runnable {
 
     public void run() {
         //Log.i(MotionMouseLayout.class.getSimpleName(), "Start DEMO LOOP");
-        float f = this.airMouseLayout.density * -32.0f;
-        BounceInterpolator bounceInterpolator = new BounceInterpolator(5);
+        final float translation = airMouseLayout.density * -32.0f;
+        final BounceInterpolator bounceInterpolator = new BounceInterpolator(5);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ignored) {
         }
         while (true) {
-            AirMouseLayout airMouseLayout = this.airMouseLayout;
             if (!airMouseLayout.attachedToWindow) {
                 break;
             }
-            airMouseLayout.post(new H(this, f, bounceInterpolator));
+            airMouseLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    airMouseLayout.mouseCardView.animate().translationY(translation).setDuration(1250).setInterpolator(bounceInterpolator);
+                }
+            });
             try {
                 Thread.sleep(1250);
             } catch (InterruptedException ignored) {
@@ -30,7 +34,12 @@ class SwipeCardDemoRunnable implements Runnable {
             if (!airMouseLayout2.attachedToWindow) {
                 break;
             }
-            airMouseLayout2.post(new I(this, f, bounceInterpolator));
+            airMouseLayout2.post(new Runnable() {
+                @Override
+                public void run() {
+                    airMouseLayout.mouseCardView.animate().translationX(translation).setDuration(1250).setInterpolator(bounceInterpolator);
+                }
+            });
             try {
                 Thread.sleep(4000);
             } catch (InterruptedException ignored) {

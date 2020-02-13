@@ -10,8 +10,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.transition.AutoTransition;
 import androidx.transition.TransitionManager;
@@ -19,7 +21,7 @@ import androidx.transition.TransitionSet;
 
 import com.google.android.material.textfield.TextInputEditText;
 
-public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier.ErrorCallback {
+public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.ErrorCallback {
     private static final String TAG = TcpIpConnectorFragment.class.getSimpleName();
 
     private TextInputEditText editTextIp, editTextPort;
@@ -78,14 +80,14 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
             buttonHelp.setVisibility(helpButtonVisibility);
         } else {
             //Log.i(getClass().getSimpleName(), "preferences.getBoolean(KeyPrefer_ShowHelpButton, true) == " + preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true));
-            buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true) ? View.VISIBLE : View.GONE);
+            buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, false) ? View.VISIBLE : View.GONE);
         }
 
-        if (isNotRestoringState()) {
-            if (/*BuildConfig.DEBUG || */preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, true)) {
+        /*if (isNotRestoringState()) {
+            if (*//*BuildConfig.DEBUG || *//*preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, true)) {
                 ShowGuideTcpIp();
             }
-        }
+        }*/
         return layout;
     }
 
@@ -143,6 +145,7 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         helpButtonVisibility = View.GONE;
     }
 
+    @Override
     public void OnErrorConnecting(@StringRes final int showToast, final int toastDuration) {
         TransitionManager.beginDelayedTransition(connectButtonsParentLayout, new AutoTransition()
                 .setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(500)
@@ -150,7 +153,11 @@ public class TcpIpConnectorFragment extends MyFragment implements ServerVerifier
         buttonHelp.setVisibility(View.VISIBLE);
         if (!isRemoving()) {
             buttonConnect.setEnabled(true);
-            mainActivity.ShowToast(showToast, toastDuration);
+            if (/*BuildConfig.DEBUG || */preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpGuide, true)) {
+                ShowGuideTcpIp();
+            } else {
+                mainActivity.ShowToast(showToast, toastDuration);
+            }
         }
     }
 }

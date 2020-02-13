@@ -75,7 +75,7 @@
         <TextView
             style="@style/AppTheme.Help_Text"
             android:layout_marginTop="14sp"
-            android:text="@string/connect_your_pc_to_the_router_either_through_a_cable_or_wifi_then_connect_this_device_to_the_wifi" />
+            android:text="@string/connect_your_pc_and_this_device_to_the_router" />
 
 
         <TextView

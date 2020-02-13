@@ -126,6 +126,6 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
     }
 
     private boolean shouldShowPurchaseFragment() {
-        return !BuildConfig.DEBUG && !remoteControllerApp.purchaseSkipped && remoteControllerApp.purchaseState != PurchaseState.PURCHASED;
+        return /*!BuildConfig.DEBUG && */!remoteControllerApp.purchaseSkipped && remoteControllerApp.purchaseState != PurchaseState.PURCHASED;
     }
 }
