@@ -128,10 +128,12 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
     }
 
     private boolean shouldShowPurchaseFragment() {
-        boolean b = preferences.getInt(MainActivity.KeyPrefer_SuccessfulConnectionCount, 0) > 3;
-        if (b) {
+        if (remoteControllerApp.purchaseSkipped || remoteControllerApp.purchaseState == PurchaseState.PURCHASED)
+            return false;
+        if (preferences.getInt(MainActivity.KeyPrefer_SuccessfulConnectionCount, 0) > 10) {
             preferences.edit().putInt(MainActivity.KeyPrefer_SuccessfulConnectionCount, 0).apply();
+            return true;
         }
-        return /*!BuildConfig.DEBUG && */b && !remoteControllerApp.purchaseSkipped && remoteControllerApp.purchaseState != PurchaseState.PURCHASED;
+        return false;
     }
 }
