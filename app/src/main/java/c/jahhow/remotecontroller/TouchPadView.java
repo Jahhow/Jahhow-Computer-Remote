@@ -17,7 +17,6 @@ import java.util.ArrayList;
 public class TouchPadView extends FrameLayout {
 
     private MainActivity mainActivity;
-    private boolean vibrateOnDownOnly;
 
     public TouchPadView(@NonNull Context context) {
         super(context);
@@ -38,17 +37,12 @@ public class TouchPadView extends FrameLayout {
 
     public void Initialize(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-        if (mainActivity.vibrator == null)
-            vibrateOnDownOnly = false;
-        else
-            vibrateOnDownOnly = mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_VibrateOnDown, false);
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         return true;
     }
-
 
     private final float density = getResources().getDisplayMetrics().density;
     private float originXdp;
@@ -65,8 +59,6 @@ public class TouchPadView extends FrameLayout {
     private int lastAction;
     private final Object lock = new Object();
     private boolean semaphore = false;
-    private final Object vibrateLock = new Object();
-    private boolean vibrateMutex;
 
     private final DownEventList downEventList = new DownEventList(/*pxSlop*/);
 
@@ -95,26 +87,6 @@ public class TouchPadView extends FrameLayout {
                     synchronized (lock) {
                         downIsInDoubleClickInterval = semaphore;
                         semaphore = false;
-                    }
-                    if (downIsInDoubleClickInterval & vibrateOnDownOnly) {
-                        synchronized (vibrateLock) {
-                            vibrateMutex = true;
-                        }
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    Thread.sleep(intensiveClickIntervalMs);
-                                } catch (InterruptedException ignored) {
-                                }
-                                synchronized (vibrateLock) {
-                                    if (vibrateMutex) {
-                                        vibrateMutex = false;
-                                        mainActivity.Vibrate(1);
-                                    }
-                                }
-                            }
-                        }).start();
                     }
                 }
                 downEventList.clear();
@@ -182,14 +154,7 @@ public class TouchPadView extends FrameLayout {
                         upIsFirstOfIntensiveClicks = false;
                         if (!hasMoveEventExceedSlop) {
                             boolean shouldSendAClick = false;
-                            if (vibrateOnDownOnly) {
-                                synchronized (vibrateLock) {
-                                    if (vibrateMutex) {
-                                        vibrateMutex = false;
-                                        shouldSendAClick = true;
-                                    }
-                                }
-                            } else if (upTime - event.getDownTime() < intensiveClickIntervalMs) {
+                            if (upTime - event.getDownTime() < intensiveClickIntervalMs) {
                                 shouldSendAClick = true;
                             }
 
