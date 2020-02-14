@@ -15,7 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import static c.jahhow.remotecontroller.MainActivity.preferences;
 
-public class ConnectorSwitcherFragment extends MyFragment implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class ConnectorSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
     static final boolean
             PreferBluetooth = true,
             PreferTcpIp = false;
@@ -35,7 +35,7 @@ public class ConnectorSwitcherFragment extends MyFragment implements BottomNavig
         View layout = inflater.inflate(R.layout.connector_switcher, container, false);
         navBar = layout.findViewById(R.id.navBarConnectors);
         navBar.setOnNavigationItemSelectedListener(this);
-        if (hasNoChildFragment()) {
+        if (savedInstanceState == null) {
             boolean preferredConnector = preferences.getBoolean(MainActivity.KeyPrefer_Connector, PreferTcpIp);
             navBar.setSelectedItemId(preferredConnector == PreferBluetooth ?
                     R.id.navButtonBluetooth : R.id.navButtonInternet);
@@ -76,7 +76,7 @@ public class ConnectorSwitcherFragment extends MyFragment implements BottomNavig
         int id = menuItem.getItemId();
         if (id != showingFragmentID) {
             showingFragmentID = id;
-            Fragment fragmentToShow = null;
+            Fragment fragmentToShow;
             if (id == R.id.navButtonBluetooth) {
                 fragmentToShow = new BluetoothConnectorFragment();
                 mainActivity.stopAutoTcpConnect();

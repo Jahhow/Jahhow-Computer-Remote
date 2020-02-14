@@ -18,7 +18,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-public class BluetoothConnectorFragment extends MyFragment {
+public class BluetoothConnectorFragment extends Fragment {
     private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private MyBroadcastReceiver myBroadcastReceiver;
     private MainViewModel mainViewModel;
@@ -54,7 +54,7 @@ public class BluetoothConnectorFragment extends MyFragment {
             context.registerReceiver(myBroadcastReceiver, intentFilter);
 
             //Log.i(getClass().getSimpleName(), String.format("Child fragment %c= null", innerFragment == null ? '=' : '!'));
-            if (mainViewModel.bluetoothConnectorFragment_showSelectBluetoothDeviceFragment || hasNoChildFragment()) {
+            if (mainViewModel.bluetoothConnectorFragment_showSelectBluetoothDeviceFragment || savedInstanceState == null) {
                 mainViewModel.bluetoothConnectorFragment_showSelectBluetoothDeviceFragment = false;
                 //Log.i(getClass().getSimpleName(), "INIT");
                 if (bluetoothAdapter.isEnabled()) {
