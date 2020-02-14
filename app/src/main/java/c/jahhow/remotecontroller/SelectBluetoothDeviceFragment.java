@@ -266,6 +266,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         }
     }
 
+    @Override
     public void OnErrorConnecting(@StringRes final int showToast, final int duration) {
         mainViewModel.mainActivity.runOnUiThread(new Runnable() {
             @Override

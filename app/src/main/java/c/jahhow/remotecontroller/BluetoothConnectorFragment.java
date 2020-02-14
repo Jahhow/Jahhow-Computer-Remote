@@ -31,11 +31,11 @@ public class BluetoothConnectorFragment extends Fragment {
         FragmentActivity activity = getActivity();
         assert activity != null;
         mainViewModel = new ViewModelProvider(activity).get(MainViewModel.class);
-        mainViewModel.bluetoothConnectorFragment = this;
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mainViewModel.bluetoothConnectorFragment = this;
         @LayoutRes int layoutRes;
         if (bluetoothAdapter == null) {
             layoutRes = R.layout.no_bluetooth;
@@ -68,12 +68,6 @@ public class BluetoothConnectorFragment extends Fragment {
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        mainViewModel.bluetoothConnectorFragment = null;
-    }
-
-    @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (bluetoothAdapter != null) {
@@ -88,6 +82,7 @@ public class BluetoothConnectorFragment extends Fragment {
                 bluetoothAdapter.disable();
             }
         }
+        mainViewModel.bluetoothConnectorFragment = null;
     }
 
     void TurnOnBluetooth() {
