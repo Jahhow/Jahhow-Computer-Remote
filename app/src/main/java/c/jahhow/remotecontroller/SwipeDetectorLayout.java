@@ -13,7 +13,6 @@ import android.widget.FrameLayout;
 public class SwipeDetectorLayout extends FrameLayout {
 
     private final MainActivity mainActivity;
-    //int movingChildIndex = 0;
     private SwipeCardView movingChild;
     private final Interpolator interpolator = new DecelerateInterpolator(2);
 
@@ -38,7 +37,6 @@ public class SwipeDetectorLayout extends FrameLayout {
     private float diffY;
     private final float density = getResources().getDisplayMetrics().density;
     private final float pxSlop = 4 * density;
-    //float transYAtAppear = 40 * density;
 
     private final long duration = 800;
 
@@ -52,8 +50,7 @@ public class SwipeDetectorLayout extends FrameLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (!mainActivity.preferences.contains(MainActivity.KeyPrefer_Swiped) || mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_SwipeDemo, true))
-            Demo();
+        Demo();
     }
 
     boolean demoing;
@@ -214,7 +211,6 @@ public class SwipeDetectorLayout extends FrameLayout {
     private final int indexLastChild;
 
     private void ReadyNextChild() {
-        //movingChildIndex = (movingChildIndex + 1) % getChildCount();
         movingChild = (SwipeCardView) getChildAt(indexLastChild);
         removeViewAt(indexLastChild);
         addView(movingChild, 0);

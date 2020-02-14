@@ -219,11 +219,11 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     }
 
     private class BluetoothConnectRunnable implements Runnable {
-        private final BluetoothSocket mmSocket;
+        private final BluetoothSocket bluetoothSocket;
 
         BluetoothConnectRunnable(BluetoothDevice device) {
-            // Use a temporary object that is later assigned to mmSocket
-            // because mmSocket is final.
+            // Use a temporary object that is later assigned to bluetoothSocket
+            // because bluetoothSocket is final.
             BluetoothSocket tmp = null;
 
             try {
@@ -231,7 +231,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             } catch (IOException e) {
                 //Log.e(getClass().getSimpleName(), "Socket's create() method failed", e);
             }
-            mmSocket = tmp;
+            bluetoothSocket = tmp;
         }
 
         public void run() {
@@ -239,8 +239,8 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             bluetoothAdapter.cancelDiscovery();
 
             try {
-                mmSocket.connect();
-                if (ServerVerifier.isValid(mainActivity.preferences, mainViewModel, mmSocket.getInputStream(), mmSocket.getOutputStream(), SelectBluetoothDeviceFragment.this)) {
+                bluetoothSocket.connect();
+                if (ServerVerifier.isValid(mainActivity.preferences, mainViewModel, bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream(), SelectBluetoothDeviceFragment.this)) {
                     mainViewModel.bluetoothConnectorFragment_showSelectBluetoothDeviceFragment = true;
                     mainViewModel.mainActivity.runOnUiThread(new Runnable() {
                         @Override
@@ -252,7 +252,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and return.
                 try {
-                    mmSocket.close();
+                    bluetoothSocket.close();
                 } catch (IOException ignored) {
                 }
                 OnErrorConnecting(R.string.ConnectionError, Toast.LENGTH_SHORT);

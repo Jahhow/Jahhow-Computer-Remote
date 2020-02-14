@@ -38,7 +38,8 @@ public class TouchPadView extends FrameLayout {
 
     public void Initialize(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-        if (mainActivity.vibrator == null) vibrateOnDownOnly = false;
+        if (mainActivity.vibrator == null)
+            vibrateOnDownOnly = false;
         else
             vibrateOnDownOnly = mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_VibrateOnDown, false);
     }

@@ -108,14 +108,14 @@ public class InputTextFragment extends Fragment {
             }
         };
 
-        View ctrlV = layout.findViewById(R.id.buttonCtrlV);
-        ctrlV.setOnClickListener(new View.OnClickListener() {
+        View buttonPaste = layout.findViewById(R.id.buttonCtrlV);
+        buttonPaste.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mainActivity.SendKeyboardScanCodeCombination(ButtonAction.Click, SCS1.L_CTRL, SCS1.V);
             }
         });
-        new LongPressAndUpDetector(ctrlV, mainActivity) {
+        new LongPressAndUpDetector(buttonPaste, mainActivity) {
             @Override
             void onLongClickDown(View v) {
                 showHelp = false;
