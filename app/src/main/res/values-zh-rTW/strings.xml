@@ -26,7 +26,7 @@
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">目前僅支援 Windows</string>
-    <string name="please_run_the_receiver_program_on_your_pc_the_download_link_is_in_the_website_below">請在電腦上執行接收器程式\n下載連結在這個網站中</string>
+    <string name="please_run_the_receiver_program_on_your_pc_the_download_link_is_in">請在電腦上執行接收器程式\n下載連結在這個網站中</string>
     <string name="make_a_search_on_your_pc_to_reach_the_website">您可以在電腦上搜尋到此網站</string>
     <string name="the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app">在電腦上執行接收器程式後，該程式會顯示電腦的 IP 數字。請在此裝置上輸入電腦的 IP 數字。</string>
     <string name="ok">了解</string>
@@ -65,6 +65,6 @@
     <!--Bluetooth Error-->
     <string name="bluetooth_bond_error">請嘗試在電腦上解除其與此裝置的藍芽配對，然後再試一次。</string>
     <string name="bluetooth_common_error_help_text">請確認您已在電腦上執行接收器程式\n並已將電腦上的藍芽開啟</string>
-    <string name="the_receiver_download_link_is_in_this_website">接收器的下載連結在以下網站中：</string>
+    <string name="the_receiver_download_link_is_in">接收器的下載連結在以下網站中：</string>
     <string name="the_supported_receiver_version_is">支援的接收器版本為 V2.1</string>
 </resources>

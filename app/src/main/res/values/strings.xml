@@ -24,7 +24,7 @@
 
     <!--Help.xml-->
     <string name="currently_works_with_windows_only">Currently works with Windows only.</string>
-    <string name="please_run_the_receiver_program_on_your_pc_the_download_link_is_in_the_website_below">Please run the Receiver Program on Your PC\nThe download link is in this website:</string>
+    <string name="please_run_the_receiver_program_on_your_pc_the_download_link_is_in">Please run the Receiver program on your computer.\nThe download link for it is in the following website:</string>
     <string name="make_a_search_on_your_pc_to_reach_the_website">You could make a web search on your PC\nto reach the website.</string>
     <string name="the_receiver_program_will_show_its_ip_numbers_try_them_in_this_app">After running the receiver program on the computer side, that program will show the IP numbers.  Please type the IP numbers into this app.</string>
     <string name="ok">OK</string>
@@ -65,6 +65,6 @@
     <!--Bluetooth Error-->
     <string name="bluetooth_bond_error">Please try to remove the Bluetooth bond on the computer, then try again.</string>
     <string name="bluetooth_common_error_help_text">Please insure the receiver program is running on your PC, and the Bluetooth there is enabled.</string>
-    <string name="the_receiver_download_link_is_in_this_website">The receiver download link is in the following website:</string>
+    <string name="the_receiver_download_link_is_in">The download link for the receiver program is in the following website:</string>
     <string name="the_supported_receiver_version_is">The supported receiver version is V2.1</string>
 </resources>

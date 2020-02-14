@@ -24,7 +24,7 @@
         <TextView
             style="@style/AppTheme.Help_Text.Title"
             android:layout_marginTop="28sp"
-            android:text="@string/the_receiver_download_link_is_in_this_website" />
+            android:text="@string/the_receiver_download_link_is_in" />
 
         <FrameLayout
             android:layout_width="match_parent"
