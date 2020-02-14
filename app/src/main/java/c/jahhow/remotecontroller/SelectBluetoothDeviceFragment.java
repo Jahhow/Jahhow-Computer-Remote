@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
-import static c.jahhow.remotecontroller.MainActivity.preferences;
-
 public class SelectBluetoothDeviceFragment extends Fragment implements AdapterView.OnItemClickListener, ServerVerifier.ErrorCallback {
     static final String TAG = SelectBluetoothDeviceFragment.class.getSimpleName();
 
