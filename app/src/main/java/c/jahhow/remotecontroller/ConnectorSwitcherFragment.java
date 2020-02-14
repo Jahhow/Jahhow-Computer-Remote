@@ -1,6 +1,5 @@
 package c.jahhow.remotecontroller;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -14,13 +13,14 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import static c.jahhow.remotecontroller.MainActivity.preferences;
+
 public class ConnectorSwitcherFragment extends MyFragment implements BottomNavigationView.OnNavigationItemSelectedListener {
     static final boolean
             PreferBluetooth = true,
             PreferTcpIp = false;
 
     MainActivity mainActivity;
-    private SharedPreferences preferences;
     private BottomNavigationView navBar;
 
     @Override
@@ -28,7 +28,6 @@ public class ConnectorSwitcherFragment extends MyFragment implements BottomNavig
         super.onCreate(savedInstanceState);
         mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
-        preferences = mainActivity.getSharedPreferences(MainActivity.name_CommonSharedPrefer, 0);
     }
 
     @Override
@@ -78,15 +77,12 @@ public class ConnectorSwitcherFragment extends MyFragment implements BottomNavig
         if (id != showingFragmentID) {
             showingFragmentID = id;
             Fragment fragmentToShow = null;
-            switch (id) {
-                case R.id.navButtonInternet:
-                    fragmentToShow = new TcpIpConnectorFragment();
-                    mainActivity.startAutoTcpConnect();
-                    break;
-                case R.id.navButtonBluetooth:
-                    fragmentToShow = new BluetoothConnectorFragment();
-                    mainActivity.stopAutoTcpConnect();
-                    break;
+            if (id == R.id.navButtonBluetooth) {
+                fragmentToShow = new BluetoothConnectorFragment();
+                mainActivity.stopAutoTcpConnect();
+            } else {
+                fragmentToShow = new TcpIpConnectorFragment();
+                mainActivity.startAutoTcpConnect();
             }
             //Log.i(this.getClass().getSimpleName(), "Manually Added Fragment");
             getChildFragmentManager().beginTransaction()

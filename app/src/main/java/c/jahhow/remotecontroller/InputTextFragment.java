@@ -19,6 +19,8 @@ import c.jahhow.remotecontroller.msg.ButtonAction;
 import c.jahhow.remotecontroller.msg.InputTextMode;
 import c.jahhow.remotecontroller.msg.SCS1;
 
+import static c.jahhow.remotecontroller.MainActivity.preferences;
+
 public class InputTextFragment extends Fragment {
     private static final String
             BundleKey_InputType = "BKIT",
@@ -145,11 +147,11 @@ public class InputTextFragment extends Fragment {
             }
         });
 
-        showHelp = mainActivity.preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpInputText, true);
+        showHelp = preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpInputText, true);
 
         boolean showHelpHere;
         if (savedInstanceState == null) {
-            editText.setText(mainActivity.preferences.getString(MainActivity.KeyPrefer_InputText, null));
+            editText.setText(preferences.getString(MainActivity.KeyPrefer_InputText, null));
             showHelpHere = showHelp;
         } else {
             int inputType = savedInstanceState.getInt(BundleKey_InputType, 0);
@@ -197,7 +199,7 @@ public class InputTextFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (!mainActivity.isChangingConfigurations()) {
-            mainActivity.preferences.edit()
+            preferences.edit()
                     .putString(MainActivity.KeyPrefer_InputText, editText.getText().toString())
                     .putBoolean(MainActivity.KeyPrefer_ShowHelpInputText, showHelp).apply();
         }
@@ -211,7 +213,7 @@ public class InputTextFragment extends Fragment {
         //Log.i("InputTextFragment", "onDestroy()");
         super.onDestroyView();
         if (!mainActivity.isChangingConfigurations()) {
-            mainActivity.preferences.edit()
+            preferences.edit()
                     .putString(MainActivity.KeyPrefer_InputText, editText.getText().toString())
                     .putBoolean(MainActivity.KeyPrefer_ShowHelpInputText, showHelp).apply();
         }

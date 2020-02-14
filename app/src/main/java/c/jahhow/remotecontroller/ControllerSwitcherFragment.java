@@ -14,6 +14,8 @@ import androidx.fragment.app.FragmentTransaction;
 import com.android.billingclient.api.Purchase.PurchaseState;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import static c.jahhow.remotecontroller.MainActivity.preferences;
+
 public class ControllerSwitcherFragment extends Fragment implements BottomNavigationView.OnNavigationItemSelectedListener {
     private MainActivity mainActivity;
     private BottomNavigationView navigationView;
@@ -32,13 +34,13 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
         remoteControllerApp.controllerSwitcherFragment = this;
 
         if (savedInstanceState == null) {
-            int preferControllerID = mainActivity.preferences.getInt(MainActivity.KeyPrefer_Controller, R.id.navButtonUseAirMouse);
+            int preferControllerID = preferences.getInt(MainActivity.KeyPrefer_Controller, R.id.navButtonUseAirMouse);
             if (preferControllerID != R.id.navButtonUseButtonController &&
                     preferControllerID != R.id.navButtonUseSwiper &&
                     preferControllerID != R.id.navButtonUseAirMouse &&
                     preferControllerID != R.id.navButtonUseTouchPad &&
                     preferControllerID != R.id.navButtonSendText) {
-                mainActivity.preferences.edit().remove(MainActivity.KeyPrefer_Controller).apply();
+                preferences.edit().remove(MainActivity.KeyPrefer_Controller).apply();
                 preferControllerID = R.id.navButtonUseSwiper;
             }
             navigationView.setSelectedItemId(preferControllerID);
@@ -74,7 +76,7 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
     }
 
     private void SavePreference() {
-        mainActivity.preferences.edit().putInt(MainActivity.KeyPrefer_Controller, navigationView.getSelectedItemId()).apply();
+        preferences.edit().putInt(MainActivity.KeyPrefer_Controller, navigationView.getSelectedItemId()).apply();
     }
 
     @Override
@@ -126,6 +128,10 @@ public class ControllerSwitcherFragment extends Fragment implements BottomNaviga
     }
 
     private boolean shouldShowPurchaseFragment() {
-        return /*!BuildConfig.DEBUG && */!remoteControllerApp.purchaseSkipped && remoteControllerApp.purchaseState != PurchaseState.PURCHASED;
+        boolean b = preferences.getInt(MainActivity.KeyPrefer_SuccessfulConnectionCount, 0) > 3;
+        if (b) {
+            preferences.edit().putInt(MainActivity.KeyPrefer_SuccessfulConnectionCount, 0).apply();
+        }
+        return /*!BuildConfig.DEBUG && */b && !remoteControllerApp.purchaseSkipped && remoteControllerApp.purchaseState != PurchaseState.PURCHASED;
     }
 }

@@ -11,14 +11,14 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
+import static c.jahhow.remotecontroller.MainActivity.preferences;
+
 public class TcpIpConnector implements ServerVerifier.ErrorCallback {
     private MainViewModel mainViewModel;
-    SharedPreferences preferences;
     TcpIpConnectorFragment tcpIpConnectorFragment = null;
 
-    TcpIpConnector(@NonNull MainViewModel mainViewModel, @NonNull SharedPreferences preferences) {
+    TcpIpConnector(@NonNull MainViewModel mainViewModel) {
         this.mainViewModel = mainViewModel;
-        this.preferences = preferences;
     }
 
     void connect(final String ip, final int port) {
@@ -34,7 +34,7 @@ public class TcpIpConnector implements ServerVerifier.ErrorCallback {
                     mmSocket.setTcpNoDelay(true);
                     mmSocket.connect(address, 1500);
                     mmSocket.setSoTimeout(1500);
-                    if (ServerVerifier.isValid(preferences, mainViewModel, mmSocket.getInputStream(),
+                    if (ServerVerifier.isValid(mainViewModel, mmSocket.getInputStream(),
                             mmSocket.getOutputStream(), TcpIpConnector.this)) {
                         mainViewModel.mainActivity.runOnUiThread(new Runnable() {
                             @Override

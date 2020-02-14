@@ -1,6 +1,5 @@
 package c.jahhow.remotecontroller;
 
-import android.content.SharedPreferences;
 import android.widget.Toast;
 
 import androidx.annotation.StringRes;
@@ -12,6 +11,8 @@ import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static c.jahhow.remotecontroller.MainActivity.preferences;
+
 class ServerVerifier {
     static private final byte[] Header = {'R', 'C', 'R', 'H'};
     static private final byte[] ServerHeader = {'U', 'E', 'R', 'J'};
@@ -20,7 +21,7 @@ class ServerVerifier {
     private ServerVerifier() {
     }
 
-    static boolean isValid(SharedPreferences preferences, MainViewModel mainViewModel, InputStream inputStream, OutputStream outputStream, ErrorCallback errorCallback) throws IOException {
+    static boolean isValid(MainViewModel mainViewModel, InputStream inputStream, OutputStream outputStream, ErrorCallback errorCallback) throws IOException {
         mainViewModel.outputStream = outputStream;
         mainViewModel.outputStream.write(Header);
 
@@ -45,7 +46,9 @@ class ServerVerifier {
             errorCallback.OnErrorConnecting(R.string.PleaseUpdateThisApp, Toast.LENGTH_SHORT);
             return false;
         }
-        preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowHelpOnCreate, false).apply();
+        int SuccessfulConnectionCount = preferences.getInt(MainActivity.KeyPrefer_SuccessfulConnectionCount, 0);
+        preferences.edit().putBoolean(MainActivity.KeyPrefer_ShowMainHelp, false)
+                .putInt(MainActivity.KeyPrefer_SuccessfulConnectionCount, SuccessfulConnectionCount + 1).apply();
         return true;
     }
 

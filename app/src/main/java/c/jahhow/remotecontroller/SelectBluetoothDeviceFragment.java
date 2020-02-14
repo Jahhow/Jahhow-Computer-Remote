@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
+import static c.jahhow.remotecontroller.MainActivity.preferences;
+
 public class SelectBluetoothDeviceFragment extends Fragment implements AdapterView.OnItemClickListener, ServerVerifier.ErrorCallback {
     static final String TAG = SelectBluetoothDeviceFragment.class.getSimpleName();
 
@@ -240,7 +242,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
 
             try {
                 bluetoothSocket.connect();
-                if (ServerVerifier.isValid(mainActivity.preferences, mainViewModel, bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream(), SelectBluetoothDeviceFragment.this)) {
+                if (ServerVerifier.isValid(mainViewModel, bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream(), SelectBluetoothDeviceFragment.this)) {
                     mainViewModel.bluetoothConnectorFragment_showSelectBluetoothDeviceFragment = true;
                     mainViewModel.mainActivity.runOnUiThread(new Runnable() {
                         @Override

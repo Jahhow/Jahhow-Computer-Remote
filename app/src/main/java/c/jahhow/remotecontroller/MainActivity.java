@@ -49,15 +49,16 @@ public class MainActivity extends AppCompatActivity {
             KeyPrefer_Swiped = "4",
             KeyPrefer_InputText = "5",
             KeyPrefer_VibrateOnDown = "6",
-            KeyPrefer_ShowHelpButton = "7",
-            KeyPrefer_ShowHelpOnCreate = "8",
+            KeyPrefer_ShowTcpIpHelpButton = "7",
+            KeyPrefer_ShowMainHelp = "8",
             KeyPrefer_ShowHelpInputText = "9",
             KeyPrefer_ShowTcpIpGuide = "a",
-            KeyPrefer_Connector = "b";
+            KeyPrefer_Connector = "b",
+            KeyPrefer_SuccessfulConnectionCount = "c";
 
     RemoteControllerApp remoteControllerApp;
     MainViewModel mainViewModel;
-    SharedPreferences preferences;
+    static SharedPreferences preferences;
 
     private Toast toast;
     Vibrator vibrator;
@@ -103,10 +104,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         mainViewModel.mainActivity = this;
-        preferences = getSharedPreferences(name_CommonSharedPrefer, 0);
+        if (preferences == null)
+            preferences = getSharedPreferences(name_CommonSharedPrefer, MODE_PRIVATE);
         remoteControllerApp = (RemoteControllerApp) getApplication();
         if (mainViewModel.tcpIpConnector == null) {
-            mainViewModel.tcpIpConnector = new TcpIpConnector(mainViewModel, preferences);
+            mainViewModel.tcpIpConnector = new TcpIpConnector(mainViewModel);
         }
 
         vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
@@ -114,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
         toast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
         if (savedInstanceState == null) {
             Fragment fragment;
-            if (/*BuildConfig.DEBUG || */preferences.getBoolean(KeyPrefer_ShowHelpOnCreate, true)) {
+            if (/*BuildConfig.DEBUG || */preferences.getBoolean(KeyPrefer_ShowMainHelp, true)) {
                 fragment = new MainHelpFragment();
                 startAutoTcpConnect();
             } else
@@ -187,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
                                 else {
                                     preferences.edit()
                                             .putBoolean(KeyPrefer_Connector, ConnectorSwitcherFragment.PreferTcpIp)
-                                            .putBoolean(MainActivity.KeyPrefer_ShowHelpButton, false)
+                                            .putBoolean(MainActivity.KeyPrefer_ShowTcpIpHelpButton, false)
                                             .putString(KeyPrefer_IP, senderIP)
                                             .putString(KeyPrefer_Port, String.valueOf(port)).apply();
                                     mainViewModel.tcpIpConnector.connect(senderIP, port);

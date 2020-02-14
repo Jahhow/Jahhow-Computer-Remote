@@ -10,7 +10,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
@@ -21,6 +20,8 @@ import androidx.transition.TransitionSet;
 
 import com.google.android.material.textfield.TextInputEditText;
 
+import static c.jahhow.remotecontroller.MainActivity.preferences;
+
 public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.ErrorCallback {
     private static final String TAG = TcpIpConnectorFragment.class.getSimpleName();
 
@@ -30,7 +31,6 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
     private LinearLayout connectButtonsParentLayout;
 
     private MainActivity mainActivity;
-    private SharedPreferences preferences;
     private MainViewModel mainViewModel;
 
     // set buttons state on next onCreateView()
@@ -44,7 +44,6 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
         //Log.i(getClass().getSimpleName(), "onCreateView()");
         mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
-        preferences = mainActivity.preferences;
         mainViewModel = mainActivity.mainViewModel;
         mainViewModel.tcpIpConnector.tcpIpConnectorFragment = this;
 
@@ -79,8 +78,8 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
             buttonConnect.setEnabled(connectButtonEnabled);
             buttonHelp.setVisibility(helpButtonVisibility);
         } else {
-            //Log.i(getClass().getSimpleName(), "preferences.getBoolean(KeyPrefer_ShowHelpButton, true) == " + preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, true));
-            buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowHelpButton, false) ? View.VISIBLE : View.GONE);
+            //Log.i(getClass().getSimpleName(), "preferences.getBoolean(KeyPrefer_ShowTcpIpHelpButton, true) == " + preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpHelpButton, true));
+            buttonHelp.setVisibility(preferences.getBoolean(MainActivity.KeyPrefer_ShowTcpIpHelpButton, false) ? View.VISIBLE : View.GONE);
         }
 
         /*if (isNotRestoringState()) {
@@ -124,11 +123,11 @@ public class TcpIpConnectorFragment extends Fragment implements ServerVerifier.E
     private void SavePreferences() {
         if (buttonHelp != null) {
             int _helpButtonVisibility = setButtonsStateOnCreateView ? helpButtonVisibility : buttonHelp.getVisibility();
-            //Log.i(getClass().getSimpleName(), "SavePreferences KeyPrefer_ShowHelpButton " + (_helpButtonVisibility == View.VISIBLE));
+            //Log.i(getClass().getSimpleName(), "SavePreferences KeyPrefer_ShowTcpIpHelpButton " + (_helpButtonVisibility == View.VISIBLE));
             preferences.edit()
                     .putString(MainActivity.KeyPrefer_IP, editTextIp.getText().toString())
                     .putString(MainActivity.KeyPrefer_Port, editTextPort.getText().toString())
-                    .putBoolean(MainActivity.KeyPrefer_ShowHelpButton, _helpButtonVisibility == View.VISIBLE)
+                    .putBoolean(MainActivity.KeyPrefer_ShowTcpIpHelpButton, _helpButtonVisibility == View.VISIBLE)
                     .apply();
         }
     }
