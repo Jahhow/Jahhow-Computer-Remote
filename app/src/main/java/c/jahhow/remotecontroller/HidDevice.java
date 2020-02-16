@@ -8,8 +8,12 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothHidDevice;
+import android.bluetooth.BluetoothHidDeviceAppSdpSettings;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
@@ -21,10 +25,12 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-class LeHidDevice {
+@RequiresApi(api = Build.VERSION_CODES.P)
+class HidDevice {
     interface Listener {
         void onConnected(BluetoothDevice device);
 
@@ -33,7 +39,7 @@ class LeHidDevice {
 
     Listener listener;
 
-    private static final String TAG = LeHidDevice.class.getSimpleName();
+    private static final String TAG = HidDevice.class.getSimpleName();
     private static final UUID
             GATT_UUID_SERVICE_GENERIC_ACCESS = getBluetoothUUID((short) 0x1800),
             GATT_UUID_SERVICE_GENERIC_ATTRIBUTE = getBluetoothUUID((short) 0x1801),
@@ -122,10 +128,12 @@ class LeHidDevice {
                     1  // Report Type: Input Report
             },
             mouse_input_report = new byte[]{0, 0, 2},// do not pretend Report ID
-            boot_mouse_input_report = new byte[]{0, 50, 50};
+            boot_mouse_input_report = new byte[]{0, 50, 50},
+            descriptors = new byte[]{};
 
     private Context context;
     private BluetoothManager bluetoothManager;
+    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private BluetoothLeAdvertiser bluetoothLeAdvertiser;
     private BluetoothGattServer server;
     private AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
@@ -139,8 +147,6 @@ class LeHidDevice {
             Log.w(TAG, "AdvertiseCallback.onStartFailure " + errorCode);
         }
     };
-
-    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private BluetoothDevice device;
     private BluetoothGattCharacteristic mouseInputReport;
     private BluetoothGattService[] services;
@@ -148,7 +154,7 @@ class LeHidDevice {
     private boolean connected = false;
     private boolean mouse_input_report_notification = (client_characteristic_configuration_boot_mouse_input_report[0] & 1) == 1;
 
-    LeHidDevice(Context context) {
+    HidDevice(Context context) {
         this.context = context;
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
@@ -172,22 +178,81 @@ class LeHidDevice {
         bluetoothLeAdvertiser.stopAdvertising(advertiseCallback);
     }
 
+    BluetoothHidDevice hidDevice;
+
     void openServer() {
+        if (!bluetoothAdapter.getProfileProxy(context, new BluetoothProfile.ServiceListener() {
+            @Override
+            public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                hidDevice = (BluetoothHidDevice) proxy;
+                hidDevice.registerApp(
+                        new BluetoothHidDeviceAppSdpSettings("Computer Remote", null, "Jahhow", (byte) 0, descriptors),
+                        null, null, context.getMainExecutor(),
+                        new BluetoothHidDevice.Callback() {
+                            @Override
+                            public void onAppStatusChanged(BluetoothDevice pluggedDevice, boolean registered) {
+                                super.onAppStatusChanged(pluggedDevice, registered);
+                            }
+
+                            @Override
+                            public void onConnectionStateChanged(BluetoothDevice device, int state) {
+                                super.onConnectionStateChanged(device, state);
+                            }
+
+                            @Override
+                            public void onGetReport(BluetoothDevice device, byte type, byte id, int bufferSize) {
+                                super.onGetReport(device, type, id, bufferSize);
+                            }
+
+                            @Override
+                            public void onSetReport(BluetoothDevice device, byte type, byte id, byte[] data) {
+                                super.onSetReport(device, type, id, data);
+                            }
+
+                            @Override
+                            public void onSetProtocol(BluetoothDevice device, byte protocol) {
+                                super.onSetProtocol(device, protocol);
+                            }
+
+                            @Override
+                            public void onInterruptData(BluetoothDevice device, byte reportId, byte[] data) {
+                                super.onInterruptData(device, reportId, data);
+                            }
+
+                            @Override
+                            public void onVirtualCableUnplug(BluetoothDevice device) {
+                                super.onVirtualCableUnplug(device);
+                            }
+                        }
+                );
+            }
+
+            @Override
+            public void onServiceDisconnected(int profile) {
+            }
+        }, BluetoothProfile.HID_DEVICE))
+            throw new RuntimeException("getProfileProxy failed");
+        try {
+            BluetoothServerSocket bluetoothServerSocket = bluetoothAdapter.listenUsingL2capChannel();
+            BluetoothSocket bluetoothSocket = bluetoothServerSocket.accept();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         BluetoothGattServerCallback serverCallback = new BluetoothGattServerCallback() {
             @Override
             public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
                 super.onConnectionStateChange(device, status, newState);
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     Log.i(TAG, "BluetoothDevice CONNECTED: " + device);
-                    if (LeHidDevice.this.device == null) {
-                        LeHidDevice.this.device = device;
+                    if (HidDevice.this.device == null) {
+                        HidDevice.this.device = device;
                         connected = true;
                         if (listener != null) {
                             listener.onConnected(device);
                         }
                     }
                 } else {
-                    if (device.equals(LeHidDevice.this.device)) {
+                    if (device.equals(HidDevice.this.device)) {
                         connected = false;
                         if (listener != null) {
                             listener.onDisconnected(device);
@@ -217,11 +282,11 @@ class LeHidDevice {
                         || uuid.equals(GATT_UUID_CHARACTERISTIC_HID_INFORMATION)
                         || uuid.equals(GATT_UUID_CHARACTERISTIC_REPORT_MAP)
                         || uuid.equals(GATT_UUID_CHARACTERISTIC_PROTOCOL_MODE)
-                    //    || uuid.equals(GATT_UUID_CHARACTERISTIC_PNP_ID)
-                    //    || uuid.equals(GATT_UUID_CHARACTERISTIC_MANUFACTURER_NAME_STRING)
-                    //    || uuid.equals(GATT_UUID_CHARACTERISTIC_MODEL_NUMBER_STRING)
-                    //    || uuid.equals(GATT_UUID_CHARACTERISTIC_BOOT_MOUSE_INPUT_REPORT)
-                    //    || uuid.equals(GATT_UUID_CHARACTERISTIC_BATTERY_LEVEL)
+                        || uuid.equals(GATT_UUID_CHARACTERISTIC_PNP_ID)
+                        || uuid.equals(GATT_UUID_CHARACTERISTIC_MANUFACTURER_NAME_STRING)
+                        || uuid.equals(GATT_UUID_CHARACTERISTIC_MODEL_NUMBER_STRING)
+                    //  || uuid.equals(GATT_UUID_CHARACTERISTIC_BOOT_MOUSE_INPUT_REPORT)
+                    //  || uuid.equals(GATT_UUID_CHARACTERISTIC_BATTERY_LEVEL)
                 ) {
                     /*if (BuildConfig.DEBUG) {
                         String str;
@@ -326,13 +391,13 @@ class LeHidDevice {
                     server.sendResponse(device, requestId, status, 0, null);
             }
 
-            /*@Override
+            @Override
             public void onExecuteWrite(BluetoothDevice device, int requestId, boolean execute) {
                 super.onExecuteWrite(device, requestId, execute);
                 Log.i(TAG, "onExecuteWrite");
             }
 
-            @Override
+            /*@Override
             public void onNotificationSent(BluetoothDevice device, int status) {
                 super.onNotificationSent(device, status);
                 Log.i(TAG, "onNotificationSent " + (status == BluetoothGatt.GATT_SUCCESS ? "OK" : "Fail"));
@@ -381,7 +446,7 @@ class LeHidDevice {
                         BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE);
                 clientConfig.setValue(client_characteristic_configuration_input_report);
                 BluetoothGattDescriptor reportReference = new BluetoothGattDescriptor(GATT_UUID_DESCRIPTOR_REPORT_REFERENCE, BluetoothGattDescriptor.PERMISSION_READ);
-                reportReference.setValue(LeHidDevice.report_reference_mouseInput);
+                reportReference.setValue(HidDevice.report_reference_mouseInput);
                 mouseInputReport.addDescriptor(clientConfig);
                 mouseInputReport.addDescriptor(reportReference);
                 mouseInputReport.setValue(mouse_input_report);
@@ -419,7 +484,7 @@ class LeHidDevice {
             BluetoothGattCharacteristic hid_information = new BluetoothGattCharacteristic(GATT_UUID_CHARACTERISTIC_HID_INFORMATION,
                     BluetoothGattCharacteristic.PROPERTY_READ,
                     BluetoothGattCharacteristic.PERMISSION_READ);
-            hid_information.setValue(LeHidDevice.hid_information);
+            hid_information.setValue(HidDevice.hid_information);
 
             BluetoothGattCharacteristic hid_control_point = new BluetoothGattCharacteristic(GATT_UUID_CHARACTERISTIC_HID_CONTROL_POINT,
                     BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
@@ -428,7 +493,7 @@ class LeHidDevice {
             BluetoothGattCharacteristic protocol_mode = new BluetoothGattCharacteristic(GATT_UUID_CHARACTERISTIC_PROTOCOL_MODE,
                     BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
                     BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PERMISSION_WRITE);
-            protocol_mode.setValue(LeHidDevice.protocol_mode);
+            protocol_mode.setValue(HidDevice.protocol_mode);
 
             human_interface_device.addCharacteristic(protocol_mode);
             human_interface_device.addCharacteristic(mouseInputReport);
@@ -449,12 +514,12 @@ class LeHidDevice {
             battery_service.addCharacteristic(battery_level);
         }*/
 
-        /*BluetoothGattService device_information = new BluetoothGattService(GATT_UUID_SERVICE_DEVICE_INFORMATION, BluetoothGattService.SERVICE_TYPE_PRIMARY);
+        BluetoothGattService device_information = new BluetoothGattService(GATT_UUID_SERVICE_DEVICE_INFORMATION, BluetoothGattService.SERVICE_TYPE_PRIMARY);
         {
             BluetoothGattCharacteristic pnp_id = new BluetoothGattCharacteristic(GATT_UUID_CHARACTERISTIC_PNP_ID,
                     BluetoothGattCharacteristic.PROPERTY_READ,
                     BluetoothGattCharacteristic.PERMISSION_READ);
-            pnp_id.setValue(LeHidDevice.pnp_id);
+            pnp_id.setValue(HidDevice.pnp_id);
 
             BluetoothGattCharacteristic manufacturer_name_string = new BluetoothGattCharacteristic(GATT_UUID_CHARACTERISTIC_MANUFACTURER_NAME_STRING,
                     BluetoothGattCharacteristic.PROPERTY_READ,
@@ -469,7 +534,7 @@ class LeHidDevice {
             device_information.addCharacteristic(manufacturer_name_string);
             device_information.addCharacteristic(model_number_string);
             device_information.addCharacteristic(pnp_id);
-        }*/
+        }
 
         /*BluetoothGattService generic_attribute = new BluetoothGattService(GATT_UUID_SERVICE_GENERIC_ATTRIBUTE, BluetoothGattService.SERVICE_TYPE_PRIMARY);
         {
@@ -479,7 +544,7 @@ class LeHidDevice {
                 human_interface_device,
                 //generic_access,    // Fail. onServiceAdded() won't call
                 //battery_service,   // optional
-                //device_information // not functioning
+                device_information // not functioning
         };
         server.addService(services[0]);
         startAdvertising();
