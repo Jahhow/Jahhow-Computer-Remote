@@ -448,11 +448,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void ShowToast(@StringRes int resId, int duration) {
-        ShowToast(getString(resId), duration);
-    }
-
-    private void ShowToast(String text, int duration) {
-        toast.setText(text);
+        toast.setText(resId);
         toast.setDuration(duration);
         toast.show();
     }

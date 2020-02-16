@@ -1,6 +1,7 @@
 package c.jahhow.remotecontroller;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -12,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,7 +53,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     private final IntentFilter intentFilter = new IntentFilter();
     private static final short PERMISSION_REQUEST_CODE = 8513;
     private static final UUID BT_SERVICE_UUID = new UUID(0xC937E0B78C64C221L, 0x4A25F40120B3064EL);
-    //private HIDDevice hidDevice;
+    private LeHidDevice leHidDevice;
 
     public SelectBluetoothDeviceFragment() {
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
@@ -128,26 +130,59 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         return layout;
     }
 
+    boolean demo = true;
+    BluetoothDevice device;
+
     @Override
     public void onStart() {
         super.onStart();
         //Log.i(getClass().getSimpleName(), "onStart()");
-        /*if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            hidDevice = new HIDDevice(mainActivity);
-            hidDevice.openServer();
-        }*/
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            leHidDevice = new LeHidDevice(mainActivity);
+            leHidDevice.listener = new LeHidDevice.Listener() {
+                @Override
+                public void onConnected(BluetoothDevice device) {
+                    Log.i(TAG, "onConnected " + device);
+                }
+
+                @Override
+                public void onDisconnected(BluetoothDevice device) {
+                    Log.i(TAG, "onDisconnected " + device);
+                }
+            };
+            leHidDevice.openServer();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i(TAG, "demo start");
+                    byte y = 3;
+                    while (demo) {
+                        if (device != null)
+                            leHidDevice.sendMouseMove(device, (byte) 0, y = (byte) -y);
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                    }
+                    Log.i(TAG, "demo stop");
+                }
+            }).start();
+        }
         if (mainViewModel.nearbyBTArrayAdapter.isEmpty())
             startBluetoothDiscovery(false);
     }
 
-    /*@SuppressLint("NewApi")
+    @SuppressLint("NewApi")
     @Override
     public void onStop() {
         super.onStop();
-        if (hidDevice != null) {
-            hidDevice.closeServer();
+        if (leHidDevice != null) {
+            leHidDevice.closeServer();
+            demo = false;
         }
-    }*/
+    }
 
     @Override
     public void onDestroyView() {
@@ -180,15 +215,23 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         }
     }
 
+    @SuppressLint("NewApi")
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        mainViewModel.bondingFailed = false;
-        bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment(getText(R.string.connecting)));
-        BluetoothDevice bluetoothDevice = (BluetoothDevice) parent.getItemAtPosition(position);
-        mainViewModel.socketHandlerThread = new HandlerThread("");
-        mainViewModel.socketHandlerThread.start();
-        mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
-        mainViewModel.socketHandler.post(new BluetoothConnectRunnable(bluetoothDevice));
+        BluetoothDevice device = (BluetoothDevice) parent.getItemAtPosition(position);
+        if (leHidDevice != null) {
+            this.device = device;
+            if (!leHidDevice.connect(device)) {
+                mainActivity.ShowToast(R.string.ConnectionError, Toast.LENGTH_SHORT);
+            }
+        } else {
+            mainViewModel.bondingFailed = false;
+            bluetoothConnectorFragment.replaceChildFragment(new LoadingFragment(getText(R.string.connecting)));
+            mainViewModel.socketHandlerThread = new HandlerThread("");
+            mainViewModel.socketHandlerThread.start();
+            mainViewModel.socketHandler = new Handler(mainViewModel.socketHandlerThread.getLooper());
+            mainViewModel.socketHandler.post(new BluetoothConnectRunnable(device));
+        }
     }
 
     class BluetoothBroadcastReceiver extends BroadcastReceiver {
