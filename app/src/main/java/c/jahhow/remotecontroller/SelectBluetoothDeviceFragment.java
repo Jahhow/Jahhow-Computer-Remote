@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -54,6 +55,7 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     private static final short PERMISSION_REQUEST_CODE = 8513;
     private static final UUID BT_SERVICE_UUID = new UUID(0xC937E0B78C64C221L, 0x4A25F40120B3064EL);
     private LeHidDevice leHidDevice;
+    private HidDevice hidDevice;
 
     public SelectBluetoothDeviceFragment() {
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
@@ -137,38 +139,61 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
     public void onStart() {
         super.onStart();
         //Log.i(getClass().getSimpleName(), "onStart()");
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            leHidDevice = new LeHidDevice(mainActivity);
-            leHidDevice.listener = new LeHidDevice.Listener() {
-                @Override
-                public void onConnected(BluetoothDevice device) {
-                    Log.i(TAG, "onConnected " + device);
-                }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                hidDevice = new HidDevice(mainActivity);
+                hidDevice.openServer();
 
-                @Override
-                public void onDisconnected(BluetoothDevice device) {
-                    Log.i(TAG, "onDisconnected " + device);
-                }
-            };
-            leHidDevice.openServer();
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.i(TAG, "demo start");
-                    byte y = 3;
-                    while (demo) {
-                        if (device != null)
-                            leHidDevice.sendMouseMove(device, (byte) 0, y = (byte) -y);
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            break;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(TAG, "demo start");
+                        byte y = 3;
+                        while (demo) {
+                            if (device != null)
+                                hidDevice.sendMouseMove((byte) 0, y = (byte) -y);
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                break;
+                            }
                         }
+                        Log.i(TAG, "demo stop");
                     }
-                    Log.i(TAG, "demo stop");
-                }
-            }).start();
+                }).start();
+            } else {
+                leHidDevice = new LeHidDevice(mainActivity);
+                leHidDevice.listener = new LeHidDevice.Listener() {
+                    @Override
+                    public void onConnected(BluetoothDevice device) {
+                        Log.i(TAG, "onConnected " + device);
+                    }
+
+                    @Override
+                    public void onDisconnected(BluetoothDevice device) {
+                        Log.i(TAG, "onDisconnected " + device);
+                    }
+                };
+                leHidDevice.openServer();
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(TAG, "demo start");
+                        byte y = 3;
+                        while (demo) {
+                            if (device != null)
+                                leHidDevice.sendMouseMove(device, (byte) 0, y = (byte) -y);
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        }
+                        Log.i(TAG, "demo stop");
+                    }
+                }).start();
+            }
         }
         if (mainViewModel.nearbyBTArrayAdapter.isEmpty())
             startBluetoothDiscovery(false);
@@ -180,8 +205,10 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         super.onStop();
         if (leHidDevice != null) {
             leHidDevice.closeServer();
-            demo = false;
+        } else if (hidDevice != null) {
+            hidDevice.closeServer();
         }
+        demo = false;
     }
 
     @Override
@@ -222,6 +249,11 @@ public class SelectBluetoothDeviceFragment extends Fragment implements AdapterVi
         if (leHidDevice != null) {
             this.device = device;
             if (!leHidDevice.connect(device)) {
+                mainActivity.ShowToast(R.string.ConnectionError, Toast.LENGTH_SHORT);
+            }
+        } else if (hidDevice != null) {
+            this.device = device;
+            if (!hidDevice.connect(device)) {
                 mainActivity.ShowToast(R.string.ConnectionError, Toast.LENGTH_SHORT);
             }
         } else {
